@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+
+.venv/
+venv/
+env/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# recorded traffic never belongs in the repo
+*.db
+*.jsonl
+.bollard/
+
+.DS_Store
+.idea/
+.vscode/
