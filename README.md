@@ -103,6 +103,36 @@ bollard tail -n 20       # the most recent calls
 bollard export out.jsonl # everything, for analysis
 ```
 
+### Then let it write the rules
+
+The next tier was going to be YAML you write by hand. But a person typing
+`max_payload: 8KB` for `send_email` is guessing at a number they have no way to
+know — which is the thing this project says the industry is doing wrong.
+Enforcement without data is guessing with extra steps, and a rule language is
+not data. So the rules come out of the observation tier instead:
+
+```
+$ bollard suggest --since 14d
+
+  send_email     max_payload            3.5KB    # p99 observed 2.3KB over n=400; 1.5x headroom
+  send_email     destinations_emails    3 allowed # 3 distinct emails covering 100% of traffic over n=400
+  send_email     rate_limit_per_hour    21       # 10.0/hour average over 39.9 hours; 2x headroom
+? fetch_url      destinations_hosts     --       # 99 distinct hosts across 150 calls -- too varied for an
+                                                 #   allowlist; this reads as a general-purpose fetcher
+? delete_record  insufficient_data      --       # only 6 calls observed; 30 needed before a threshold
+                                                 #   means anything
+```
+
+`--format yaml` emits the same thing as a policy draft, every rule commented
+with the evidence it rests on.
+
+Note what it refuses to do. A tool below 30 calls gets no threshold, because a
+p99 over n=6 is an anecdote. A tool whose destinations are too varied is flagged
+for a human rather than handed an allowlist that would fire constantly. And a
+destination that was never seen is not a destination that is forbidden — it may
+simply not have happened yet, and the output says so rather than letting you
+forget it. Every line is a hypothesis with its evidence attached, not a finding.
+
 ### Try it without an agent
 
 ```bash
@@ -196,8 +226,10 @@ design are in [experiments/README.md](experiments/README.md).
 ## Where this is going
 
 1. **Now** — observe. Record every call, block nothing.
-2. **Next** — deterministic policy: YAML rules evaluated inline, sub-millisecond.
-   Destination allowlists, payload ceilings, per-tool limits. Fail-open by default.
+2. **Next** — deterministic policy: the rules `bollard suggest` proposes,
+   evaluated inline, sub-millisecond, fail-open by default. The generator ships
+   first on purpose; an engine that enforces numbers nobody could justify is the
+   problem, not the product.
 3. **Then** — context: an LLM judge, but only on calls the deterministic tier
    flags. Payload volume × destination reputation first.
 
