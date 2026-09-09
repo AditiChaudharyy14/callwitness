@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .chain import GENESIS, digest
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS sessions (
     session_id TEXT PRIMARY KEY,
@@ -36,6 +38,9 @@ CREATE TABLE IF NOT EXISTS calls (
     args_truncated INTEGER DEFAULT 0,
     signals_json   TEXT,
     redaction_json TEXT,
+    seq            INTEGER,
+    prev_hash      TEXT,
+    hash           TEXT,
     duration_ms    REAL,
     is_error       INTEGER DEFAULT 0,
     result_bytes   INTEGER,
@@ -59,7 +64,7 @@ _MAX_EVENT_BYTES = 20_000
 # Bump when the shape of the tables changes. Stored in PRAGMA user_version so an
 # upgraded Bollard can tell a v1 database from a v2 one instead of failing on a
 # missing column and losing a user's history.
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def utcnow() -> str:
@@ -77,6 +82,11 @@ class Recorder:
         self.db_path = self.home / "bollard.db"
         self.jsonl_path = self.home / "calls.jsonl"
         self._lock = threading.Lock()
+        # Chain state for this session. Held in memory rather than read back per
+        # write: concurrent sessions share the database but never share a chain,
+        # so there is nothing to coordinate and nothing to race on.
+        self._seq = 0
+        self._last_hash = GENESIS
         self._db = sqlite3.connect(str(self.db_path), check_same_thread=False)
         try:
             # WAL lets the reader commands run while a session is recording,
@@ -101,10 +111,19 @@ class Recorder:
         """Add columns introduced after v1. Never destructive."""
         try:
             current = self._db.execute("PRAGMA user_version").fetchone()[0]
-            if current < 2:
-                cols = {r[1] for r in self._db.execute("PRAGMA table_info(calls)")}
-                if "redaction_json" not in cols:
-                    self._db.execute("ALTER TABLE calls ADD COLUMN redaction_json TEXT")
+            cols = {r[1] for r in self._db.execute("PRAGMA table_info(calls)")}
+            if current < 2 and "redaction_json" not in cols:
+                self._db.execute("ALTER TABLE calls ADD COLUMN redaction_json TEXT")
+            if current < 3:
+                # Existing rows keep NULL hashes on purpose. Back-filling them
+                # would manufacture evidence for records nobody was chaining at
+                # the time, which is the opposite of the point. `verify` reports
+                # them as predating the chain.
+                for name, decl in (("seq", "INTEGER"), ("prev_hash", "TEXT"),
+                                   ("hash", "TEXT")):
+                    if name not in cols:
+                        self._db.execute(
+                            "ALTER TABLE calls ADD COLUMN {} {}".format(name, decl))
             self._db.execute("PRAGMA user_version={}".format(SCHEMA_VERSION))
         except Exception:
             pass
@@ -162,34 +181,50 @@ class Recorder:
     def call(self, rec: Dict[str, Any]) -> None:
         try:
             with self._lock:
+                self._seq += 1
+                row = {
+                    "session_id": self.session_id,
+                    "seq": self._seq,
+                    "ts": rec.get("ts"),
+                    "tool": rec.get("tool"),
+                    "args_json": json.dumps(rec.get("args"), default=str),
+                    "args_bytes": rec.get("args_bytes", 0),
+                    "args_truncated": 1 if rec.get("args_truncated") else 0,
+                    "signals_json": json.dumps(rec.get("signals", {})),
+                    "redaction_json": json.dumps(rec.get("redaction", {})),
+                    "duration_ms": rec.get("duration_ms"),
+                    "is_error": 1 if rec.get("is_error") else 0,
+                    "result_bytes": rec.get("result_bytes", 0),
+                    "result_preview": rec.get("result_preview"),
+                }
+                prev_hash = self._last_hash
+                row_hash = digest(row, prev_hash)
+
                 self._db.execute(
                     "INSERT INTO calls (session_id, label, ts, tool, args_json, "
                     "args_bytes, args_truncated, signals_json, redaction_json, "
-                    "duration_ms, is_error, result_bytes, result_preview) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "duration_ms, is_error, result_bytes, result_preview, "
+                    "seq, prev_hash, hash) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
-                        self.session_id,
-                        self.label,
-                        rec.get("ts"),
-                        rec.get("tool"),
-                        json.dumps(rec.get("args"), default=str),
-                        rec.get("args_bytes", 0),
-                        1 if rec.get("args_truncated") else 0,
-                        json.dumps(rec.get("signals", {})),
-                        json.dumps(rec.get("redaction", {})),
-                        rec.get("duration_ms"),
-                        1 if rec.get("is_error") else 0,
-                        rec.get("result_bytes", 0),
-                        rec.get("result_preview"),
+                        row["session_id"], self.label, row["ts"], row["tool"],
+                        row["args_json"], row["args_bytes"], row["args_truncated"],
+                        row["signals_json"], row["redaction_json"],
+                        row["duration_ms"], row["is_error"], row["result_bytes"],
+                        row["result_preview"],
+                        row["seq"], prev_hash, row_hash,
                     ),
                 )
                 self._db.commit()
                 if self._jsonl is not None:
                     self._jsonl.write(json.dumps(
-                        {"session_id": self.session_id, "label": self.label, **rec},
+                        {"session_id": self.session_id, "label": self.label,
+                         "seq": row["seq"], "prev_hash": prev_hash,
+                         "hash": row_hash, **rec},
                         default=str,
                     ) + "\n")
                     self._jsonl.flush()
+                self._last_hash = row_hash
         except Exception:
             pass
 

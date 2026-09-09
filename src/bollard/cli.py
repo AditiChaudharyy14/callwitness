@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import __version__
+from .chain import format_report, verify_store
 from .http import HttpProxy
 from .proxy import MAX_ARG_BYTES_DEFAULT, Proxy
 from .record import Recorder
@@ -86,6 +87,19 @@ def cmd_suggest(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify(args: argparse.Namespace) -> int:
+    try:
+        sessions = verify_store(Path(args.home))
+    except FileNotFoundError:
+        print("No data yet. Record some traffic first:\n"
+              "  bollard run -- <mcp server command>", file=sys.stderr)
+        return 1
+    sys.stdout.write(format_report(sessions))
+    # Exit 1 on a broken chain, so this is usable in a cron job or a CI step
+    # without anyone having to parse the text.
+    return 1 if any(not rep["intact"] for _, _, rep in sessions) else 0
+
+
 def cmd_export(args: argparse.Namespace) -> int:
     try:
         n = export_jsonl(Path(args.home), Path(args.out))
@@ -157,6 +171,11 @@ def build_parser() -> argparse.ArgumentParser:
     suggest.add_argument("--format", choices=("text", "yaml"), default="text",
                          help="human-readable review (default) or a policy draft")
     suggest.set_defaults(func=cmd_suggest)
+
+    verify = sub.add_parser(
+        "verify",
+        help="check that recorded calls have not been altered since they were written")
+    verify.set_defaults(func=cmd_verify)
 
     export = sub.add_parser("export", help="dump all calls as JSONL")
     export.add_argument("out")
