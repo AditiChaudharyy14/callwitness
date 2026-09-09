@@ -136,8 +136,8 @@ def test_the_break_is_reported_at_the_first_alteration_not_the_last():
 
 # -- it does not claim what it cannot deliver ------------------------------
 
-def test_records_written_before_chaining_are_not_called_tampering():
-    """An upgraded install must not be told its history was altered."""
+def _legacy_store():
+    """A v2 store: the shape `bollard verify` meets on any existing install."""
     home = Path(tempfile.mkdtemp())
     con = sqlite3.connect(str(home / "bollard.db"))
     con.executescript(
@@ -152,13 +152,53 @@ def test_records_written_before_chaining_are_not_called_tampering():
     )
     con.commit()
     con.close()
+    return home
 
-    Recorder(home, "new", "l").close()  # triggers migration
+
+def test_verify_reads_a_pre_chain_store_without_migrating_it_first():
+    """The bug a real user hit in the first minute.
+
+    `verify` never constructs a Recorder, so it meets the database in whatever
+    shape it is in. The original test called Recorder() to force a migration
+    before verifying, which quietly tested a path no user takes -- the real one
+    raised OperationalError: no such column: seq.
+
+    A read command must also not migrate as a side effect: being asked a
+    question is not consent to rewrite the schema.
+    """
+    home = _legacy_store()
+
     rep = {sid: r for sid, _, r in verify_store(home)}["old"]
     assert rep["intact"] is True
     assert rep["unchained"] == 1
     assert rep["verified"] == 0
     assert "before chaining" in format_report(verify_store(home))
+
+    cols = {r[1] for r in sqlite3.connect(
+        str(home / "bollard.db")).execute("PRAGMA table_info(calls)")}
+    assert "seq" not in cols, "verify must not have migrated the store"
+
+
+def test_records_written_before_chaining_are_not_called_tampering():
+    """After a migration, old rows are still reported as predating the chain."""
+    home = _legacy_store()
+    Recorder(home, "new", "l").close()  # now migrate, as `run` would
+    rep = {sid: r for sid, _, r in verify_store(home)}["old"]
+    assert rep["intact"] is True
+    assert rep["unchained"] == 1
+    assert rep["verified"] == 0
+
+
+def test_a_store_with_no_sessions_table_still_verifies_its_calls():
+    home = Path(tempfile.mkdtemp())
+    con = sqlite3.connect(str(home / "bollard.db"))
+    con.executescript(
+        "CREATE TABLE calls (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        " session_id TEXT, tool TEXT);"
+        "INSERT INTO calls (session_id, tool) VALUES ('lonely', 'x');")
+    con.commit()
+    con.close()
+    assert [sid for sid, _, _ in verify_store(home)] == ["lonely"]
 
 
 def test_migration_adds_the_columns_without_touching_old_rows():
