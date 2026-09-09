@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS calls (
     args_bytes     INTEGER,
     args_truncated INTEGER DEFAULT 0,
     signals_json   TEXT,
+    redaction_json TEXT,
     duration_ms    REAL,
     is_error       INTEGER DEFAULT 0,
     result_bytes   INTEGER,
@@ -55,6 +56,11 @@ CREATE INDEX IF NOT EXISTS idx_calls_tool    ON calls(tool);
 
 _MAX_EVENT_BYTES = 20_000
 
+# Bump when the shape of the tables changes. Stored in PRAGMA user_version so an
+# upgraded Bollard can tell a v1 database from a v2 one instead of failing on a
+# missing column and losing a user's history.
+SCHEMA_VERSION = 2
+
 
 def utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -72,8 +78,36 @@ class Recorder:
         self.jsonl_path = self.home / "calls.jsonl"
         self._lock = threading.Lock()
         self._db = sqlite3.connect(str(self.db_path), check_same_thread=False)
+        try:
+            # WAL lets the reader commands run while a session is recording,
+            # and NORMAL stops us paying an fsync per tool call. We already
+            # accept that a hard crash may lose the last few records -- losing
+            # them is fine, blocking the agent to prevent it is not.
+            self._db.execute("PRAGMA journal_mode=WAL")
+            self._db.execute("PRAGMA synchronous=NORMAL")
+        except Exception:
+            pass
         self._db.executescript(SCHEMA)
+        self._migrate()
         self._db.commit()
+        # Held open rather than reopened per call: an open() and a close() on
+        # every tool call is most of the recorder's cost for none of its value.
+        try:
+            self._jsonl = open(self.jsonl_path, "a", encoding="utf-8")
+        except Exception:
+            self._jsonl = None
+
+    def _migrate(self) -> None:
+        """Add columns introduced after v1. Never destructive."""
+        try:
+            current = self._db.execute("PRAGMA user_version").fetchone()[0]
+            if current < 2:
+                cols = {r[1] for r in self._db.execute("PRAGMA table_info(calls)")}
+                if "redaction_json" not in cols:
+                    self._db.execute("ALTER TABLE calls ADD COLUMN redaction_json TEXT")
+            self._db.execute("PRAGMA user_version={}".format(SCHEMA_VERSION))
+        except Exception:
+            pass
 
     # -- lifecycle ---------------------------------------------------------
 
@@ -102,6 +136,11 @@ class Recorder:
 
     def close(self) -> None:
         try:
+            if self._jsonl is not None:
+                self._jsonl.close()
+        except Exception:
+            pass
+        try:
             self._db.close()
         except Exception:
             pass
@@ -125,8 +164,9 @@ class Recorder:
             with self._lock:
                 self._db.execute(
                     "INSERT INTO calls (session_id, label, ts, tool, args_json, "
-                    "args_bytes, args_truncated, signals_json, duration_ms, "
-                    "is_error, result_bytes, result_preview) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "args_bytes, args_truncated, signals_json, redaction_json, "
+                    "duration_ms, is_error, result_bytes, result_preview) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         self.session_id,
                         self.label,
@@ -136,6 +176,7 @@ class Recorder:
                         rec.get("args_bytes", 0),
                         1 if rec.get("args_truncated") else 0,
                         json.dumps(rec.get("signals", {})),
+                        json.dumps(rec.get("redaction", {})),
                         rec.get("duration_ms"),
                         1 if rec.get("is_error") else 0,
                         rec.get("result_bytes", 0),
@@ -143,11 +184,12 @@ class Recorder:
                     ),
                 )
                 self._db.commit()
-                with open(self.jsonl_path, "a", encoding="utf-8") as fh:
-                    fh.write(json.dumps(
+                if self._jsonl is not None:
+                    self._jsonl.write(json.dumps(
                         {"session_id": self.session_id, "label": self.label, **rec},
                         default=str,
                     ) + "\n")
+                    self._jsonl.flush()
         except Exception:
             pass
 
