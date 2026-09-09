@@ -1,0 +1,82 @@
+# Tests run on every push and pull request.
+#
+# The matrix is wide on purpose. pyproject claims `requires-python = ">=3.8"`,
+# and a claim nobody checks is a claim that breaks on a stranger's laptop rather
+# than ours. The full range runs on Linux; macOS and Windows run the two ends,
+# because the parts most likely to differ by platform -- subprocess pipes,
+# sockets, SQLite file locking -- fail at the boundaries or not at all.
+
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: macos-latest
+            python: "3.13"
+          - os: macos-latest
+            python: "3.9"
+          - os: windows-latest
+            python: "3.13"
+          - os: windows-latest
+            python: "3.9"
+
+    name: ${{ matrix.os }} / py${{ matrix.python }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Test
+        run: pytest -q
+
+      - name: The demo has to work too
+        run: python examples/demo.py
+
+  wheel:
+    # A package that passes its tests from a source checkout can still be broken
+    # for the person who runs `pip install`: a missing module, a bad entry point,
+    # a file the build backend never packaged. So build the artifact and use it.
+    name: wheel installs and runs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install build
+      - run: python -m build
+      - name: Install from the wheel, in a clean environment
+        run: |
+          python -m venv /tmp/fresh
+          /tmp/fresh/bin/pip install dist/*.whl
+          /tmp/fresh/bin/bollard --version
+          /tmp/fresh/bin/bollard suggest --help
+          /tmp/fresh/bin/python -c "import bollard.http, bollard.proxy, bollard.suggest, bollard.redact"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
