@@ -32,12 +32,12 @@ recorder bug can't reach the stream. That property is tested, not asserted —
 see `tests/test_passthrough.py`, which asserts the proxied output is
 byte-identical to running the server directly.
 
-One honest limit, because the distinction matters: observation currently runs on
-the same thread that forwards, so a slow observation delays the *next* message
-rather than corrupting the current one. A ReDoS in the email pattern used to make
-that delay seconds long on a large payload; that is fixed and regression-tested
-(`tests/test_hardening.py`), and moving observation onto its own queue is the
-next step. Until then the guarantee is about correctness, not latency.
+**It cannot delay, either.** Observation runs on its own thread behind a bounded
+queue, so the relay only ever does a non-blocking hand-off. A deliberately
+half-second-slow observer moves the gap between two forwarded messages by 0.05ms
+— it used to move it by 4.2 seconds. The queue drops rather than growing without
+limit under load, and counts what it dropped: unrecorded data nobody can see is
+worse than data that was never collected.
 
 It matters because the security industry is currently writing rules against
 agent failures nobody has measured. Enforcement without data is guessing with
@@ -72,6 +72,28 @@ In an MCP client config, replace the server command with the wrapped one:
   }
 }
 ```
+
+### Remote servers
+
+Production agents mostly talk to remote MCP servers over Streamable HTTP. Put
+Bollard in front of one and point the client at the local address instead:
+
+```bash
+bollard proxy --upstream https://mcp.example.com/mcp --port 8100 --echo
+```
+
+```json
+{
+  "mcpServers": {
+    "example": { "url": "http://127.0.0.1:8100/mcp" }
+  }
+}
+```
+
+POST, the SSE response stream, the server-initiated `GET` stream and session
+teardown are all relayed verbatim, headers included, so the `Mcp-Session-Id`
+handshake works without Bollard understanding it. Both transports share one
+recorder (`CallTracker`), so a row looks the same whichever produced it.
 
 The agent behaves exactly as before. Then look at what it did:
 
@@ -148,12 +170,13 @@ SQLite at `~/.bollard/bollard.db`, plus an append-only `calls.jsonl`.
 
 ## Design rule
 
-The recorder must never corrupt the protocol stream. Every line is forwarded
-first and parsed second, on a copy, inside a `try`. If recording throws, traffic
-still flows.
+The recorder must never corrupt the protocol stream, and must never delay it.
+Every message is forwarded first, then handed to a background queue; parsing
+happens on another thread, inside a `try`. If recording throws, traffic still
+flows. If recording is slow, traffic still moves.
 
-If you contribute, keep it that way. `test_a_broken_recorder_never_raises` is
-there to make sure you do.
+If you contribute, keep it that way. `test_a_broken_recorder_never_raises` and
+`tests/test_hardening.py` are there to make sure you do.
 
 ## The experiment
 
@@ -178,8 +201,9 @@ design are in [experiments/README.md](experiments/README.md).
 3. **Then** — context: an LLM judge, but only on calls the deterministic tier
    flags. Payload volume × destination reputation first.
 
-Scope: MCP tool calls. Direct API calls made inside agent code need an SDK
-wrapper, and that is deliberately not in v1.
+Scope: MCP tool calls over stdio and Streamable HTTP. The deprecated
+two-endpoint HTTP+SSE transport is not covered. Direct API calls made inside
+agent code need an SDK wrapper, and that is deliberately not in v1.
 
 ## Where it came from
 

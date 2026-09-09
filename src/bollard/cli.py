@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from . import __version__
+from .http import HttpProxy
 from .proxy import MAX_ARG_BYTES_DEFAULT, Proxy
 from .record import Recorder
 from .report import export_jsonl, format_stats, format_tail
@@ -34,6 +35,24 @@ def cmd_run(args: argparse.Namespace) -> int:
                   redact=not args.no_redact,
                   echo=args.echo)
     return proxy.run()
+
+
+def cmd_proxy(args: argparse.Namespace) -> int:
+    upstream = args.upstream
+    if not upstream.startswith(("http://", "https://")):
+        print("bollard: --upstream must be an http(s) URL", file=sys.stderr)
+        return 2
+
+    from urllib.parse import urlparse
+    recorder = Recorder(Path(args.home), uuid.uuid4().hex[:12],
+                        args.label or (urlparse(upstream).hostname or "http"))
+    server = HttpProxy(upstream, recorder,
+                       host=args.host, port=args.port,
+                       max_arg_bytes=args.max_arg_bytes,
+                       no_args=args.no_args,
+                       redact=not args.no_redact,
+                       echo=args.echo)
+    return server.serve_forever()
 
 
 def cmd_stats(args: argparse.Namespace) -> int:
@@ -92,6 +111,27 @@ def build_parser() -> argparse.ArgumentParser:
 
     stats = sub.add_parser("stats", help="summarise recorded traffic")
     stats.set_defaults(func=cmd_stats)
+
+    proxy = sub.add_parser(
+        "proxy",
+        help="record a remote MCP server over Streamable HTTP")
+    proxy.add_argument("--upstream", required=True,
+                       help="remote MCP endpoint, e.g. https://example.com/mcp")
+    proxy.add_argument("--port", type=int, default=8100,
+                       help="local port to listen on (default: 8100)")
+    proxy.add_argument("--host", default="127.0.0.1",
+                       help="local interface to bind (default: 127.0.0.1)")
+    proxy.add_argument("--label", help="name for this server in the logs")
+    proxy.add_argument("--max-arg-bytes", type=int, default=MAX_ARG_BYTES_DEFAULT,
+                       help="cap on stored argument bytes")
+    proxy.add_argument("--no-args", action="store_true",
+                       help="store argument shape only, never values")
+    proxy.add_argument("--no-redact", action="store_true",
+                       help="store argument values verbatim, including any "
+                            "credentials they contain (redaction is on by default)")
+    proxy.add_argument("--echo", action="store_true",
+                       help="print each call to stderr as it happens")
+    proxy.set_defaults(func=cmd_proxy)
 
     tail = sub.add_parser("tail", help="show the most recent calls")
     tail.add_argument("-n", type=int, default=20)
