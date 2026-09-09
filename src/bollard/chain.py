@@ -178,22 +178,41 @@ def verify_store(home) -> List[Tuple[str, str, Dict[str, Any]]]:
     con = sqlite3.connect(str(db))
     con.row_factory = sqlite3.Row
     try:
-        sessions = con.execute(
-            "SELECT session_id, label FROM sessions ORDER BY started_at"
-        ).fetchall()
+        # A store written by an older version has no chain columns at all, and
+        # `verify` is a read command -- it must not migrate someone's database
+        # as a side effect of being asked a question. So detect the shape and
+        # degrade: every record in a pre-chain store simply predates chaining,
+        # which is the honest answer rather than a crash.
+        cols = {r[1] for r in con.execute("PRAGMA table_info(calls)")}
+        chained = {"seq", "prev_hash", "hash"} <= cols
+        order = "seq, id" if chained else "id"
+
+        try:
+            sessions = con.execute(
+                "SELECT session_id, label FROM sessions ORDER BY started_at"
+            ).fetchall()
+        except sqlite3.OperationalError:
+            sessions = []  # no sessions table yet; the orphan sweep still finds calls
         # Calls can exist for a session row that was never written (a crash
         # between the first call and end_session). Verifying only what sessions
-        # claims would silently skip them, so take the union.
-        orphans = con.execute(
-            "SELECT DISTINCT session_id FROM calls WHERE session_id NOT IN "
-            "(SELECT session_id FROM sessions)"
-        ).fetchall()
+        # claims would silently skip them, so take the union. And if there is no
+        # sessions table at all, every session is an orphan -- the calls are
+        # still the thing worth checking.
+        try:
+            orphans = con.execute(
+                "SELECT DISTINCT session_id FROM calls WHERE session_id NOT IN "
+                "(SELECT session_id FROM sessions)"
+            ).fetchall()
+        except sqlite3.OperationalError:
+            orphans = con.execute(
+                "SELECT DISTINCT session_id FROM calls").fetchall()
 
         out = []
         for row in list(sessions) + [{"session_id": o[0], "label": None} for o in orphans]:
             sid = row["session_id"]
             rows = [dict(r) for r in con.execute(
-                "SELECT * FROM calls WHERE session_id=? ORDER BY seq, id", (sid,)
+                "SELECT * FROM calls WHERE session_id=? ORDER BY {}".format(order),
+                (sid,)
             ).fetchall()]
             if not rows:
                 continue
