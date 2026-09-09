@@ -135,9 +135,19 @@ forget it. Every line is a hypothesis with its evidence attached, not a finding.
 
 ### Try it without an agent
 
+No agent, no API key, no network, no Node:
+
 ```bash
-python examples/demo.py
+python examples/demo.py                     # throwaway run, nothing kept
+python examples/demo.py --keep --repeat 40  # record into your own store
+bollard suggest                             # then let it propose rules
 ```
+
+The plain run uses a temporary directory so trying the tool doesn't pollute
+anyone's data — but the obvious next thing to type is `bollard stats`, and
+"No data yet" is a bad first hour. `--keep` records into `~/.bollard`, and
+`--repeat` sends enough varied traffic that `suggest` has a distribution to
+work from rather than an anecdote.
 
 ## Privacy
 
