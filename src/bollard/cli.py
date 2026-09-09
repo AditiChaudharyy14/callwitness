@@ -14,6 +14,7 @@ from .http import HttpProxy
 from .proxy import MAX_ARG_BYTES_DEFAULT, Proxy
 from .record import Recorder
 from .report import export_jsonl, format_stats, format_tail
+from .suggest import format_suggestions, format_yaml
 
 DEFAULT_HOME = Path(os.environ.get("BOLLARD_HOME", Path.home() / ".bollard"))
 
@@ -70,6 +71,17 @@ def cmd_tail(args: argparse.Namespace) -> int:
         sys.stdout.write(format_tail(Path(args.home), args.n))
     except FileNotFoundError:
         print("No data yet.", file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_suggest(args: argparse.Namespace) -> int:
+    render = format_yaml if args.format == "yaml" else format_suggestions
+    try:
+        sys.stdout.write(render(Path(args.home), args.since))
+    except FileNotFoundError:
+        print("No data yet. Record some traffic first:\n"
+              "  bollard run -- <mcp server command>", file=sys.stderr)
         return 1
     return 0
 
@@ -136,6 +148,15 @@ def build_parser() -> argparse.ArgumentParser:
     tail = sub.add_parser("tail", help="show the most recent calls")
     tail.add_argument("-n", type=int, default=20)
     tail.set_defaults(func=cmd_tail)
+
+    suggest = sub.add_parser(
+        "suggest",
+        help="propose policy rules from traffic already observed")
+    suggest.add_argument("--since", type=float, metavar="DAYS",
+                         help="only consider calls from the last N days")
+    suggest.add_argument("--format", choices=("text", "yaml"), default="text",
+                         help="human-readable review (default) or a policy draft")
+    suggest.set_defaults(func=cmd_suggest)
 
     export = sub.add_parser("export", help="dump all calls as JSONL")
     export.add_argument("out")
