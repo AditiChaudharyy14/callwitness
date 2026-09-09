@@ -29,8 +29,31 @@ import re
 from typing import Any, Dict, List
 
 URL_RE = re.compile(r"https?://[^\s\"'<>)\]}]+", re.I)
-EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+
+# The leading lookbehind is load-bearing, not stylistic.
+#
+# The obvious form -- [\w.+-]+@[\w-]+\.[\w.-]+ -- is quadratic on any long run
+# of word characters. The engine matches the whole run with [\w.+-]+, fails to
+# find '@', backtracks one character, fails again, and then restarts the same
+# walk from every subsequent offset in the run. A 20KB base64 attachment cost
+# ~1.8s; 80KB cost ~30s; growth is 4x for every 2x of input.
+#
+# That is a denial of service reachable by exactly the payload this tool exists
+# to notice -- a large body headed somewhere unexpected. Anyone who could
+# trigger our alert could first make us spend minutes of CPU not raising it.
+#
+# (?<![\w.+-]) forbids starting mid-run, so the engine fails immediately at
+# every offset after the first instead of re-walking. Linear, ~4000x faster on
+# a 20KB blob, and identical results on real addresses -- see
+# tests/test_hardening.py, which asserts both the equivalence and the bound.
+EMAIL_RE = re.compile(r"(?<![\w.+-])[\w.+-]{1,64}@[\w-]{1,255}\.[\w.-]{1,255}")
+
 IPV4_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
+
+# Hard ceiling on how much text we will scan for entities, per call.
+# Defence in depth: the regexes above are linear now, but a pathological input
+# should cost a bounded amount regardless of what any future pattern does.
+MAX_SCAN_CHARS = 262_144
 
 # Argument names that say where a call is addressed. Matched as substrings, so
 # "attach_url", "recipients" and "callbackUrl" are all caught.
@@ -52,7 +75,14 @@ def is_routing_key(key: str) -> bool:
 
 
 def extract_entities(blob: str) -> Dict[str, List[str]]:
-    """Scan a string for hosts, emails and IPs. Returns only non-empty kinds."""
+    """Scan a string for hosts, emails and IPs. Returns only non-empty kinds.
+
+    Scanning is capped at MAX_SCAN_CHARS. A destination appears in a routing
+    field, and routing fields are short; truncation costs us nothing we were
+    going to use, and bounds the cost of a hostile payload.
+    """
+    if len(blob) > MAX_SCAN_CHARS:
+        blob = blob[:MAX_SCAN_CHARS]
     hosts = [h for h in (_host_of(u) for u in URL_RE.findall(blob)[:_MAX_PER_KIND]) if h]
     emails = [e.lower() for e in EMAIL_RE.findall(blob)[:_MAX_PER_KIND]]
     ips = [ip for ip in IPV4_RE.findall(blob)[:_MAX_PER_KIND] if _is_ipv4(ip)]

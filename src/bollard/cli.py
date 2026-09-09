@@ -31,6 +31,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     proxy = Proxy(command, recorder,
                   max_arg_bytes=args.max_arg_bytes,
                   no_args=args.no_args,
+                  redact=not args.no_redact,
                   echo=args.echo)
     return proxy.run()
 
@@ -80,6 +81,9 @@ def build_parser() -> argparse.ArgumentParser:
                      help="cap on stored argument bytes (true size is still recorded)")
     run.add_argument("--no-args", action="store_true",
                      help="record argument shape only, never values")
+    run.add_argument("--no-redact", action="store_true",
+                     help="store argument values verbatim, including any "
+                          "credentials they contain (redaction is on by default)")
     run.add_argument("--echo", action="store_true",
                      help="print one line per call to stderr")
     run.add_argument("command", nargs=argparse.REMAINDER,
