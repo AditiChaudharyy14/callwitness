@@ -26,11 +26,18 @@ those are the two signals Bollard records on every call.
 
 Because it should be installable in production on a Tuesday afternoon.
 
-There is no failure mode where Bollard stops a customer's agent from working: it
-relays every message whether or not it can parse it, and every write to storage
-is wrapped so a recorder bug can't reach the stream. That property is tested,
-not asserted — see `tests/test_passthrough.py`, which asserts the proxied output
-is byte-identical to running the server directly.
+Bollard cannot corrupt what an agent sends or receives: it relays every message
+whether or not it can parse it, and every write to storage is wrapped so a
+recorder bug can't reach the stream. That property is tested, not asserted —
+see `tests/test_passthrough.py`, which asserts the proxied output is
+byte-identical to running the server directly.
+
+One honest limit, because the distinction matters: observation currently runs on
+the same thread that forwards, so a slow observation delays the *next* message
+rather than corrupting the current one. A ReDoS in the email pattern used to make
+that delay seconds long on a large payload; that is fixed and regression-tested
+(`tests/test_hardening.py`), and moving observation onto its own queue is the
+next step. Until then the guarantee is about correctness, not latency.
 
 It matters because the security industry is currently writing rules against
 agent failures nobody has measured. Enforcement without data is guessing with
@@ -84,9 +91,23 @@ python examples/demo.py
 
 | Flag | Effect |
 |---|---|
+| *(default)* | Credentials in argument values are redacted before storage |
+| `--no-redact` | Stores argument values verbatim, credentials included |
 | `--no-args` | Stores argument *shape* only (`{"to": "<str:20>"}`), never values |
 | `--max-arg-bytes N` | Caps stored bytes; the true size is still recorded |
 | `--home DIR` | Where data lives (default `~/.bollard`) |
+
+**Redaction is on by default.** Tool arguments routinely carry API keys, bearer
+tokens and connection strings, and without this every install would be a
+plaintext credential store that didn't exist before Bollard was installed. Known
+key formats, credentials inside URLs, sensitively-named parameters and
+high-entropy tokens are replaced with `<redacted:reason>` on the write path —
+never on read, because by then the plaintext is already on disk. The true
+pre-redaction byte count is still recorded, so the volume signal survives.
+
+Destinations survive redaction on purpose: `postgres://admin:hunter2@db.internal`
+stores as `postgres://admin:<redacted:url_password>@db.internal`. The host is the
+signal; the password is not.
 
 `--no-args` still records destinations — hosts, emails, IPs — because
 destinations are the signal. That's deliberate, it's tested, and you should say
