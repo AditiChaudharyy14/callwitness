@@ -105,11 +105,21 @@ def test_variance_threshold_is_honoured_on_both_sides():
 
 # -- the numbers it does produce -------------------------------------------
 
-def test_ceiling_sits_above_everything_observed():
-    sizes = [100] * (MIN_SAMPLE + 60) + [50_000]
-    home = _home([{"bytes": b} for b in sizes])
-    ceiling = _rules(home)[("send_email", "max_payload")]["value"]
-    assert ceiling > max(sizes), "a ceiling at the largest thing ever seen fires tomorrow"
+def test_ceiling_sits_above_the_bulk_it_was_derived_from():
+    """Headroom over ordinary traffic, so the limit does not fire tomorrow.
+
+    This used to assert the ceiling exceeded *everything* observed. That was
+    the poisoning bug written down as a requirement: it made a single enormous
+    call raise the limit to permit itself. Headroom is owed to the bulk; the
+    outlier gets a tail line instead.
+    """
+    bulk = [100] * (MIN_SAMPLE + 60)
+    home = _home([{"bytes": b} for b in bulk + [50_000]])
+    rules = _rules(home)
+    ceiling = rules[("send_email", "max_payload")]["value"]
+    assert ceiling > max(bulk)
+    assert ceiling < 50_000
+    assert ("send_email", "tail_review") in rules
 
 
 def test_ceiling_is_not_dragged_up_by_a_single_outlier():
@@ -183,3 +193,111 @@ def test_empty_store_says_so_rather_than_proposing_nothing_confidently():
 def test_missing_store_raises_for_the_cli_to_handle():
     with pytest.raises(FileNotFoundError):
         format_suggestions(Path(tempfile.mkdtemp()) / "nope")
+
+
+# --------------------------------------------------------------------------
+# Baseline poisoning
+#
+# The demo showed this against real output: a 29KB exfiltration inside the
+# observation window produced a 43KB proposed ceiling -- one that would have
+# permitted the exact call the tool exists to catch. The attack raised the
+# limit rather than being noticed. These pin the inversion.
+# --------------------------------------------------------------------------
+
+from bollard.suggest import TAIL_MAX_FRACTION, TAIL_MULTIPLE, _split_tail
+
+
+def _poisoned(normal=1000, n=60, attack=30_000):
+    return _home([{"bytes": normal}] * n + [{"bytes": attack}])
+
+
+def test_the_ceiling_does_not_permit_the_outlier_that_set_it():
+    """The regression that matters. Previously ceiling > attack; now under it."""
+    home = _poisoned()
+    ceiling = _rules(home)[("send_email", "max_payload")]["value"]
+    assert ceiling < 30_000, (
+        "a single large call must not raise the limit to permit itself")
+
+
+def test_the_outlier_is_reported_rather_than_absorbed():
+    entry = _rules(_poisoned())[("send_email", "tail_review")]
+    assert entry["value"] == 1
+    assert entry["mark"] == "!"
+    assert entry["confident"] is False
+
+
+def test_the_tail_line_says_when_and_where():
+    """A count is not reviewable. A person needs to go look at the call."""
+    home = _home([{"bytes": 800, "signals": _dest(emails=["ops@acme.com"])}] * 60
+                 + [{"bytes": 40_000, "signals": _dest(hosts=["exfil.example.net"])}])
+    basis = _rules(home)[("send_email", "tail_review")]["basis"]
+    assert "exfil.example.net" in basis
+    assert "39" in basis or "40" in basis  # the size, humanised
+
+
+def test_the_ceiling_basis_admits_what_it_excluded():
+    basis = _rules(_poisoned())[("send_email", "max_payload")]["basis"]
+    assert "EXCLUDES" in basis
+    assert "tail line" in basis
+
+
+def test_ordinary_traffic_produces_no_tail_line():
+    """Nothing to review means nothing shouted about. Alarm fatigue is a bug."""
+    import random
+    rng = random.Random(3)
+    home = _home([{"bytes": rng.randint(800, 1600)} for _ in range(80)])
+    assert ("send_email", "tail_review") not in _rules(home)
+
+
+def test_a_genuinely_wide_distribution_is_not_trimmed():
+    """If a third of calls are large, that is the shape, not an intrusion.
+
+    Excluding that much would misdescribe the traffic -- a different failure
+    from the one we are defending against, and just as wrong.
+    """
+    n = 90
+    big = int(n * 0.3)
+    sizes = [500] * (n - big) + [80_000] * big
+    _, tail, _ = _split_tail(sizes)
+    assert tail == [], "excluding 30% of traffic is not tail trimming"
+
+
+def test_the_tail_fraction_boundary_holds_on_both_sides():
+    n = 200
+    under = int(n * TAIL_MAX_FRACTION) - 1
+    over = int(n * TAIL_MAX_FRACTION) + 5
+
+    def split(count):
+        return _split_tail([1000] * (n - count) + [500_000] * count)[1]
+
+    assert len(split(under)) == under
+    assert split(over) == []
+
+
+def test_a_zero_median_defines_no_tail():
+    """With no scale to measure against, nothing is far from anything."""
+    bulk, tail, median = _split_tail([0] * 50 + [9_999_999])
+    assert median == 0
+    assert tail == []
+    assert bulk == [0] * 50 + [9_999_999]
+
+
+def test_the_threshold_is_a_multiple_of_the_median_not_the_mean():
+    """A mean is moved by the outlier; that is how the ceiling got poisoned."""
+    sizes = [1000] * 99 + [10_000_000]
+    _, tail, median = _split_tail(sizes)
+    assert median == 1000
+    assert tail == [10_000_000]
+    assert 10_000_000 > median * TAIL_MULTIPLE
+
+
+def test_text_output_explains_why_ceilings_exclude_the_tail():
+    out = format_suggestions(_poisoned())
+    assert "already happened while we were watching" in out
+    assert "!" in out
+
+
+def test_yaml_marks_the_tail_for_review_not_as_unresolved():
+    out = format_yaml(_poisoned())
+    assert "REVIEW tail_review" in out
+    assert "max_payload" in out
