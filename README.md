@@ -133,6 +133,35 @@ destination that was never seen is not a destination that is forbidden — it ma
 simply not have happened yet, and the output says so rather than letting you
 forget it. Every line is a hypothesis with its evidence attached, not a finding.
 
+**Baseline poisoning.** If the bad thing already happened while Bollard was
+watching, it is in the distribution, and a plain percentile quietly raises the
+ceiling to permit it. The demo above showed exactly that: a 29KB exfiltration
+produced a 43KB proposed ceiling — one that would have allowed the very call
+this tool exists to catch.
+
+So ceilings come from the bulk of a distribution, not all of it. Calls far above
+the median set no limit; they are named, with timestamps and destinations, and
+handed to a person:
+
+```
+  send_email  max_payload   4.3KB  # p99 of the bulk is 2.9KB; 1.5x headroom.
+                                   #   EXCLUDES 1 call above 11.4KB
+! send_email  tail_review   1      # 1 call more than 8x the 1.4KB median. A rare
+                                   #   enormous call is the most interesting thing
+                                   #   here, so it sets no limit until you have
+                                   #   looked at it: 28.8KB at 2026-09-09T18:09
+                                   #   -> exfil.example.net
+```
+
+The reference is the median, because it is the one statistic a single enormous
+call cannot move — which is the point when that call may be the attack. If more
+than 10% of traffic sits above the threshold it is not a tail, it is the shape,
+and nothing is excluded; misdescribing the distribution is a different failure,
+and just as wrong.
+
+This is not a solution to baseline poisoning. Nothing that learns from unlabelled
+traffic has one. It is a refusal to hide it.
+
 ### Try it without an agent
 
 No agent, no API key, no network, no Node:

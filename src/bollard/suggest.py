@@ -26,10 +26,28 @@ papered over:
     human instead of being handed a threshold that will fire constantly.
 
 A suggestion is a hypothesis with its evidence attached, not a finding.
+
+Baseline poisoning
+------------------
+The sharpest problem with learning policy from traffic: if the bad thing already
+happened during the observation window, it is in the distribution, and a naive
+percentile quietly raises the ceiling to permit it. Our own demo showed this --
+a 29KB exfiltration produced a 43KB proposed ceiling, which would have allowed
+the exact call the tool exists to catch.
+
+So the ceiling is computed from the BULK and the tail is reported separately.
+Calls far above the median do not silently raise the limit; they are named, with
+their timestamps and destinations, and handed to a person. A rare enormous call
+is the most interesting thing in the data, and the last thing that should be
+absorbed into a threshold without anyone looking at it.
+
+This is not a solution to baseline poisoning -- nothing that learns from
+unlabelled traffic has one. It is a refusal to hide it.
 """
 
 from __future__ import annotations
 
+import heapq
 import json
 import math
 import sqlite3
@@ -48,6 +66,19 @@ CEILING_HEADROOM = 1.5
 # Above this ratio of distinct destinations to calls, the tool is not a fixed
 # integration -- it is a general fetcher, and an allowlist is the wrong shape.
 DEST_VARIANCE_LIMIT = 0.35
+
+# A call this many times the median is not part of the shape; it is an event.
+# Deliberately generous -- ordinary traffic varies, and we would rather surface
+# a handful of large-but-legitimate calls than absorb one attack into a limit.
+TAIL_MULTIPLE = 8.0
+
+# If more than this fraction sits above the tail threshold, it is not a tail --
+# the distribution is genuinely wide, and excluding it would be a lie about the
+# shape rather than a defence against one call.
+TAIL_MAX_FRACTION = 0.10
+
+# How many of the biggest calls we keep per tool, to describe the tail with.
+_KEEP_LARGEST = 25
 
 
 def _connect(home: Path) -> sqlite3.Connection:
@@ -91,16 +122,31 @@ def collect(home: Path, since_days: Optional[float] = None) -> Dict[str, Any]:
     for tool, ts, args_bytes, signals, is_error in rows:
         entry = tools.setdefault(tool, {
             "n": 0, "errors": 0, "sizes": [], "hosts": {}, "emails": {}, "times": [],
+            "largest": [],
         })
         entry["n"] += 1
         entry["errors"] += int(is_error or 0)
-        entry["sizes"].append(args_bytes or 0)
+        size = args_bytes or 0
+        entry["sizes"].append(size)
         if ts:
             entry["times"].append(ts)
             stamps.append(ts)
         try:
             dest = json.loads(signals or "{}").get("destinations", {})
         except Exception:
+            dest = {}
+
+        # A bounded min-heap of the biggest calls. The tail is the part a person
+        # has to look at, so it needs to be describable -- when and where to --
+        # not just a count.
+        where = ", ".join(dest.get("hosts", []) + dest.get("emails", [])) or "-"
+        record = (size, ts or "", where)
+        if len(entry["largest"]) < _KEEP_LARGEST:
+            heapq.heappush(entry["largest"], record)
+        elif size > entry["largest"][0][0]:
+            heapq.heapreplace(entry["largest"], record)
+
+        if not dest:
             continue
         for kind in ("hosts", "emails"):
             for value in dest.get(kind, []):
@@ -124,6 +170,31 @@ def _window_hours(entry: Dict[str, Any]) -> float:
         return 0.0
 
 
+def _split_tail(sizes: List[int]):
+    """Separate the bulk of a size distribution from its far tail.
+
+    Returns (bulk, tail, median). The median is the reference because it is the
+    one statistic a single enormous call cannot move -- which is the whole point
+    when the enormous call may be the attack.
+
+    Two refusals to exclude:
+      * A median of zero gives no scale to measure against, so nothing is called
+        a tail.
+      * If more than TAIL_MAX_FRACTION sits above the threshold, the
+        distribution is genuinely wide. Excluding that much would misdescribe
+        the shape rather than defend against one call.
+    """
+    median = _percentile(sizes, 50)
+    if median <= 0:
+        return sizes, [], median
+    threshold = median * TAIL_MULTIPLE
+    tail = [s for s in sizes if s > threshold]
+    if not tail or len(tail) > len(sizes) * TAIL_MAX_FRACTION:
+        return sizes, [], median
+    bulk = [s for s in sizes if s <= threshold]
+    return bulk, tail, median
+
+
 def propose(evidence: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Turn evidence into rule proposals, each carrying its own basis."""
     out: List[Dict[str, Any]] = []
@@ -137,19 +208,45 @@ def propose(evidence: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "tool": tool, "rule": "insufficient_data", "value": None,
                 "basis": "only {} call{} observed; {} needed before a threshold "
                          "means anything".format(n, "" if n == 1 else "s", MIN_SAMPLE),
-                "confident": False,
+                "confident": False, "mark": "?",
             })
             continue
 
         sizes = entry["sizes"]
-        p99 = _percentile(sizes, 99)
+        bulk, tail, median = _split_tail(sizes)
+
+        p99 = _percentile(bulk, 99)
         ceiling = max(int(p99 * CEILING_HEADROOM), 1024)
+        if tail:
+            basis = ("p99 of the bulk is {}; {}x headroom. EXCLUDES {} call{} above "
+                     "{} -- see the tail line".format(
+                         _human_bytes(p99), CEILING_HEADROOM, len(tail),
+                         "" if len(tail) == 1 else "s",
+                         _human_bytes(median * TAIL_MULTIPLE)))
+        else:
+            basis = "p99 observed {} over n={}; {}x headroom".format(
+                _human_bytes(p99), n, CEILING_HEADROOM)
         out.append({
             "tool": tool, "rule": "max_payload", "value": ceiling,
-            "basis": "p99 observed {} over n={}; {}x headroom".format(
-                _human_bytes(p99), n, CEILING_HEADROOM),
-            "confident": True,
+            "basis": basis, "confident": True, "mark": " ",
         })
+
+        if tail:
+            biggest = sorted(entry.get("largest", []), reverse=True)
+            shown = [(sz, ts, where) for sz, ts, where in biggest
+                     if sz > median * TAIL_MULTIPLE][:3]
+            detail = "; ".join("{} at {} -> {}".format(
+                _human_bytes(sz), (ts or "?")[:19], where) for sz, ts, where in shown)
+            out.append({
+                "tool": tool, "rule": "tail_review",
+                "value": len(tail),
+                "basis": ("{} call{} more than {}x the {} median. A rare enormous "
+                          "call is the most interesting thing here, so it sets no "
+                          "limit until you have looked at it: {}".format(
+                              len(tail), "" if len(tail) == 1 else "s",
+                              int(TAIL_MULTIPLE), _human_bytes(median), detail)),
+                "confident": False, "mark": "!",
+            })
 
         for kind in ("hosts", "emails"):
             seen = entry[kind]
@@ -164,7 +261,7 @@ def propose(evidence: Dict[str, Any]) -> List[Dict[str, Any]]:
                     "basis": "{} distinct {} across {} calls -- too varied for an "
                              "allowlist; this reads as a general-purpose fetcher, "
                              "review by hand".format(distinct, kind, n),
-                    "confident": False,
+                    "confident": False, "mark": "?",
                 })
                 continue
             top = sorted(seen.items(), key=lambda kv: -kv[1])
@@ -174,7 +271,7 @@ def propose(evidence: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "value": [v for v, _ in top],
                 "basis": "{} distinct {} covering {:.0%} of observed traffic "
                          "over n={}".format(distinct, kind, covered, n),
-                "confident": True,
+                "confident": True, "mark": " ",
             })
 
         hours = _window_hours(entry)
@@ -185,7 +282,7 @@ def propose(evidence: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "tool": tool, "rule": "rate_limit_per_hour", "value": limit,
                 "basis": "{:.1f}/hour average over {:.1f} hours; 2x headroom".format(
                     per_hour, hours),
-                "confident": True,
+                "confident": True, "mark": " ",
             })
 
     return out
@@ -208,7 +305,7 @@ def format_suggestions(home: Path, since_days: Optional[float] = None) -> str:
 
     width = max((len(p["tool"]) for p in proposals), default=4)
     for p in proposals:
-        mark = " " if p["confident"] else "?"
+        mark = p.get("mark", " " if p["confident"] else "?")
         value = p["value"]
         if isinstance(value, list):
             shown = "{} allowed".format(len(value))
@@ -222,8 +319,17 @@ def format_suggestions(home: Path, since_days: Optional[float] = None) -> str:
             mark, p["tool"], p["rule"], shown, p["basis"], w=width))
 
     lines.append("")
-    lines.append("Lines marked ? are not proposals -- they are places the data "
-                 "cannot support one yet.")
+    lines.append("?  the data cannot support a proposal here yet.")
+    lines.append("!  a proposal exists, but something in the traffic needs your "
+                 "eyes before you accept it.")
+    lines.append("")
+    lines.append("Ceilings are computed from the bulk of each distribution, not "
+                 "all of it. If the bad thing")
+    lines.append("already happened while we were watching, a plain percentile "
+                 "would quietly raise the limit")
+    lines.append("to permit it -- so calls far above the median set no limit and "
+                 "are listed instead.")
+    lines.append("")
     lines.append("A destination not seen is not a destination that is forbidden; "
                  "it may simply not have")
     lines.append("happened yet. Review before enforcing anything here.")
@@ -258,5 +364,6 @@ def format_yaml(home: Path, since_days: Optional[float] = None) -> str:
                 lines.append("    {}: {}".format(p["rule"], p["value"]))
         for p in by_tool[tool]:
             if not p["confident"]:
-                lines.append("    # UNRESOLVED {}: {}".format(p["rule"], p["basis"]))
+                label = "REVIEW" if p.get("mark") == "!" else "UNRESOLVED"
+                lines.append("    # {} {}: {}".format(label, p["rule"], p["basis"]))
     return "\n".join(lines) + "\n"
