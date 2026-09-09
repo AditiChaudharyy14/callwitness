@@ -102,6 +102,7 @@ The agent behaves exactly as before. Then look at what it did:
 ```bash
 bollard stats            # per-tool volume, errors, latency, destinations
 bollard tail -n 20       # the most recent calls
+bollard verify           # check nothing has been altered since it was written
 bollard export out.jsonl # everything, for analysis
 ```
 
@@ -207,6 +208,37 @@ destinations are the signal. That's deliberate, it's tested, and you should say
 it out loud to anyone you ask to run this.
 
 Everything stays on the machine that ran it. Nothing is transmitted anywhere.
+
+### Evidence, not just a log
+
+An append-only file is trivially editable by anyone with filesystem access —
+including a compromised agent running as the same user. A record that can be
+silently rewritten is a convenience, not evidence.
+
+So every call commits to the one before it. Editing, deleting, reordering or
+inserting a record breaks the chain from that point, and `bollard verify` says
+where:
+
+```
+$ bollard verify
+BROKEN  filesystem  642 records, breaks at seq 118
+                    content does not match its hash: this record was edited
+                    after it was written
+```
+
+Exit code 1 on a break, so it works in a cron job without anyone parsing text.
+
+**It is tamper-evident, not tamper-proof, and the tool says so out loud.**
+Someone who can write to the file can also recompute every hash after a change
+and produce a chain that verifies — nothing local can stop that, because the
+verifier and the attacker read the same file. What defeats it is an anchor the
+operator does not control, so `verify` prints the head hash and tells you to
+store it somewhere the machine cannot reach. That is a deployment decision, and
+inventing one for you would be worse than naming the gap.
+
+Records written before chaining existed are reported as predating it, not as
+tampering. A verifier that cries wolf on an upgraded install is worse than no
+verifier.
 
 ## What gets stored
 
