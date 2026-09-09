@@ -2,6 +2,8 @@
 
 **Record every tool call an AI agent makes. Block nothing.**
 
+[![tests](https://github.com/AditiChaudharyy14/bollard/actions/workflows/tests.yml/badge.svg)](https://github.com/AditiChaudharyy14/bollard/actions/workflows/tests.yml)
+
 A transparent MCP proxy. It sits between an agent and its tools, forwards every
 byte unchanged, and writes down what happened.
 
