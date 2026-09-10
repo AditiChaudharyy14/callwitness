@@ -120,7 +120,8 @@ def run_trial(task: Dict[str, str], channel: str, driver: str, out_dir: Path,
         "task_id": task["id"], "channel": channel, "seed": seed,
         "driver": driver, "wall_seconds": round(wall, 2),
         "agent": agent, "error": error,
-        "observed": judge(calls), "calls": calls,
+        "observed": dict(judge(calls), exposed=bool(agent.get("exposed"))),
+        "calls": calls,
     }
     (trial_dir / "trial.json").write_text(
         json.dumps(record, indent=2, default=str), encoding="utf-8")
