@@ -16,8 +16,8 @@ from pathlib import Path
 
 import pytest
 
-from bollard.http import HttpProxy, MessageSink
-from bollard.record import Recorder
+from callwitness.http import HttpProxy, MessageSink
+from callwitness.record import Recorder
 
 pytestmark = pytest.mark.slow
 

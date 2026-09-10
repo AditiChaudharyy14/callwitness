@@ -62,7 +62,7 @@ CREATE INDEX IF NOT EXISTS idx_calls_tool    ON calls(tool);
 _MAX_EVENT_BYTES = 20_000
 
 # Bump when the shape of the tables changes. Stored in PRAGMA user_version so an
-# upgraded Bollard can tell a v1 database from a v2 one instead of failing on a
+# upgraded Callwitness can tell a v1 database from a v2 one instead of failing on a
 # missing column and losing a user's history.
 SCHEMA_VERSION = 3
 
@@ -79,7 +79,7 @@ class Recorder:
         self.session_id = session_id
         self.label = label
         self.home.mkdir(parents=True, exist_ok=True)
-        self.db_path = self.home / "bollard.db"
+        self.db_path = self.home / "callwitness.db"
         self.jsonl_path = self.home / "calls.jsonl"
         self._lock = threading.Lock()
         # Chain state for this session. Held in memory rather than read back per

@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from bollard.record import Recorder
-from bollard.suggest import (
+from callwitness.record import Recorder
+from callwitness.suggest import (
     DEST_VARIANCE_LIMIT, MIN_SAMPLE, collect, format_suggestions, format_yaml, propose,
 )
 
@@ -204,7 +204,7 @@ def test_missing_store_raises_for_the_cli_to_handle():
 # limit rather than being noticed. These pin the inversion.
 # --------------------------------------------------------------------------
 
-from bollard.suggest import TAIL_MAX_FRACTION, TAIL_MULTIPLE, _split_tail
+from callwitness.suggest import TAIL_MAX_FRACTION, TAIL_MULTIPLE, _split_tail
 
 
 def _poisoned(normal=1000, n=60, attack=30_000):
