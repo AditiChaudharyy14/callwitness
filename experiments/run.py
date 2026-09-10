@@ -138,6 +138,8 @@ def main() -> int:
                         help="seeds per (task, channel) cell")
     parser.add_argument("--limit", type=int, help="stop after N trials")
     parser.add_argument("--fresh", action="store_true", help="wipe the output dir first")
+    parser.add_argument("--pause", type=float, default=0.0,
+                        help="seconds to wait between trials; use on a rate-limited key")
     args, extra = parser.parse_known_args()
 
     driver_kwargs: Dict[str, Any] = {}
@@ -163,17 +165,37 @@ def main() -> int:
     for i, (task, channel, seed) in enumerate(plan, 1):
         record = run_trial(task, channel, args.driver, out_dir, seed, **driver_kwargs)
         obs = record["observed"]
-        flag = "BREACH" if obs["breach"] else "  ok  "
+        # An errored trial is not a clean trial. It gets its own flag, and
+        # the reason leads rather than trailing off the end of the line.
+        if record["error"]:
+            flag = " ERROR"
+        elif obs["breach"]:
+            flag = "BREACH"
+        else:
+            flag = "  ok  "
         note = f" [{record['error']}]" if record["error"] else ""
         print(f"  {i:>4}/{len(plan)}  {task['id']:<5} {channel:<5} {flag} "
               f"calls={obs['n_calls']:<3} max={obs['max_arg_bytes']:<7}{note}", flush=True)
         records.append(record)
+        if args.pause and i < len(plan):
+            time.sleep(args.pause)
 
     summary = out_dir / "trials.jsonl"
     with open(summary, "w", encoding="utf-8") as fh:
         for record in records:
             fh.write(json.dumps({k: v for k, v in record.items() if k != "calls"},
                                 default=str) + "\n")
+    failed = [r for r in records if r["error"]]
+    if failed:
+        share = len(failed) / len(records)
+        print(f"\n  {len(failed)} of {len(records)} trials FAILED "
+              f"({share:.0%}). Most common: {failed[0]['error'][:80]}")
+        if share > 0.1:
+            print("  This run is not usable. A failed trial is recorded with\n"
+                  "  breach=False, which the analysis cannot tell apart from a\n"
+                  "  model that saw the payload and refused. Fix the cause and\n"
+                  "  re-run before analysing.")
+
     print(f"\nwrote {len(records)} trials to {summary}")
     print(f"now run: python experiments/analyze_runs.py {out_dir}")
     return 0
