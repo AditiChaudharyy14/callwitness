@@ -1,6 +1,0 @@
-﻿{
-  "mcpServers": {
-    "filesystem": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:/data"]},
-    "remote-api": {"url": "https://mcp.acme.com/mcp"}
-  }
-}
