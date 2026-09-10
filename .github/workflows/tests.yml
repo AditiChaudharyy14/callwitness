@@ -73,9 +73,9 @@ jobs:
         run: |
           python -m venv /tmp/fresh
           /tmp/fresh/bin/pip install dist/*.whl
-          /tmp/fresh/bin/bollard --version
-          /tmp/fresh/bin/bollard suggest --help
-          /tmp/fresh/bin/python -c "import bollard.http, bollard.proxy, bollard.suggest, bollard.redact"
+          /tmp/fresh/bin/callwitness --version
+          /tmp/fresh/bin/callwitness suggest --help
+          /tmp/fresh/bin/python -c "import callwitness.http, callwitness.proxy, callwitness.suggest, callwitness.redact"
       - uses: actions/upload-artifact@v4
         with:
           name: dist

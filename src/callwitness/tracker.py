@@ -181,7 +181,7 @@ class CallTracker:
         import sys
         dest_map = entry["signals"].get("destinations", {})
         dest = ", ".join(dest_map.get("hosts", []) + dest_map.get("emails", [])) or "-"
-        print("[bollard] -> {} ({}B) dest={}".format(tool, args_bytes, dest),
+        print("[callwitness] -> {} ({}B) dest={}".format(tool, args_bytes, dest),
               file=sys.stderr, flush=True)
 
     def _echo_response(self, entry: Dict[str, Any]) -> None:
@@ -191,6 +191,6 @@ class CallTracker:
         flag = "ERR" if entry["is_error"] else "ok"
         duration: Optional[float] = entry.get("duration_ms")
         shown = "{:.0f}ms".format(duration) if duration is not None else "-"
-        print("[bollard] <- {} {} {}B {}".format(
+        print("[callwitness] <- {} {} {}B {}".format(
             entry["tool"], flag, entry["result_bytes"], shown),
             file=sys.stderr, flush=True)

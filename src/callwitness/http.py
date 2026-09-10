@@ -2,7 +2,7 @@
 
 Why this exists
 ---------------
-`bollard run` wraps a stdio subprocess, which is the local development shape --
+`callwitness run` wraps a stdio subprocess, which is the local development shape --
 Claude Desktop, Cursor, a filesystem server on a laptop. Production agents
 mostly talk to REMOTE MCP servers over Streamable HTTP. Recording only stdio
 means recording only developers, and the calls worth watching are the other
@@ -120,7 +120,7 @@ def _client_headers(handler: BaseHTTPRequestHandler) -> List[Tuple[str, str]]:
 
 class _Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
-    server_version = "bollard"
+    server_version = "callwitness"
 
     # Injected by HttpProxy.
     upstream: str = ""
@@ -130,7 +130,7 @@ class _Handler(BaseHTTPRequestHandler):
 
     def log_message(self, fmt: str, *args: Any) -> None:
         if self.echo:
-            sys.stderr.write("[bollard] %s\n" % (fmt % args))
+            sys.stderr.write("[callwitness] %s\n" % (fmt % args))
 
     # -- verbs -------------------------------------------------------------
 
@@ -271,7 +271,7 @@ class HttpProxy:
         self._server = ThreadingHTTPServer((self.host, self.port), self._handler_class())
         self._server.daemon_threads = True
         bound = self._server.server_address
-        print("[bollard] recording {} -> {}".format(
+        print("[callwitness] recording {} -> {}".format(
             "http://{}:{}".format(bound[0], bound[1]), self.upstream),
             file=sys.stderr, flush=True)
         code = 0
@@ -296,7 +296,7 @@ class HttpProxy:
             self.observer.close()
             stats = self.observer.stats
             if stats["dropped"] and self.echo:
-                print("[bollard] dropped {} observations under load".format(
+                print("[callwitness] dropped {} observations under load".format(
                     stats["dropped"]), file=sys.stderr, flush=True)
             self.rec.event("observer:stats", stats)
         except Exception:

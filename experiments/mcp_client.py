@@ -2,7 +2,7 @@
 
 Enough of the protocol to hold a real tool-calling conversation: initialize,
 tools/list, tools/call. It talks to whatever command it is given — and in this
-experiment that command is `bollard run -- python env_server.py`, so every call
+experiment that command is `callwitness run -- python env_server.py`, so every call
 is recorded on the way past without the client knowing anything about it.
 """
 
@@ -31,7 +31,7 @@ class MCPClient:
         self.request("initialize", {
             "protocolVersion": "2024-11-05",
             "capabilities": {},
-            "clientInfo": {"name": "bollard-experiment", "version": "1.0"},
+            "clientInfo": {"name": "callwitness-experiment", "version": "1.0"},
         })
         return self
 

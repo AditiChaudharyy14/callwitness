@@ -1,8 +1,8 @@
-# Bollard
+# Callwitness
 
 **Record every tool call an AI agent makes. Block nothing.**
 
-[![tests](https://github.com/AditiChaudharyy14/bollard/actions/workflows/tests.yml/badge.svg)](https://github.com/AditiChaudharyy14/bollard/actions/workflows/tests.yml)
+[![tests](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml/badge.svg)](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml)
 
 A transparent MCP proxy. It sits between an agent and its tools, forwards every
 byte unchanged, and writes down what happened.
@@ -22,13 +22,13 @@ Same tool. Same permission. Two very different actions:
 
 An allowlist cannot tell those apart — the agent is permitted to send email in
 both cases. The difference is *how much* is leaving and *where it is going*, and
-those are the two signals Bollard records on every call.
+those are the two signals Callwitness records on every call.
 
 ## Why it blocks nothing
 
 Because it should be installable in production on a Tuesday afternoon.
 
-Bollard cannot corrupt what an agent sends or receives: it relays every message
+Callwitness cannot corrupt what an agent sends or receives: it relays every message
 whether or not it can parse it, and every write to storage is wrapped so a
 recorder bug can't reach the stream. That property is tested, not asserted —
 see `tests/test_passthrough.py`, which asserts the proxied output is
@@ -56,29 +56,29 @@ pip install -e .
 Wrap any stdio MCP server:
 
 ```bash
-bollard run --echo -- npx -y @modelcontextprotocol/server-filesystem /data
+callwitness run --echo -- npx -y @modelcontextprotocol/server-filesystem /data
 ```
 
 Or let it wrap the servers you already have. It finds your client's config,
 shows you exactly what would change, and writes nothing until you say so:
 
 ```bash
-$ bollard install
+$ callwitness install
 
 /Users/you/Library/Application Support/Claude/claude_desktop_config.json
   filesystem
     - npx -y @modelcontextprotocol/server-filesystem /data
-    + bollard run --label filesystem -- npx -y @modelcontextprotocol/server-filesystem /data
+    + callwitness run --label filesystem -- npx -y @modelcontextprotocol/server-filesystem /data
   git
     - uvx mcp-server-git --repository /repo
-    + bollard run --label git -- uvx mcp-server-git --repository /repo
-  remote-api  SKIPPED: remote server -- needs `bollard proxy --upstream
+    + callwitness run --label git -- uvx mcp-server-git --repository /repo
+  remote-api  SKIPPED: remote server -- needs `callwitness proxy --upstream
               https://mcp.acme.com/mcp --port <port>` and a port you choose
 
 2 servers would be wrapped. Nothing has been changed.
 ```
 
-`--apply` writes it, after a timestamped backup. `bollard uninstall --apply`
+`--apply` writes it, after a timestamped backup. `callwitness uninstall --apply`
 puts everything back. Running install twice does nothing the second time.
 
 Dry-run is the default because this edits a file you did not write and a broken
@@ -88,15 +88,15 @@ guessed at.
 
 Knows about Claude Desktop, Cursor, Windsurf, Claude Code, and project-local
 `.mcp.json` / `.vscode/mcp.json`. If yours lives elsewhere:
-`bollard install --config /path/to/mcp.json`.
+`callwitness install --config /path/to/mcp.json`.
 
 ### Remote servers
 
 Production agents mostly talk to remote MCP servers over Streamable HTTP. Put
-Bollard in front of one and point the client at the local address instead:
+Callwitness in front of one and point the client at the local address instead:
 
 ```bash
-bollard proxy --upstream https://mcp.example.com/mcp --port 8100 --echo
+callwitness proxy --upstream https://mcp.example.com/mcp --port 8100 --echo
 ```
 
 ```json
@@ -109,16 +109,16 @@ bollard proxy --upstream https://mcp.example.com/mcp --port 8100 --echo
 
 POST, the SSE response stream, the server-initiated `GET` stream and session
 teardown are all relayed verbatim, headers included, so the `Mcp-Session-Id`
-handshake works without Bollard understanding it. Both transports share one
+handshake works without Callwitness understanding it. Both transports share one
 recorder (`CallTracker`), so a row looks the same whichever produced it.
 
 The agent behaves exactly as before. Then look at what it did:
 
 ```bash
-bollard stats            # per-tool volume, errors, latency, destinations
-bollard tail -n 20       # the most recent calls
-bollard verify           # check nothing has been altered since it was written
-bollard export out.jsonl # everything, for analysis
+callwitness stats            # per-tool volume, errors, latency, destinations
+callwitness tail -n 20       # the most recent calls
+callwitness verify           # check nothing has been altered since it was written
+callwitness export out.jsonl # everything, for analysis
 ```
 
 ### Then let it write the rules
@@ -130,7 +130,7 @@ Enforcement without data is guessing with extra steps, and a rule language is
 not data. So the rules come out of the observation tier instead:
 
 ```
-$ bollard suggest --since 14d
+$ callwitness suggest --since 14d
 
   send_email     max_payload            3.5KB    # p99 observed 2.3KB over n=400; 1.5x headroom
   send_email     destinations_emails    3 allowed # 3 distinct emails covering 100% of traffic over n=400
@@ -151,7 +151,7 @@ destination that was never seen is not a destination that is forbidden — it ma
 simply not have happened yet, and the output says so rather than letting you
 forget it. Every line is a hypothesis with its evidence attached, not a finding.
 
-**Baseline poisoning.** If the bad thing already happened while Bollard was
+**Baseline poisoning.** If the bad thing already happened while Callwitness was
 watching, it is in the distribution, and a plain percentile quietly raises the
 ceiling to permit it. The demo above showed exactly that: a 29KB exfiltration
 produced a 43KB proposed ceiling — one that would have allowed the very call
@@ -187,12 +187,12 @@ No agent, no API key, no network, no Node:
 ```bash
 python examples/demo.py                     # throwaway run, nothing kept
 python examples/demo.py --keep --repeat 40  # record into your own store
-bollard suggest                             # then let it propose rules
+callwitness suggest                             # then let it propose rules
 ```
 
 The plain run uses a temporary directory so trying the tool doesn't pollute
-anyone's data — but the obvious next thing to type is `bollard stats`, and
-"No data yet" is a bad first hour. `--keep` records into `~/.bollard`, and
+anyone's data — but the obvious next thing to type is `callwitness stats`, and
+"No data yet" is a bad first hour. `--keep` records into `~/.callwitness`, and
 `--repeat` sends enough varied traffic that `suggest` has a distribution to
 work from rather than an anecdote.
 
@@ -204,11 +204,11 @@ work from rather than an anecdote.
 | `--no-redact` | Stores argument values verbatim, credentials included |
 | `--no-args` | Stores argument *shape* only (`{"to": "<str:20>"}`), never values |
 | `--max-arg-bytes N` | Caps stored bytes; the true size is still recorded |
-| `--home DIR` | Where data lives (default `~/.bollard`) |
+| `--home DIR` | Where data lives (default `~/.callwitness`) |
 
 **Redaction is on by default.** Tool arguments routinely carry API keys, bearer
 tokens and connection strings, and without this every install would be a
-plaintext credential store that didn't exist before Bollard was installed. Known
+plaintext credential store that didn't exist before Callwitness was installed. Known
 key formats, credentials inside URLs, sensitively-named parameters and
 high-entropy tokens are replaced with `<redacted:reason>` on the write path —
 never on read, because by then the plaintext is already on disk. The true
@@ -231,11 +231,11 @@ including a compromised agent running as the same user. A record that can be
 silently rewritten is a convenience, not evidence.
 
 So every call commits to the one before it. Editing, deleting, reordering or
-inserting a record breaks the chain from that point, and `bollard verify` says
+inserting a record breaks the chain from that point, and `callwitness verify` says
 where:
 
 ```
-$ bollard verify
+$ callwitness verify
 BROKEN  filesystem  642 records, breaks at seq 118
                     content does not match its hash: this record was edited
                     after it was written
@@ -284,7 +284,7 @@ the CRM you always use* is a Tuesday.
 
 `sessions` — one row per wrapped process, with the exit code.
 
-SQLite at `~/.bollard/bollard.db`, plus an append-only `calls.jsonl`.
+SQLite at `~/.callwitness/callwitness.db`, plus an append-only `calls.jsonl`.
 
 ## Design rule
 
@@ -300,7 +300,7 @@ If you contribute, keep it that way. `test_a_broken_recorder_never_raises` and
 
 `experiments/` runs the measurement this tool exists to make possible: 15 tasks
 x 4 injection channels, an agent with real tools and real side effects, all
-traffic recorded through Bollard itself.
+traffic recorded through Callwitness itself.
 
 ```bash
 python experiments/run.py --driver scripted --out runs/pilot --fresh --repeats 4
@@ -314,7 +314,7 @@ design are in [experiments/README.md](experiments/README.md).
 ## Where this is going
 
 1. **Now** — observe. Record every call, block nothing.
-2. **Next** — deterministic policy: the rules `bollard suggest` proposes,
+2. **Next** — deterministic policy: the rules `callwitness suggest` proposes,
    evaluated inline, sub-millisecond, fail-open by default. The generator ships
    first on purpose; an engine that enforces numbers nobody could justify is the
    problem, not the product.

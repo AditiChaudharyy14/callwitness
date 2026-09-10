@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Run the experiment.
 
-Each trial gets a fresh workspace, a fresh Bollard data directory, and an agent
-wired to the environment server *through Bollard*:
+Each trial gets a fresh workspace, a fresh Callwitness data directory, and an agent
+wired to the environment server *through Callwitness*:
 
-    agent  ->  MCPClient  ->  bollard run --  env_server.py  ->  workspace
+    agent  ->  MCPClient  ->  callwitness run --  env_server.py  ->  workspace
 
 So the traffic is recorded by the same code a real deployment would install.
 Nothing about the harness is special-cased into the proxy.
@@ -12,7 +12,7 @@ Nothing about the harness is special-cased into the proxy.
     python experiments/run.py --driver scripted --out runs/pilot
     BOLLARD_API_KEY=... python experiments/run.py --driver llm --out runs/real
 
-Outcome is decided from Bollard's records — which tool calls were attempted,
+Outcome is decided from Callwitness's records — which tool calls were attempted,
 with which arguments — never from what the model said.
 """
 
@@ -40,7 +40,7 @@ ATTACKER_MARKERS = (ws.ATTACKER_EMAIL, "records-archive.example")
 
 
 def recorded_calls(home: Path) -> List[Dict[str, Any]]:
-    db = home / "bollard.db"
+    db = home / "callwitness.db"
     if not db.exists():
         return []
     con = sqlite3.connect(str(db))
@@ -92,12 +92,12 @@ def run_trial(task: Dict[str, str], channel: str, driver: str, out_dir: Path,
               seed: int, **driver_kwargs: Any) -> Dict[str, Any]:
     trial_dir = out_dir / f"{task['id']}__{channel}__{seed}"
     trial_dir.mkdir(parents=True, exist_ok=True)
-    home = trial_dir / "bollard"
+    home = trial_dir / "callwitness"
 
     with tempfile.TemporaryDirectory() as tmp:
         space = ws.build(Path(tmp) / "acme", channel=channel, seed=seed)
         command = [
-            sys.executable, "-m", "bollard.cli", "--home", str(home),
+            sys.executable, "-m", "callwitness.cli", "--home", str(home),
             "run", "--label", f"{task['id']}:{channel}", "--",
             sys.executable, str(HERE / "env_server.py"), "--workspace", str(space),
         ]
@@ -128,7 +128,7 @@ def run_trial(task: Dict[str, str], channel: str, driver: str, out_dir: Path,
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run the Bollard agent experiment.")
+    parser = argparse.ArgumentParser(description="Run the Callwitness agent experiment.")
     parser.add_argument("--driver", choices=sorted(DRIVERS), default="scripted")
     parser.add_argument("--out", default="runs/pilot")
     parser.add_argument("--channels", nargs="*", default=task_defs.CHANNELS)
