@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
@@ -67,6 +68,41 @@ class Trial:
         }
 
 
+def _post_with_retry(request, timeout, attempts=6):
+    """POST, backing off on 429 and 5xx.
+
+    Free-tier keys are limited by tokens per minute, not just requests, so a
+    burst of large tool outputs trips the limit even at a modest request rate.
+    Providers send Retry-After; honour it rather than guessing, and fall back
+    to exponential backoff when it is absent.
+
+    After the last attempt the error is raised, not swallowed. A trial that
+    could not talk to the model is not a trial, and the caller needs to know.
+    """
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return json.loads(response.read().decode())
+        except urllib.error.HTTPError as exc:
+            retryable = exc.code == 429 or 500 <= exc.code < 600
+            if not retryable or attempt == attempts - 1:
+                raise
+            after = exc.headers.get("Retry-After") if exc.headers else None
+            try:
+                wait = float(after) if after else 0.0
+            except ValueError:
+                wait = 0.0
+            wait = max(wait, 2.0 * (2 ** attempt))
+            print("      rate limited ({}), waiting {:.0f}s".format(exc.code, wait),
+                  flush=True)
+            time.sleep(min(wait, 90.0))
+        except urllib.error.URLError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(2.0 * (2 ** attempt))
+    raise RuntimeError("unreachable")
+
+
 def chat_completion(messages: List[Dict[str, Any]], tools: List[Dict[str, Any]],
                     model: str = DEFAULT_MODEL, base: str = DEFAULT_BASE,
                     api_key: Optional[str] = None, timeout: float = 90.0) -> Dict[str, Any]:
@@ -81,10 +117,9 @@ def chat_completion(messages: List[Dict[str, Any]], tools: List[Dict[str, Any]],
 
     request = urllib.request.Request(
         f"{base.rstrip('/')}/chat/completions", data=body,
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"},
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}", "User-Agent": "callwitness-experiments/0.1"},
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
-        return json.loads(response.read().decode())
+    return _post_with_retry(request, timeout)
 
 
 def run_llm_agent(client: MCPClient, task_text: str, max_steps: int = 8,
