@@ -3,6 +3,7 @@
 **Record every tool call an AI agent makes. Block nothing.**
 
 [![tests](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml/badge.svg)](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml)
+[![PyPI](https://img.shields.io/pypi/v/callwitness)](https://pypi.org/project/callwitness/)
 
 A transparent MCP proxy. It sits between an agent and its tools, forwards every
 byte unchanged, and writes down what happened.
@@ -48,7 +49,7 @@ extra steps. Collect first.
 ## Install
 
 ```bash
-pip install -e .
+pip install callwitness 
 ```
 
 ## Use
