@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Callwitness</title>
+<meta name="description" content="A transparent MCP proxy. It sits between an AI agent and its tools, forwards every byte unchanged, and writes down what happened.">
+<meta property="og:title" content="Callwitness">
+<meta property="og:description" content="Record every tool call an AI agent makes. Block nothing.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F4F5F2;
+  --raised:#FBFBF9;
+  --ink:#16181C;
+  --ink-soft:#4A4F58;
+  --ink-faint:#868C96;
+  --rule:#D9DBD6;
+  --rule-soft:#E7E9E4;
+  --accent:#2E3BA6;
+  --accent-soft:#E6E8F6;
+  --flag:#9B4A16;
+  --flag-soft:#F4E7DC;
+  --good:#2C6A44;
+
+  --f-display:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+  --rail:3.25rem;
+  --measure:66ch;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#131519;
+    --raised:#1A1D23;
+    --ink:#E9EAE7;
+    --ink-soft:#A9AEB7;
+    --ink-faint:#6C727C;
+    --rule:#2A2E36;
+    --rule-soft:#22262D;
+    --accent:#909BEA;
+    --accent-soft:#212642;
+    --flag:#D98A4E;
+    --flag-soft:#2E2319;
+    --good:#6FBF8E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131519;
+  --raised:#1A1D23;
+  --ink:#E9EAE7;
+  --ink-soft:#A9AEB7;
+  --ink-faint:#6C727C;
+  --rule:#2A2E36;
+  --rule-soft:#22262D;
+  --accent:#909BEA;
+  --accent-soft:#212642;
+  --flag:#D98A4E;
+  --flag-soft:#2E2319;
+  --good:#6FBF8E;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:16px;
+  line-height:1.6;
+  padding-inline:20px;
+  padding-block:0;
+}
+.wrap{max-width:calc(var(--measure) + var(--rail) + 8rem);margin-inline:auto}
+
+/* the rail: sequence marks, echoing the hash chain */
+.seq{
+  position:relative;
+  padding-left:var(--rail);
+  padding-block:3.25rem;
+  border-left:1px solid var(--rule-soft);
+}
+.seq{border-left-color:var(--rule-soft)}
+.seq > .mark{
+  position:absolute;
+  left:0;top:3.4rem;
+  width:var(--rail);
+  padding-right:1.1rem;
+  text-align:right;
+  font-family:var(--f-mono);
+  font-size:.6875rem;
+  font-weight:500;
+  letter-spacing:.06em;
+  color:var(--ink-faint);
+  font-variant-numeric:tabular-nums;
+}
+@media (max-width:720px){
+  .seq{padding-left:0;border-left:none;padding-block:2.5rem}
+  .seq > .mark{position:static;width:auto;text-align:left;padding:0;display:block;margin-bottom:.75rem}
+}
+
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0}
+h1{
+  font-size:clamp(2.6rem,7vw,4rem);
+  line-height:1.02;
+  letter-spacing:-.02em;
+}
+h2{
+  font-size:clamp(1.5rem,3.4vw,2rem);
+  line-height:1.15;
+  letter-spacing:-.012em;
+  margin-bottom:1rem;
+}
+h3{
+  font-family:var(--f-body);
+  font-size:.8125rem;
+  font-weight:600;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin-bottom:.6rem;
+}
+p{margin:0 0 1.1rem;max-width:var(--measure);color:var(--ink-soft)}
+p.lede{color:var(--ink);font-size:1.0625rem}
+p:last-child{margin-bottom:0}
+strong{color:var(--ink);font-weight:600}
+em{font-style:italic}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+a:hover{border-bottom-color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+code{font-family:var(--f-mono);font-size:.875em;color:var(--ink)}
+
+header.top{
+  padding-block:4.5rem 0;
+}
+.wordmark{
+  font-family:var(--f-mono);
+  font-size:.75rem;
+  font-weight:600;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  margin-bottom:2.5rem;
+}
+.thesis{
+  font-family:var(--f-display);
+  font-size:clamp(1.25rem,2.8vw,1.6rem);
+  line-height:1.35;
+  color:var(--ink);
+  max-width:30ch;
+  margin:1.4rem 0 0;
+}
+.thesis .b{
+  border-bottom:2px solid var(--accent);
+  padding-bottom:1px;
+}
+.meta{
+  display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;
+  margin-top:2rem;
+  font-family:var(--f-mono);
+  font-size:.75rem;
+  letter-spacing:.04em;
+  color:var(--ink-faint);
+}
+.meta span{white-space:nowrap}
+
+.install{
+  margin-top:2.25rem;
+  display:flex;flex-wrap:wrap;align-items:stretch;gap:.5rem;
+}
+.cmd{
+  display:flex;align-items:center;gap:.6rem;
+  background:var(--raised);
+  border:1px solid var(--rule);
+  padding:.7rem 1rem;
+  font-family:var(--f-mono);
+  font-size:.9375rem;
+  color:var(--ink);
+  min-width:0;
+  overflow-x:auto;
+  white-space:nowrap;
+}
+.cmd .p{color:var(--ink-faint);user-select:none}
+button.copy{
+  font-family:var(--f-mono);
+  font-size:.75rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  background:var(--ink);
+  color:var(--paper);
+  border:1px solid var(--ink);
+  padding:.7rem 1.1rem;
+  cursor:pointer;
+}
+button.copy:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.ghlink{
+  font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;
+  display:inline-flex;align-items:center;padding:.7rem 1.1rem;
+  border:1px solid var(--rule);color:var(--ink-soft);
+}
+.ghlink:hover{border-color:var(--ink-soft);color:var(--ink)}
+
+.record{
+  margin:2.5rem 0 0;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--rule);
+  overflow-x:auto;
+}
+.record table{
+  border-collapse:collapse;
+  width:100%;
+  min-width:38rem;
+  font-family:var(--f-mono);
+  font-size:.875rem;
+  font-variant-numeric:tabular-nums;
+}
+.record th{
+  text-align:left;
+  font-weight:500;
+  font-size:.6875rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  padding:.55rem .9rem;
+  border-bottom:1px solid var(--rule);
+  white-space:nowrap;
+}
+.record td{
+  padding:.7rem .9rem;
+  border-bottom:1px solid var(--rule-soft);
+  color:var(--ink-soft);
+  white-space:nowrap;
+}
+.record tr:last-child td{border-bottom:none}
+.record .num{text-align:right;color:var(--ink)}
+.record .tool{color:var(--ink)}
+.record tr.hot td{background:var(--flag-soft);color:var(--ink)}
+.record tr.hot .num{color:var(--flag);font-weight:600}
+.record .bang{color:var(--flag);font-weight:600;text-align:center;width:1.5rem}
+.caption{
+  font-size:.875rem;
+  color:var(--ink-faint);
+  margin-top:.85rem;
+  max-width:var(--measure);
+}
+
+pre{
+  margin:1.4rem 0;
+  padding:1.1rem 1.2rem;
+  background:var(--raised);
+  border:1px solid var(--rule);
+  border-left:2px solid var(--accent);
+  overflow-x:auto;
+  font-family:var(--f-mono);
+  font-size:.8125rem;
+  line-height:1.65;
+  color:var(--ink-soft);
+  white-space:pre;
+}
+pre b{color:var(--ink);font-weight:500}
+pre .c{color:var(--ink-faint)}
+pre .add{color:var(--good)}
+pre .del{color:var(--flag)}
+pre .flag{color:var(--flag);font-weight:600}
+
+.pair{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));
+  gap:2rem;
+  margin-top:1.75rem;
+}
+.pair > div > p{margin-bottom:0}
+.figure{
+  font-family:var(--f-mono);
+  font-variant-numeric:tabular-nums;
+  font-size:1.75rem;
+  line-height:1.1;
+  color:var(--ink);
+  display:block;
+  margin-bottom:.35rem;
+}
+.figure .unit{font-size:.9375rem;color:var(--ink-faint)}
+
+ol.road{
+  list-style:none;
+  counter-reset:step;
+  margin:1.5rem 0 0;
+  padding:0;
+  display:grid;
+  gap:1.25rem;
+}
+ol.road li{
+  counter-increment:step;
+  display:grid;
+  grid-template-columns:2.25rem 1fr;
+  gap:1rem;
+  align-items:baseline;
+  max-width:var(--measure);
+}
+ol.road li::before{
+  content:counter(step);
+  font-family:var(--f-mono);
+  font-size:.8125rem;
+  color:var(--ink-faint);
+  border-top:1px solid var(--rule);
+  padding-top:.35rem;
+}
+ol.road .st{
+  font-family:var(--f-mono);
+  font-size:.6875rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--accent);
+  display:block;
+  margin-bottom:.15rem;
+}
+ol.road p{margin:0;font-size:.9375rem}
+
+.note{
+  border-left:2px solid var(--flag);
+  padding-left:1.1rem;
+  margin-top:1.75rem;
+  max-width:var(--measure);
+}
+.note h3{color:var(--flag)}
+
+footer{
+  border-top:1px solid var(--rule);
+  padding-block:2.5rem 4rem;
+  margin-top:1rem;
+  display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-between;
+  font-family:var(--f-mono);
+  font-size:.75rem;
+  letter-spacing:.04em;
+  color:var(--ink-faint);
+}
+footer nav{display:flex;flex-wrap:wrap;gap:1.25rem}
+footer a{border-bottom:none;color:var(--ink-soft)}
+footer a:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="wordmark">Callwitness</div>
+  <h1>Record every tool<br>call an agent makes.<br>Block nothing.</h1>
+  <p class="thesis">A transparent MCP proxy. It forwards <span class="b">every byte unchanged</span> and writes down what happened.</p>
+
+  <div class="meta">
+    <span>v0.1.0 &middot; alpha</span>
+    <span>Python 3.8+</span>
+    <span>Zero dependencies</span>
+    <span>MIT</span>
+  </div>
+
+  <div class="install">
+    <div class="cmd"><span class="p">$</span><span id="cmd">pip install callwitness</span></div>
+    <button class="copy" id="copy" type="button">Copy</button>
+    <a class="ghlink" href="https://github.com/AditiChaudharyy14/callwitness">Source</a>
+  </div>
+</header>
+
+<section class="seq">
+  <span class="mark">seq</span>
+  <h2>Same tool. Same permission.<br>Two very different acts.</h2>
+
+  <div class="record">
+    <table>
+      <thead>
+        <tr><th class="num">seq</th><th class="num">bytes</th><th>tool</th><th>destinations</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">117</td><td class="num">51</td>
+          <td class="tool">send_email</td><td>ops@acme.com</td><td class="bang"></td>
+        </tr>
+        <tr>
+          <td class="num">118</td><td class="num">63</td>
+          <td class="tool">send_email</td><td>billing@acme.com</td><td class="bang"></td>
+        </tr>
+        <tr class="hot">
+          <td class="num">119</td><td class="num">20085</td>
+          <td class="tool">send_email</td><td>exfil.example.net, drop@unknown.example</td><td class="bang">!</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="caption">An allowlist cannot tell these apart. The agent is permitted to send email in all three cases. The difference is <em>how much</em> is leaving and <em>where it is going</em> &mdash; the two signals Callwitness records on every call.</p>
+</section>
+
+<section class="seq">
+  <span class="mark">why</span>
+  <h2>It blocks nothing, so you can install it on a Tuesday afternoon.</h2>
+  <p class="lede">A recorder that can break the thing it records will not be installed anywhere that matters. So two properties come before every feature, and both are tested rather than asserted.</p>
+
+  <div class="pair">
+    <div>
+      <h3>It cannot corrupt</h3>
+      <p>Every message is relayed whether or not the recorder can parse it, and every write to storage is wrapped so a recorder bug never reaches the stream. <code>test_passthrough.py</code> asserts the proxied output is byte-identical to running the server directly.</p>
+    </div>
+    <div>
+      <h3>It cannot delay</h3>
+      <span class="figure">0.05<span class="unit">ms</span></span>
+      <p>What a deliberately half-second-slow observer adds to the gap between two forwarded messages. Before observation moved off the hot path, the same test moved it by <strong>4.2 seconds</strong>. The queue drops rather than growing without limit, and counts what it dropped.</p>
+    </div>
+  </div>
+</section>
+
+<section class="seq">
+  <span class="mark">use</span>
+  <h2>It wraps the servers you already have.</h2>
+  <p>Point it at your client's config. It shows exactly what would change and writes nothing until you say so &mdash; a broken MCP config means a broken agent, which is the one outcome this tool promises not to cause.</p>
+
+<pre><span class="c">$</span> <b>callwitness install</b>
+
+<span class="c">/Users/you/Library/Application Support/Claude/claude_desktop_config.json</span>
+  filesystem
+    <span class="del">-</span> npx -y @modelcontextprotocol/server-filesystem /data
+    <span class="add">+</span> callwitness run --label filesystem -- npx -y @modelcontextprotocol/server-filesystem /data
+  git
+    <span class="del">-</span> uvx mcp-server-git --repository /repo
+    <span class="add">+</span> callwitness run --label git -- uvx mcp-server-git --repository /repo
+  remote-api  <span class="c">SKIPPED: remote server -- needs `callwitness proxy`</span>
+
+2 servers would be wrapped. <b>Nothing has been changed.</b></pre>
+
+  <p>Knows Claude Desktop, Claude Code, Cursor, Windsurf and project-local <code>.mcp.json</code>. Remote servers over Streamable HTTP go behind <code>callwitness proxy</code> instead &mdash; POST, the SSE response stream, the server-initiated <code>GET</code> stream and session teardown are all relayed verbatim, headers included, so the <code>Mcp-Session-Id</code> handshake works without Callwitness understanding it.</p>
+  <p><code>--apply</code> writes it, after a timestamped backup. <code>callwitness uninstall</code> puts everything back.</p>
+</section>
+
+<section class="seq">
+  <span class="mark">rules</span>
+  <h2>Then it writes the rules, from traffic you actually saw.</h2>
+  <p>The next tier was going to be YAML you write by hand. But a person typing <code>max_payload: 8KB</code> is guessing at a number they have no way to know &mdash; which is the thing this project says the industry is doing wrong. Enforcement without data is guessing with extra steps.</p>
+
+<pre><span class="c">$</span> <b>callwitness suggest --since 14d</b>
+
+  send_email     max_payload           3.5KB     <span class="c"># p99 observed 2.3KB over n=400; 1.5x headroom</span>
+  send_email     destinations_emails   3 allowed <span class="c"># 3 addresses covering 100% of traffic, n=400</span>
+  send_email     rate_limit_per_hour   21        <span class="c"># 10.0/hour over 39.9 hours; 2x headroom</span>
+<span class="c">?</span> fetch_url      destinations_hosts    --        <span class="c"># 99 distinct hosts across 150 calls -- too varied
+                                                #   for an allowlist; reads as a general fetcher</span>
+<span class="c">?</span> delete_record  insufficient_data     --        <span class="c"># only 6 calls observed; 30 needed before a
+                                                #   threshold means anything</span></pre>
+
+  <p>Note what it refuses to do. A tool below 30 calls gets no threshold, because a p99 over n=6 is an anecdote. A destination never seen is not a destination that is forbidden &mdash; it may simply not have happened yet, and the output says so. Every line is a hypothesis with its evidence attached.</p>
+</section>
+
+<section class="seq">
+  <span class="mark">trap</span>
+  <h2>The attack that raises the limit to permit itself.</h2>
+  <p>If the bad thing already happened while you were watching, it is in the distribution, and a plain percentile quietly makes room for it. In testing, a <strong>29KB exfiltration produced a 43KB proposed ceiling</strong> &mdash; a limit that would have allowed the exact call the tool exists to catch.</p>
+
+<pre>  send_email  max_payload  4.3KB  <span class="c"># p99 of the bulk is 2.9KB; 1.5x headroom.
+                                 #   EXCLUDES 1 call above 11.4KB</span>
+<span class="flag">!</span> send_email  tail_review  1      <span class="c"># 1 call more than 8x the 1.4KB median. A rare
+                                 #   enormous call is the most interesting thing
+                                 #   here, so it sets no limit until you have
+                                 #   looked at it: 28.8KB at 2026-09-09T18:09
+                                 #   -&gt; exfil.example.net</span></pre>
+
+  <p>So ceilings come from the bulk of a distribution, not all of it. The reference is the <strong>median</strong> &mdash; the one statistic a single enormous call cannot move, which is the point when that call may be the attack. Outliers set no limit; they are named, with timestamps and destinations, and handed to a person. If more than 10% of traffic sits above the threshold it is not a tail, it is the shape, and nothing is excluded.</p>
+</section>
+
+<section class="seq">
+  <span class="mark">chain</span>
+  <h2>A record that can be silently rewritten is a convenience, not evidence.</h2>
+  <p>An append-only file is trivially editable by anyone with filesystem access &mdash; including a compromised agent running as the same user. So every call commits to the one before it. Editing, deleting, reordering or inserting a record breaks the chain from that point, and <code>verify</code> says where.</p>
+
+<pre><span class="c">$</span> <b>callwitness verify</b>
+<span class="del">BROKEN</span>  filesystem  642 records, breaks at seq 118
+                    content does not match its hash: this record was
+                    edited after it was written</pre>
+
+  <p>Exit code 1 on a break, so it works in a cron job without anyone parsing text.</p>
+
+  <div class="note">
+    <h3>It is tamper-evident, not tamper-proof</h3>
+    <p>Someone who can write to the file can also recompute every hash after a change and produce a chain that verifies. Nothing local can stop that, because the verifier and the attacker read the same file. What defeats it is an anchor the operator does not control, so <code>verify</code> prints the head hash and tells you to store it somewhere the machine cannot reach. That is a deployment decision, and inventing one for you would be worse than naming the gap.</p>
+  </div>
+</section>
+
+<section class="seq">
+  <span class="mark">privacy</span>
+  <h2>Redaction is on by default, and destinations survive it.</h2>
+  <p>Tool arguments routinely carry API keys, bearer tokens and connection strings. Without redaction, every install would create a plaintext credential store that did not exist before. Known key formats, credentials inside URLs, sensitively-named parameters and high-entropy tokens are replaced on the write path &mdash; never on read, because by then the plaintext is already on disk.</p>
+
+<pre><span class="c">stored as:</span>  postgres://admin:<span class="flag">&lt;redacted:url_password&gt;</span>@db.internal</pre>
+
+  <p>The host is the signal; the password is not. The true pre-redaction byte count is kept, so the volume signal survives. <code>--no-args</code> stores argument <em>shape</em> only and still records destinations &mdash; that is deliberate, it is tested, and you should say it out loud to anyone you ask to run this.</p>
+  <p>Everything stays on the machine that ran it. Nothing is transmitted anywhere.</p>
+</section>
+
+<section class="seq">
+  <span class="mark">next</span>
+  <h2>Where this is going.</h2>
+  <ol class="road">
+    <li>
+      <div><span class="st">Now</span><p><strong>Observe.</strong> Record every call, block nothing. Both MCP transports, hash-chained, redacted on the write path.</p></div>
+    </li>
+    <li>
+      <div><span class="st">Next</span><p><strong>Deterministic policy.</strong> The rules <code>suggest</code> proposes, evaluated inline, sub-millisecond, fail-open by default. The generator ships first on purpose: an engine that enforces numbers nobody could justify is the problem, not the product.</p></div>
+    </li>
+    <li>
+      <div><span class="st">Then</span><p><strong>Context.</strong> An LLM judge, but only on calls the deterministic tier flags. Payload volume &times; destination reputation first.</p></div>
+    </li>
+  </ol>
+
+  <p style="margin-top:2rem">Scope is MCP tool calls over stdio and Streamable HTTP. The deprecated two-endpoint HTTP+SSE transport is not covered. Direct API calls made inside agent code need an SDK wrapper, and that is deliberately not in v1.</p>
+</section>
+
+<section class="seq">
+  <span class="mark">origin</span>
+  <h2>Why it exists.</h2>
+  <p>Out of an experiment on chain-of-thought faithfulness, which turned up a measurement problem: hint verbalisation rate reads <strong>100% on the reasoning trace and 12% on the user-facing answer</strong>, for the same responses. Same data, same model, an order of magnitude apart depending only on where you look.</p>
+  <p>A field whose headline metric moves by 10&times; depending on the instrument does not need another opinion about agent risk. It needs somebody to start writing down what actually happens.</p>
+
+  <div class="install" style="margin-top:2.25rem">
+    <div class="cmd"><span class="p">$</span><span>pip install callwitness</span></div>
+    <a class="ghlink" href="https://pypi.org/project/callwitness/">PyPI</a>
+    <a class="ghlink" href="https://github.com/AditiChaudharyy14/callwitness">GitHub</a>
+  </div>
+</section>
+
+<footer>
+  <span>Callwitness v0.1.0 &middot; alpha &middot; MIT</span>
+  <nav>
+    <a href="https://pypi.org/project/callwitness/">PyPI</a>
+    <a href="https://github.com/AditiChaudharyy14/callwitness">GitHub</a>
+    <a href="https://github.com/AditiChaudharyy14/callwitness/issues">Issues</a>
+  </nav>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var btn=document.getElementById("copy");
+  if(!btn)return;
+  btn.addEventListener("click",function(){
+    var text="pip install callwitness";
+    var done=function(){btn.textContent="Copied";setTimeout(function(){btn.textContent="Copy"},1600)};
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done,function(){fallback(text,done)});
+      }else{fallback(text,done)}
+    }catch(e){fallback(text,done)}
+  });
+  function fallback(text,done){
+    try{
+      var t=document.createElement("textarea");
+      t.value=text;t.setAttribute("readonly","");
+      t.style.position="fixed";t.style.top="-1000px";
+      document.body.appendChild(t);t.select();
+      document.execCommand("copy");
+      document.body.removeChild(t);done();
+    }catch(e){
+      var r=document.createRange();r.selectNodeContents(document.getElementById("cmd"));
+      var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+    }
+  }
+})();
+</script>
+</body>
+</html>
