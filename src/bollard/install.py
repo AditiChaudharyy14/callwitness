@@ -26,6 +26,7 @@ not recognise is skipped and reported rather than guessed at.
 
 from __future__ import annotations
 
+import codecs
 import json
 import os
 import shutil
@@ -131,11 +132,17 @@ def plan(path: Path, executable: str = "bollard",
     """Work out what would change in one config, without changing anything."""
     report: Dict[str, Any] = {
         "path": path, "error": None, "change": [], "already": [], "skipped": [],
-        "doc": None, "key": None,
+        "doc": None, "key": None, "bom": False,
     }
     try:
-        text = path.read_text(encoding="utf-8")
-        doc = json.loads(text)
+        # utf-8-sig, not utf-8. Windows writes JSON with a byte-order mark by
+        # default -- PowerShell's Out-File does it, Notepad does it, several
+        # editors do it -- and plain utf-8 raises on the first character. The
+        # user then sees "could not read as JSON" about a file that is perfectly
+        # valid JSON, and concludes the tool is broken. utf-8-sig reads both.
+        raw = path.read_bytes()
+        report["bom"] = raw.startswith(codecs.BOM_UTF8)
+        doc = json.loads(raw.decode("utf-8-sig"))
     except Exception as exc:
         report["error"] = "could not read as JSON: {}".format(exc)
         return report
@@ -190,7 +197,12 @@ def apply(report: Dict[str, Any]) -> Optional[Path]:
     servers = doc[report["key"]]
     for name, _before, after in report["change"]:
         servers[name] = after
-    path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+    # Write the file back the way we found it. If the client wrote a BOM, it
+    # gets a BOM: quietly changing the encoding of someone's config is not our
+    # business, and this tool's one promise is that it does not break configs.
+    body = (json.dumps(doc, indent=2) + "\n").encode("utf-8")
+    path.write_bytes(codecs.BOM_UTF8 + body if report.get("bom") else body)
     return backup
 
 
