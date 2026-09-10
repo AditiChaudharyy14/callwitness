@@ -31,7 +31,10 @@ def _config(servers, key="mcpServers"):
 
 
 def _servers(path):
-    return json.loads(path.read_text())["mcpServers"]
+    # utf-8-sig for the same reason the code under test uses it: some of these
+    # fixtures carry a BOM, and a helper that cannot read them would fail tests
+    # about behaviour that is actually correct.
+    return json.loads(path.read_bytes().decode("utf-8-sig"))["mcpServers"]
 
 
 # -- the wrap itself -------------------------------------------------------
@@ -201,3 +204,59 @@ def test_no_configs_found_points_at_the_escape_hatch():
 def test_discover_returns_only_paths_that_exist():
     for _name, path in discover():
         assert path.is_file()
+
+
+# --------------------------------------------------------------------------
+# Byte-order marks
+#
+# Found by running the command on Windows. PowerShell's `Out-File -Encoding
+# utf8` writes a BOM, so do Notepad and several editors, and plain utf-8
+# decoding raises on the first character. The user sees "could not read as
+# JSON" about a file that is perfectly good JSON and concludes the tool is
+# broken -- on the one command whose entire job is not breaking their config.
+# --------------------------------------------------------------------------
+
+import codecs
+
+
+def _config_with_bom(servers):
+    path = Path(tempfile.mkdtemp()) / "mcp.json"
+    body = json.dumps({"mcpServers": servers}, indent=2).encode("utf-8")
+    path.write_bytes(codecs.BOM_UTF8 + body)
+    return path
+
+
+def test_a_config_with_a_bom_is_read_not_rejected():
+    report = plan(_config_with_bom({"fs": FILESYSTEM}))
+    assert report["error"] is None
+    assert [n for n, _, _ in report["change"]] == ["fs"]
+
+
+def test_a_bom_survives_the_rewrite():
+    """Silently changing the encoding of someone's config is not our business."""
+    path = _config_with_bom({"fs": FILESYSTEM})
+    apply(plan(path))
+    assert path.read_bytes().startswith(codecs.BOM_UTF8)
+    assert _servers(path)["fs"]["command"] == "bollard"
+
+
+def test_a_file_without_a_bom_does_not_gain_one():
+    path = _config({"fs": FILESYSTEM})
+    apply(plan(path))
+    assert not path.read_bytes().startswith(codecs.BOM_UTF8)
+
+
+def test_the_backup_of_a_bom_file_is_byte_identical():
+    path = _config_with_bom({"fs": FILESYSTEM})
+    original = path.read_bytes()
+    backup = apply(plan(path))
+    assert backup.read_bytes() == original
+
+
+def test_install_uninstall_round_trips_through_a_bom():
+    servers = {"fs": FILESYSTEM, "git": GIT}
+    path = _config_with_bom(dict(servers))
+    apply(plan(path))
+    apply(plan(path, undo=True))
+    assert _servers(path) == servers
+    assert path.read_bytes().startswith(codecs.BOM_UTF8)
