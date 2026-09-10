@@ -12,6 +12,8 @@ from typing import List, Optional
 from . import __version__
 from .chain import format_report, verify_store
 from .http import HttpProxy
+from .install import apply as apply_plan
+from .install import discover, format_plan, plan
 from .proxy import MAX_ARG_BYTES_DEFAULT, Proxy
 from .record import Recorder
 from .report import export_jsonl, format_stats, format_tail
@@ -85,6 +87,33 @@ def cmd_suggest(args: argparse.Namespace) -> int:
               "  bollard run -- <mcp server command>", file=sys.stderr)
         return 1
     return 0
+
+
+def _cmd_wrap(args: argparse.Namespace, undo: bool) -> int:
+    if args.config:
+        targets = [("given", Path(args.config))]
+        missing = [p for _, p in targets if not p.is_file()]
+        if missing:
+            print("bollard: no such file: {}".format(missing[0]), file=sys.stderr)
+            return 2
+    else:
+        targets = discover()
+
+    reports = [plan(path, undo=undo) for _, path in targets]
+    if args.apply:
+        for report in reports:
+            if report["change"]:
+                report["backup"] = apply_plan(report)
+    sys.stdout.write(format_plan(reports, undo=undo, applied=args.apply))
+    return 0
+
+
+def cmd_install(args: argparse.Namespace) -> int:
+    return _cmd_wrap(args, undo=False)
+
+
+def cmd_uninstall(args: argparse.Namespace) -> int:
+    return _cmd_wrap(args, undo=True)
 
 
 def cmd_verify(args: argparse.Namespace) -> int:
@@ -171,6 +200,21 @@ def build_parser() -> argparse.ArgumentParser:
     suggest.add_argument("--format", choices=("text", "yaml"), default="text",
                          help="human-readable review (default) or a policy draft")
     suggest.set_defaults(func=cmd_suggest)
+
+    install = sub.add_parser(
+        "install",
+        help="wrap the MCP servers your client already has (shows the change first)")
+    install.add_argument("--apply", action="store_true",
+                         help="actually write the change (a backup is made first)")
+    install.add_argument("--config", help="a specific config file, if yours is elsewhere")
+    install.set_defaults(func=cmd_install)
+
+    uninstall = sub.add_parser(
+        "uninstall", help="put the wrapped servers back the way they were")
+    uninstall.add_argument("--apply", action="store_true",
+                           help="actually write the change (a backup is made first)")
+    uninstall.add_argument("--config", help="a specific config file, if yours is elsewhere")
+    uninstall.set_defaults(func=cmd_uninstall)
 
     verify = sub.add_parser(
         "verify",
