@@ -19,7 +19,7 @@ from .record import Recorder
 from .report import export_jsonl, format_stats, format_tail
 from .suggest import format_suggestions, format_yaml
 
-DEFAULT_HOME = Path(os.environ.get("BOLLARD_HOME", Path.home() / ".bollard"))
+DEFAULT_HOME = Path(os.environ.get("BOLLARD_HOME", Path.home() / ".callwitness"))
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -27,8 +27,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     if command and command[0] == "--":
         command = command[1:]
     if not command:
-        print("bollard: no server command given.\n"
-              "  usage: bollard run -- <mcp server command>", file=sys.stderr)
+        print("callwitness: no server command given.\n"
+              "  usage: callwitness run -- <mcp server command>", file=sys.stderr)
         return 2
 
     recorder = Recorder(Path(args.home), uuid.uuid4().hex[:12],
@@ -44,7 +44,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 def cmd_proxy(args: argparse.Namespace) -> int:
     upstream = args.upstream
     if not upstream.startswith(("http://", "https://")):
-        print("bollard: --upstream must be an http(s) URL", file=sys.stderr)
+        print("callwitness: --upstream must be an http(s) URL", file=sys.stderr)
         return 2
 
     from urllib.parse import urlparse
@@ -64,7 +64,7 @@ def cmd_stats(args: argparse.Namespace) -> int:
         sys.stdout.write(format_stats(Path(args.home)))
     except FileNotFoundError:
         print("No data yet. Record some traffic:\n"
-              "  bollard run -- <mcp server command>", file=sys.stderr)
+              "  callwitness run -- <mcp server command>", file=sys.stderr)
         return 1
     return 0
 
@@ -84,7 +84,7 @@ def cmd_suggest(args: argparse.Namespace) -> int:
         sys.stdout.write(render(Path(args.home), args.since))
     except FileNotFoundError:
         print("No data yet. Record some traffic first:\n"
-              "  bollard run -- <mcp server command>", file=sys.stderr)
+              "  callwitness run -- <mcp server command>", file=sys.stderr)
         return 1
     return 0
 
@@ -94,7 +94,7 @@ def _cmd_wrap(args: argparse.Namespace, undo: bool) -> int:
         targets = [("given", Path(args.config))]
         missing = [p for _, p in targets if not p.is_file()]
         if missing:
-            print("bollard: no such file: {}".format(missing[0]), file=sys.stderr)
+            print("callwitness: no such file: {}".format(missing[0]), file=sys.stderr)
             return 2
     else:
         targets = discover()
@@ -121,7 +121,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
         sessions = verify_store(Path(args.home))
     except FileNotFoundError:
         print("No data yet. Record some traffic first:\n"
-              "  bollard run -- <mcp server command>", file=sys.stderr)
+              "  callwitness run -- <mcp server command>", file=sys.stderr)
         return 1
     sys.stdout.write(format_report(sessions))
     # Exit 1 on a broken chain, so this is usable in a cron job or a CI step
@@ -141,10 +141,10 @@ def cmd_export(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="bollard",
+        prog="callwitness",
         description="Record every tool call an AI agent makes. Block nothing.",
     )
-    parser.add_argument("--version", action="version", version=f"bollard {__version__}")
+    parser.add_argument("--version", action="version", version=f"callwitness {__version__}")
     parser.add_argument("--home", default=str(DEFAULT_HOME),
                         help=f"data directory (default: {DEFAULT_HOME})")
     sub = parser.add_subparsers(dest="command_name", required=True)

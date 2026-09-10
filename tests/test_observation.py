@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from bollard.proxy import Proxy
-from bollard.record import Recorder
+from callwitness.proxy import Proxy
+from callwitness.record import Recorder
 
 
 @pytest.fixture

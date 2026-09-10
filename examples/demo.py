@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run Bollard against a mock agent session and show what it caught.
+"""Run Callwitness against a mock agent session and show what it caught.
 
     python examples/demo.py                    # throwaway, nothing kept
     python examples/demo.py --keep             # writes to your real store
@@ -8,7 +8,7 @@
 No agent, no API key, no network, and no Node. Thirty seconds.
 
 The default is deliberately throwaway so trying the tool does not pollute
-anyone's data. But the obvious next thing to type after a demo is `bollard
+anyone's data. But the obvious next thing to type after a demo is `callwitness
 stats`, and getting "No data yet" at that moment is a bad first hour -- so
 --keep exists, and the closing text says which command to run next.
 """
@@ -57,7 +57,7 @@ SESSION = [
 ]
 
 
-DEFAULT_HOME = Path(os.environ.get("BOLLARD_HOME", Path.home() / ".bollard"))
+DEFAULT_HOME = Path(os.environ.get("BOLLARD_HOME", Path.home() / ".callwitness"))
 
 
 @contextmanager
@@ -108,7 +108,7 @@ def main(argv=None) -> int:
     ap.add_argument("--keep", action="store_true",
                     help="record into your real store instead of a temp dir")
     ap.add_argument("--repeat", type=int, default=0, metavar="N",
-                    help="also send N rounds of varied traffic, so `bollard "
+                    help="also send N rounds of varied traffic, so `callwitness "
                          "suggest` has a distribution to work from")
     args = ap.parse_args(argv)
 
@@ -119,11 +119,11 @@ def main(argv=None) -> int:
         stdin = "".join(json.dumps(m) + "\n" for m in session).encode()
 
         print("=" * 72)
-        print("running an agent session through bollard (nothing is blocked)")
+        print("running an agent session through callwitness (nothing is blocked)")
         print("=" * 72)
 
         run = subprocess.run(
-            [sys.executable, "-m", "bollard.cli", "--home", home,
+            [sys.executable, "-m", "callwitness.cli", "--home", home,
              "run", "--label", "demo", "--echo", "--",
              sys.executable, str(MOCK)],
             input=stdin, capture_output=True,
@@ -137,7 +137,7 @@ def main(argv=None) -> int:
               f"unmodified\n")
 
         stats = subprocess.run(
-            [sys.executable, "-m", "bollard.cli", "--home", home, "stats"],
+            [sys.executable, "-m", "callwitness.cli", "--home", home, "stats"],
             capture_output=True,
             env=ENV,
         )
@@ -153,8 +153,8 @@ def main(argv=None) -> int:
         if args.keep:
             print()
             print("recorded into {}. next:".format(home))
-            print("    bollard stats")
-            print("    bollard suggest" +
+            print("    callwitness stats")
+            print("    callwitness suggest" +
                   ("" if args.repeat >= 12 else
                    "     # will report insufficient_data -- that is the"))
             if args.repeat < 12:
@@ -167,7 +167,7 @@ def main(argv=None) -> int:
             print("that ran in a temporary directory, so nothing was kept.")
             print("to record into your own store and then look at it:")
             print("    python examples/demo.py --keep --repeat 40")
-            print("    bollard suggest")
+            print("    callwitness suggest")
     return 0
 
 

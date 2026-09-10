@@ -33,7 +33,7 @@ class BackgroundObserver:
     """Runs `handler` on submitted items, on its own thread, never blocking."""
 
     def __init__(self, handler: Callable[[Any], None],
-                 maxsize: int = DEFAULT_MAXSIZE, name: str = "bollard-observer") -> None:
+                 maxsize: int = DEFAULT_MAXSIZE, name: str = "callwitness-observer") -> None:
         self._handler = handler
         self._q: "queue.Queue" = queue.Queue(maxsize=maxsize)
         self._dropped = 0

@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Tuple
 
 
 def _connect(home: Path) -> sqlite3.Connection:
-    db = Path(home) / "bollard.db"
+    db = Path(home) / "callwitness.db"
     if not db.exists():
         raise FileNotFoundError(db)
     return sqlite3.connect(str(db))

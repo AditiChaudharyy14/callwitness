@@ -13,8 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from bollard.chain import GENESIS, digest, format_report, verify_rows, verify_store
-from bollard.record import SCHEMA_VERSION, Recorder
+from callwitness.chain import GENESIS, digest, format_report, verify_rows, verify_store
+from callwitness.record import SCHEMA_VERSION, Recorder
 
 
 def _store(n=12, home=None):
@@ -35,7 +35,7 @@ def _store(n=12, home=None):
 
 
 def _sql(home, statement, *params):
-    con = sqlite3.connect(str(Path(home) / "bollard.db"))
+    con = sqlite3.connect(str(Path(home) / "callwitness.db"))
     con.execute(statement, params)
     con.commit()
     con.close()
@@ -56,7 +56,7 @@ def test_an_untouched_store_verifies():
 
 def test_the_first_record_chains_from_genesis():
     home = _store(3)
-    con = sqlite3.connect(str(Path(home) / "bollard.db"))
+    con = sqlite3.connect(str(Path(home) / "callwitness.db"))
     row = con.execute("SELECT prev_hash FROM calls ORDER BY seq LIMIT 1").fetchone()
     assert row[0] == GENESIS
 
@@ -114,7 +114,7 @@ def test_reordering_records_is_caught():
 def test_inserting_a_forged_record_is_caught():
     """A row with a plausible hash still has to chain to its neighbours."""
     home = _store()
-    con = sqlite3.connect(str(Path(home) / "bollard.db"))
+    con = sqlite3.connect(str(Path(home) / "callwitness.db"))
     con.execute(
         "INSERT INTO calls (session_id, label, ts, tool, args_json, args_bytes,"
         " args_truncated, signals_json, redaction_json, duration_ms, is_error,"
@@ -137,9 +137,9 @@ def test_the_break_is_reported_at_the_first_alteration_not_the_last():
 # -- it does not claim what it cannot deliver ------------------------------
 
 def _legacy_store():
-    """A v2 store: the shape `bollard verify` meets on any existing install."""
+    """A v2 store: the shape `callwitness verify` meets on any existing install."""
     home = Path(tempfile.mkdtemp())
-    con = sqlite3.connect(str(home / "bollard.db"))
+    con = sqlite3.connect(str(home / "callwitness.db"))
     con.executescript(
         "CREATE TABLE calls (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT,"
         " label TEXT, ts TEXT, tool TEXT, args_json TEXT, args_bytes INTEGER,"
@@ -175,7 +175,7 @@ def test_verify_reads_a_pre_chain_store_without_migrating_it_first():
     assert "before chaining" in format_report(verify_store(home))
 
     cols = {r[1] for r in sqlite3.connect(
-        str(home / "bollard.db")).execute("PRAGMA table_info(calls)")}
+        str(home / "callwitness.db")).execute("PRAGMA table_info(calls)")}
     assert "seq" not in cols, "verify must not have migrated the store"
 
 
@@ -191,7 +191,7 @@ def test_records_written_before_chaining_are_not_called_tampering():
 
 def test_a_store_with_no_sessions_table_still_verifies_its_calls():
     home = Path(tempfile.mkdtemp())
-    con = sqlite3.connect(str(home / "bollard.db"))
+    con = sqlite3.connect(str(home / "callwitness.db"))
     con.executescript(
         "CREATE TABLE calls (id INTEGER PRIMARY KEY AUTOINCREMENT,"
         " session_id TEXT, tool TEXT);"
@@ -203,7 +203,7 @@ def test_a_store_with_no_sessions_table_still_verifies_its_calls():
 
 def test_migration_adds_the_columns_without_touching_old_rows():
     home = Path(tempfile.mkdtemp())
-    con = sqlite3.connect(str(home / "bollard.db"))
+    con = sqlite3.connect(str(home / "callwitness.db"))
     con.executescript(
         "CREATE TABLE calls (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT,"
         " label TEXT, ts TEXT, tool TEXT, args_json TEXT, args_bytes INTEGER,"
@@ -244,7 +244,7 @@ def test_a_wholesale_rewrite_is_not_detected_and_we_do_not_pretend_it_is():
     is why the report prints one and tells you to store it elsewhere.
     """
     home = _store(6)
-    con = sqlite3.connect(str(home / "bollard.db"))
+    con = sqlite3.connect(str(home / "callwitness.db"))
     con.row_factory = sqlite3.Row
     rows = [dict(r) for r in con.execute("SELECT * FROM calls ORDER BY seq")]
     original_head = verify_rows(rows)["head"]

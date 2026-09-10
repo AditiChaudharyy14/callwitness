@@ -14,14 +14,14 @@ from pathlib import Path
 
 import pytest
 
-from bollard.install import (
+from callwitness.install import (
     apply, discover, format_plan, is_wrapped, plan, unwrap, wrap,
 )
 
 FILESYSTEM = {"command": "npx", "args": ["-y", "@mcp/server-filesystem", "/data"]}
 GIT = {"command": "uvx", "args": ["mcp-server-git"]}
 REMOTE = {"url": "https://mcp.acme.com/mcp"}
-WRAPPED = {"command": "bollard", "args": ["run", "--label", "fs", "--", "npx", "-y", "x"]}
+WRAPPED = {"command": "callwitness", "args": ["run", "--label", "fs", "--", "npx", "-y", "x"]}
 
 
 def _config(servers, key="mcpServers"):
@@ -41,7 +41,7 @@ def _servers(path):
 
 def test_a_plain_server_is_wrapped_with_its_command_preserved():
     out = wrap("filesystem", FILESYSTEM)
-    assert out["command"] == "bollard"
+    assert out["command"] == "callwitness"
     assert out["args"] == ["run", "--label", "filesystem", "--",
                            "npx", "-y", "@mcp/server-filesystem", "/data"]
 
@@ -60,7 +60,7 @@ def test_wrapping_is_idempotent():
 
 
 def test_a_dev_install_invocation_counts_as_wrapped():
-    entry = {"command": "python", "args": ["-m", "bollard.cli", "run", "--", "npx"]}
+    entry = {"command": "python", "args": ["-m", "callwitness.cli", "run", "--", "npx"]}
     assert is_wrapped(entry)
 
 
@@ -75,7 +75,7 @@ def test_unwrap_drops_the_args_key_when_there_were_none():
 
 
 def test_unwrap_refuses_a_shape_it_did_not_produce():
-    assert unwrap({"command": "bollard", "args": ["stats"]}) is None
+    assert unwrap({"command": "callwitness", "args": ["stats"]}) is None
 
 
 # -- planning --------------------------------------------------------------
@@ -94,7 +94,7 @@ def test_a_remote_server_is_skipped_with_the_command_it_would_need():
     assert report["change"] == []
     name, why = report["skipped"][0]
     assert name == "api"
-    assert "bollard proxy" in why
+    assert "callwitness proxy" in why
     assert "https://mcp.acme.com/mcp" in why
 
 
@@ -142,14 +142,14 @@ def test_apply_leaves_untouched_servers_exactly_as_they_were():
     after = _servers(path)
     assert after["api"] == REMOTE
     assert after["done"] == WRAPPED
-    assert after["fs"]["command"] == "bollard"
+    assert after["fs"]["command"] == "callwitness"
 
 
 def test_install_then_uninstall_returns_the_file_to_its_meaning():
     servers = {"fs": FILESYSTEM, "git": GIT, "api": REMOTE}
     path = _config(dict(servers))
     apply(plan(path))
-    assert _servers(path)["fs"]["command"] == "bollard"
+    assert _servers(path)["fs"]["command"] == "callwitness"
     apply(plan(path, undo=True))
     assert _servers(path) == servers
 
@@ -183,7 +183,7 @@ def test_the_dry_run_says_plainly_that_nothing_happened():
 def test_the_dry_run_shows_the_before_and_after_command():
     out = format_plan([plan(_config({"fs": FILESYSTEM}))], undo=False, applied=False)
     assert "- npx -y @mcp/server-filesystem /data" in out
-    assert "+ bollard run --label fs -- npx" in out
+    assert "+ callwitness run --label fs -- npx" in out
 
 
 def test_applying_tells_the_user_to_restart_the_client():
@@ -237,7 +237,7 @@ def test_a_bom_survives_the_rewrite():
     path = _config_with_bom({"fs": FILESYSTEM})
     apply(plan(path))
     assert path.read_bytes().startswith(codecs.BOM_UTF8)
-    assert _servers(path)["fs"]["command"] == "bollard"
+    assert _servers(path)["fs"]["command"] == "callwitness"
 
 
 def test_a_file_without_a_bom_does_not_gain_one():
