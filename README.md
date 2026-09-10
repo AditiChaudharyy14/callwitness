@@ -59,21 +59,36 @@ Wrap any stdio MCP server:
 bollard run --echo -- npx -y @modelcontextprotocol/server-filesystem /data
 ```
 
-In an MCP client config, replace the server command with the wrapped one:
+Or let it wrap the servers you already have. It finds your client's config,
+shows you exactly what would change, and writes nothing until you say so:
 
-```json
-{
-  "mcpServers": {
-    "filesystem": {
-      "command": "bollard",
-      "args": [
-        "run", "--label", "filesystem", "--",
-        "npx", "-y", "@modelcontextprotocol/server-filesystem", "/data"
-      ]
-    }
-  }
-}
+```bash
+$ bollard install
+
+/Users/you/Library/Application Support/Claude/claude_desktop_config.json
+  filesystem
+    - npx -y @modelcontextprotocol/server-filesystem /data
+    + bollard run --label filesystem -- npx -y @modelcontextprotocol/server-filesystem /data
+  git
+    - uvx mcp-server-git --repository /repo
+    + bollard run --label git -- uvx mcp-server-git --repository /repo
+  remote-api  SKIPPED: remote server -- needs `bollard proxy --upstream
+              https://mcp.acme.com/mcp --port <port>` and a port you choose
+
+2 servers would be wrapped. Nothing has been changed.
 ```
+
+`--apply` writes it, after a timestamped backup. `bollard uninstall --apply`
+puts everything back. Running install twice does nothing the second time.
+
+Dry-run is the default because this edits a file you did not write and a broken
+MCP config means a broken agent — the one outcome this whole tool promises not
+to cause. Anything it does not recognise is skipped and named rather than
+guessed at.
+
+Knows about Claude Desktop, Cursor, Windsurf, Claude Code, and project-local
+`.mcp.json` / `.vscode/mcp.json`. If yours lives elsewhere:
+`bollard install --config /path/to/mcp.json`.
 
 ### Remote servers
 
