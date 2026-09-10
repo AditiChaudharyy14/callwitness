@@ -105,6 +105,33 @@ def stack():
     proxy.observer.close()
 
 
+def _recorded(rec, proxy, expected, timeout=10.0):
+    """Wait until `expected` calls have been recorded, then return them.
+
+    Observation is asynchronous by design: the relay hands work to a queue on
+    another thread and never waits for it. Over HTTP every request is its own
+    handler thread, so there is no stream boundary where a test can say "now
+    everything is written" -- the client's read() returning only means the
+    bytes reached the client, not that the server thread finished handing its
+    copy to the observer.
+
+    The original assertions called drain() and read immediately. drain() waits
+    for what has already been SUBMITTED, so on a loaded runner it can return
+    before the handler submitted anything at all. That is the macOS py3.13 CI
+    failure: 0 calls, not 2 of 3. The test encoded a synchronous expectation of
+    an asynchronous system; the product was correct the whole time.
+
+    The contract is "recorded shortly", so that is what this waits for.
+    """
+    deadline = time.time() + timeout
+    while True:
+        proxy.observer.drain()
+        rows = rec.all_calls()
+        if len(rows) >= expected or time.time() > deadline:
+            return rows
+        time.sleep(0.02)
+
+
 def _call(base, path, rid, tool="send_email", args=None, headers=None):
     body = json.dumps({"jsonrpc": "2.0", "id": rid, "method": "tools/call",
                        "params": {"name": tool,
@@ -122,8 +149,7 @@ def test_records_a_call_over_plain_json(stack):
     resp = _call(base, "/mcp", 1)
     assert json.loads(resp.read().decode())["result"] == {"ok": True}
 
-    proxy.observer.drain()
-    rows = rec.all_calls()
+    rows = _recorded(rec, proxy, 1)
     assert len(rows) == 1
     assert rows[0]["tool"] == "send_email"
     assert rows[0]["is_error"] == 0
@@ -135,8 +161,7 @@ def test_records_a_call_delivered_over_sse(stack):
     resp = _call(base, "/sse", 7)
     assert b"data:" in resp.read()
 
-    proxy.observer.drain()
-    rows = rec.all_calls()
+    rows = _recorded(rec, proxy, 1)
     assert len(rows) == 1
     assert rows[0]["result_bytes"] > 0
     assert rows[0]["duration_ms"] is not None
@@ -183,8 +208,7 @@ def test_batched_calls_over_http_are_all_recorded(stack):
                                  headers={"Content-Type": "application/json"})
     urllib.request.urlopen(req, timeout=10).read()
 
-    proxy.observer.drain()
-    assert len(rec.all_calls()) == 3
+    assert len(_recorded(rec, proxy, 3)) == 3
 
 
 def test_secrets_are_redacted_over_http_too(stack):
@@ -193,8 +217,7 @@ def test_secrets_are_redacted_over_http_too(stack):
     # the reply is not fully relayed until the client consumes it.
     _call(base, "/mcp", 5, args={"api_key": "sk-ant-api03-" + "z" * 40,
                                  "to": "ops@acme.com"}).read()
-    proxy.observer.drain()
-    stored = rec.all_calls()[0]["args_json"]
+    stored = _recorded(rec, proxy, 1)[0]["args_json"]
     assert "sk-ant-api03" not in stored
     assert "ops@acme.com" in stored  # the destination survives
 
