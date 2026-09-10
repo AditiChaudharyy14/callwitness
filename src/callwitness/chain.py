@@ -9,7 +9,7 @@ is the thing anyone would ever pay for.
 
 Chaining fixes that specific hole. Every record commits to its predecessor, so
 editing, deleting, reordering or inserting a call breaks the chain from that
-point on, and `bollard verify` says exactly where.
+point on, and `callwitness verify` says exactly where.
 
 What this does NOT give you, stated plainly
 -------------------------------------------
@@ -21,7 +21,7 @@ read the same file and neither knows what the head hash was supposed to be.
 Closing that requires an anchor the operator does not control: publishing the
 head hash somewhere append-only, or countersigning it off the machine. That is
 a deployment decision, not a library one, so it is deliberately not invented
-here. `bollard verify` prints the head hash for exactly that purpose -- write it
+here. `callwitness verify` prints the head hash for exactly that purpose -- write it
 down somewhere the machine cannot reach, and the remaining hole closes.
 
 Scope: the chain is per session. Within a session, nothing can be altered
@@ -116,7 +116,7 @@ def format_report(sessions: List[Tuple[str, str, Dict[str, Any]]]) -> str:
     """Render one line per session, then the heads worth writing down."""
     if not sessions:
         return ("No sessions recorded yet.\n"
-                "  bollard run -- <mcp server command>\n")
+                "  callwitness run -- <mcp server command>\n")
 
     lines: List[str] = []
     broken = 0
@@ -172,7 +172,7 @@ def verify_store(home) -> List[Tuple[str, str, Dict[str, Any]]]:
     import sqlite3
     from pathlib import Path
 
-    db = Path(home) / "bollard.db"
+    db = Path(home) / "callwitness.db"
     if not db.exists():
         raise FileNotFoundError(db)
     con = sqlite3.connect(str(db))

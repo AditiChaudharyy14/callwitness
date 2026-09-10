@@ -13,10 +13,10 @@ from pathlib import Path
 
 import pytest
 
-from bollard.analyze import EMAIL_RE, MAX_SCAN_CHARS, extract_entities, extract_signals
-from bollard.proxy import Proxy
-from bollard.record import SCHEMA_VERSION, Recorder
-from bollard.redact import RedactionStats, redact_structure, redact_value
+from callwitness.analyze import EMAIL_RE, MAX_SCAN_CHARS, extract_entities, extract_signals
+from callwitness.proxy import Proxy
+from callwitness.record import SCHEMA_VERSION, Recorder
+from callwitness.redact import RedactionStats, redact_structure, redact_value
 
 
 def _proxy(**kw):
@@ -128,7 +128,7 @@ def test_malformed_batch_member_does_not_lose_the_rest():
 # 3. Secrets were written to disk in plaintext
 #
 # stored = args went straight into args_json and calls.jsonl. Every install
-# became a credential store that did not exist before Bollard was installed.
+# became a credential store that did not exist before Callwitness was installed.
 # --------------------------------------------------------------------------
 
 def test_secrets_never_reach_storage():
@@ -248,7 +248,7 @@ def test_v1_database_migrates_without_data_loss():
     """An existing install must not lose its history on upgrade."""
     import sqlite3
     home = Path(tempfile.mkdtemp())
-    db = sqlite3.connect(str(home / "bollard.db"))
+    db = sqlite3.connect(str(home / "callwitness.db"))
     db.executescript(
         "CREATE TABLE calls (id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT,"
         " label TEXT, ts TEXT, tool TEXT, args_json TEXT, args_bytes INTEGER,"

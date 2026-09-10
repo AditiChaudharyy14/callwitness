@@ -1,6 +1,6 @@
 """End-to-end: the proxy must be invisible to the protocol.
 
-This is the property the whole product rests on. If Bollard can drop, reorder or
+This is the property the whole product rests on. If Callwitness can drop, reorder or
 alter a single message, nobody should ever put it in front of a real agent.
 """
 
@@ -28,7 +28,7 @@ ENV = {
 def run_proxy(messages, home, extra_args=()):
     stdin = "".join(json.dumps(m) + "\n" for m in messages)
     proc = subprocess.run(
-        [sys.executable, "-m", "bollard.cli", "--home", str(home), "run",
+        [sys.executable, "-m", "callwitness.cli", "--home", str(home), "run",
          *extra_args, "--", sys.executable, str(MOCK)],
         input=stdin.encode(), capture_output=True, timeout=60,
         env=ENV,
@@ -74,7 +74,7 @@ def test_unparseable_lines_are_still_forwarded(tmp_path):
     """Garbage in the stream is the server's problem, not ours to swallow."""
     stdin = b'not json at all\n' + json.dumps(CONVERSATION[0]).encode() + b"\n"
     proc = subprocess.run(
-        [sys.executable, "-m", "bollard.cli", "--home", str(tmp_path), "run",
+        [sys.executable, "-m", "callwitness.cli", "--home", str(tmp_path), "run",
          "--", sys.executable, str(MOCK)],
         input=stdin, capture_output=True, timeout=60,
         env=ENV,
@@ -86,7 +86,7 @@ def test_unparseable_lines_are_still_forwarded(tmp_path):
 def test_calls_are_recorded_with_size_and_destination(tmp_path):
     run_proxy(CONVERSATION, tmp_path)
     import sqlite3
-    con = sqlite3.connect(str(tmp_path / "bollard.db"))
+    con = sqlite3.connect(str(tmp_path / "callwitness.db"))
     rows = con.execute(
         "SELECT tool, args_bytes, is_error, signals_json FROM calls ORDER BY id"
     ).fetchall()
@@ -106,7 +106,7 @@ def test_calls_are_recorded_with_size_and_destination(tmp_path):
 
 def test_exit_code_of_the_wrapped_server_is_propagated(tmp_path):
     proc = subprocess.run(
-        [sys.executable, "-m", "bollard.cli", "--home", str(tmp_path), "run",
+        [sys.executable, "-m", "callwitness.cli", "--home", str(tmp_path), "run",
          "--", sys.executable, "-c", "import sys; sys.exit(3)"],
         input=b"", capture_output=True, timeout=60,
         env=ENV,
@@ -116,7 +116,7 @@ def test_exit_code_of_the_wrapped_server_is_propagated(tmp_path):
 
 def test_missing_server_command_fails_cleanly(tmp_path):
     proc = subprocess.run(
-        [sys.executable, "-m", "bollard.cli", "--home", str(tmp_path), "run",
+        [sys.executable, "-m", "callwitness.cli", "--home", str(tmp_path), "run",
          "--", "definitely-not-a-real-binary-xyz"],
         input=b"", capture_output=True, timeout=60,
         env=ENV,

@@ -1,6 +1,6 @@
 import json
 
-from bollard.analyze import extract_entities, extract_signals, is_routing_key, shape_only
+from callwitness.analyze import extract_entities, extract_signals, is_routing_key, shape_only
 
 
 def test_finds_host_email_and_ip():

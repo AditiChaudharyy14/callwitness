@@ -102,7 +102,7 @@ class Proxy(CallTracker):
                 bufsize=0,
             )
         except (FileNotFoundError, PermissionError) as exc:
-            print("bollard: cannot start server {!r}: {}".format(self.command[0], exc),
+            print("callwitness: cannot start server {!r}: {}".format(self.command[0], exc),
                   file=sys.stderr)
             self.rec.end_session(127)
             self.observer.close()

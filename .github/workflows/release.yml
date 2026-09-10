@@ -3,7 +3,7 @@
 # Uses trusted publishing, so there is no API token in repository secrets --
 # PyPI verifies the workflow's identity directly. One-time setup on PyPI:
 #   Project -> Publishing -> Add a new pending publisher
-#     Owner: <your github user>   Repository: bollard
+#     Owner: <your github user>   Repository: callwitness
 #     Workflow: release.yml       Environment: pypi
 #
 # The distribution name comes from pyproject.toml, so this works whatever the

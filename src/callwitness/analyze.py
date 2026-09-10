@@ -161,7 +161,7 @@ def _is_ipv4(candidate: str) -> bool:
 def shape_only(value: Any, depth: int = 0) -> Any:
     """Reduce arguments to their structure, discarding every value.
 
-    Used by --no-args so a team can run Bollard against sensitive traffic and
+    Used by --no-args so a team can run Callwitness against sensitive traffic and
     still contribute size and destination signal without exposing content.
     """
     if depth > 4:

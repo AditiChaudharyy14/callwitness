@@ -8,7 +8,7 @@ server entry by hand without breaking the JSON. That is the step where people
 give up, and no amount of README fixes it -- the work is real and it is fiddly.
 
     "filesystem": {"command": "npx",     "args": ["-y", "@mcp/fs", "/data"]}
-    "filesystem": {"command": "bollard", "args": ["run", "--", "npx", "-y", "@mcp/fs", "/data"]}
+    "filesystem": {"command": "callwitness", "args": ["run", "--", "npx", "-y", "@mcp/fs", "/data"]}
 
 So: find the configs, show exactly what would change, and only write when asked.
 
@@ -76,22 +76,28 @@ def _servers_of(doc: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     return None
 
 
+KNOWN_EXECUTABLES = frozenset({"callwitness", "bollard"})
+
+
 def is_wrapped(entry: Dict[str, Any]) -> bool:
     if not isinstance(entry, dict):
         return False
     command = entry.get("command")
-    if isinstance(command, str) and Path(command).stem == "bollard":
+    if isinstance(command, str) and Path(command).stem in KNOWN_EXECUTABLES:
         return True
-    # Also catch `python -m bollard.cli ...`, which is how a dev install runs.
+    # Also catch `python -m callwitness.cli ...`, which is how a dev install runs.
     args = entry.get("args")
-    return isinstance(args, list) and "bollard.cli" in [str(a) for a in args]
+    if not isinstance(args, list):
+        return False
+    return any(str(a).split(".")[0] in KNOWN_EXECUTABLES
+               for a in args if str(a).endswith(".cli"))
 
 
-def wrap(name: str, entry: Dict[str, Any], executable: str = "bollard") -> Optional[Dict[str, Any]]:
+def wrap(name: str, entry: Dict[str, Any], executable: str = "callwitness") -> Optional[Dict[str, Any]]:
     """Return the wrapped form of one server entry, or None if we should not.
 
     Returning None rather than guessing is deliberate. A remote server has a
-    `url` and no command, and needs `bollard proxy` plus a port the operator
+    `url` and no command, and needs `callwitness proxy` plus a port the operator
     chooses -- inventing one and rewriting their config would be a worse
     outcome than telling them it needs a decision.
     """
@@ -127,7 +133,7 @@ def unwrap(entry: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     return restored
 
 
-def plan(path: Path, executable: str = "bollard",
+def plan(path: Path, executable: str = "callwitness",
          undo: bool = False) -> Dict[str, Any]:
     """Work out what would change in one config, without changing anything."""
     report: Dict[str, Any] = {
@@ -172,7 +178,7 @@ def plan(path: Path, executable: str = "bollard",
             report["already"].append(name)
         elif "url" in entry and not entry.get("command"):
             report["skipped"].append(
-                (name, "remote server -- needs `bollard proxy --upstream {} --port <port>` "
+                (name, "remote server -- needs `callwitness proxy --upstream {} --port <port>` "
                        "and a port you choose".format(entry.get("url"))))
         else:
             wrapped = wrap(name, entry, executable)
@@ -190,7 +196,7 @@ def apply(report: Dict[str, Any]) -> Optional[Path]:
     if doc is None or not report["change"]:
         return None
 
-    backup = path.with_suffix(path.suffix + ".bollard-backup-{}".format(
+    backup = path.with_suffix(path.suffix + ".callwitness-backup-{}".format(
         time.strftime("%Y%m%d-%H%M%S")))
     shutil.copy2(str(path), str(backup))
 
@@ -240,7 +246,7 @@ def format_plan(reports: List[Dict[str, Any]], undo: bool, applied: bool) -> str
     if not reports:
         lines.append("No MCP client configs found on this machine.")
         lines.append("If yours lives somewhere else, point at it:")
-        lines.append("  bollard install --config /path/to/mcp.json")
+        lines.append("  callwitness install --config /path/to/mcp.json")
         return "\n".join(lines) + "\n"
 
     if total == 0:
@@ -254,5 +260,5 @@ def format_plan(reports: List[Dict[str, Any]], undo: bool, applied: bool) -> str
             total, "" if total == 1 else "s", verb))
         lines.append("")
         lines.append("Re-run with --apply to write it. Your config is backed up first,")
-        lines.append("and `bollard uninstall` puts it back.")
+        lines.append("and `callwitness uninstall` puts it back.")
     return "\n".join(lines) + "\n"

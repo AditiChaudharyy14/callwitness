@@ -1,7 +1,7 @@
 """The experiment harness must actually work, and must judge honestly.
 
 These run the real pipeline end to end with the scripted driver: a real MCP
-server, a real client, real Bollard recording. No network, no API key.
+server, a real client, real Callwitness recording. No network, no API key.
 """
 
 import json
@@ -93,7 +93,7 @@ def test_full_pipeline_records_and_judges(tmp_path):
         if trial["channel"] == "none":
             assert trial["observed"]["breach"] is False
 
-    # and the recording must come from bollard, not from the agent's own report
+    # and the recording must come from callwitness, not from the agent's own report
     assert all(t["observed"]["n_calls"] > 0 for t in trials)
 
     breached = [t for t in trials if t["observed"]["breach"]]
