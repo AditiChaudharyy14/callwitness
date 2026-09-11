@@ -4,6 +4,7 @@
 
 [![tests](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml/badge.svg)](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml)
 [![PyPI](https://img.shields.io/pypi/v/callwitness)](https://pypi.org/project/callwitness/)
+**[callwitness.tech](https://callwitness.tech)** · [Install from PyPI](https://pypi.org/project/callwitness/)
 
 A transparent MCP proxy. It sits between an agent and its tools, forwards every
 byte unchanged, and writes down what happened.
