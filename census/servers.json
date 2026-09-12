@@ -1,0 +1,108 @@
+{
+  "_comment": [
+    "The servers under census. Add one entry per server; order does not matter.",
+    "",
+    "  name      short label used in the tables and as the callwitness --label",
+    "  package   what a reader would install, for the published table",
+    "  command   argv, exactly as a client config would spell it",
+    "  calls     optional. Tools worth calling on purpose, with real arguments.",
+    "            Anything not listed here that has no required string fields is",
+    "            called automatically with {}.",
+    "  env       optional environment for this server only",
+    "  skip      set true to leave a server in the file but out of the run",
+    "",
+    "Rule for `calls`: use arguments a real user would plausibly pass. A path",
+    "nobody has is an error response, and an error response has a byte count,",
+    "which would sit in the dataset looking like a measurement.",
+    "",
+    "CENSUS_ROOT below is replaced at load time with --root (default: a folder",
+    "of your choosing). Point it at something with real content -- a directory",
+    "of twelve files measures the filesystem you built for the test, not the",
+    "one people have."
+  ],
+
+  "servers": [
+    {
+      "name": "filesystem",
+      "package": "@modelcontextprotocol/server-filesystem",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "CENSUS_ROOT"],
+      "calls": [
+        {"tool": "list_directory", "arguments": {"path": "CENSUS_ROOT"}},
+        {"tool": "directory_tree", "arguments": {"path": "CENSUS_ROOT"}},
+        {"tool": "list_allowed_directories", "arguments": {}}
+      ]
+    },
+    {
+      "name": "memory",
+      "package": "@modelcontextprotocol/server-memory",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "calls": [
+        {"tool": "read_graph", "arguments": {}}
+      ]
+    },
+    {
+      "name": "sequentialthinking",
+      "package": "@modelcontextprotocol/server-sequential-thinking",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "calls": [
+        {"tool": "sequentialthinking", "arguments": {
+          "thought": "A first thought.", "nextThoughtNeeded": false,
+          "thoughtNumber": 1, "totalThoughts": 1}}
+      ]
+    },
+    {
+      "name": "everything",
+      "package": "@modelcontextprotocol/server-everything",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-everything"],
+      "calls": [
+        {"tool": "echo", "arguments": {"message": "census"}},
+        {"tool": "add", "arguments": {"a": 2, "b": 3}},
+        {"tool": "getTinyImage", "arguments": {}}
+      ]
+    },
+    {
+      "name": "chrome-devtools",
+      "package": "chrome-devtools-mcp",
+      "command": ["npx", "-y", "chrome-devtools-mcp@latest"],
+      "calls": []
+    },
+    {
+      "name": "context7",
+      "package": "@upstash/context7-mcp",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "calls": [
+        {"tool": "resolve-library-id", "arguments": {"libraryName": "react"}}
+      ]
+    },
+    {
+      "name": "github",
+      "package": "@modelcontextprotocol/server-github",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "calls": []
+    },
+    {
+      "name": "time",
+      "package": "mcp-server-time",
+      "command": ["uvx", "mcp-server-time"],
+      "calls": [
+        {"tool": "get_current_time", "arguments": {"timezone": "Asia/Kathmandu"}}
+      ]
+    },
+    {
+      "name": "fetch",
+      "package": "mcp-server-fetch",
+      "command": ["uvx", "mcp-server-fetch"],
+      "calls": [
+        {"tool": "fetch", "arguments": {"url": "https://example.com"}}
+      ]
+    },
+    {
+      "name": "git",
+      "package": "mcp-server-git",
+      "command": ["uvx", "mcp-server-git", "--repository", "CENSUS_ROOT"],
+      "calls": [],
+      "skip": true,
+      "_why_skipped": "needs CENSUS_ROOT to be a git repository; re-enable and point --root at one"
+    }
+  ]
+}
