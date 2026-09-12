@@ -29,7 +29,7 @@ def test_a_bare_name_is_resolved_to_a_full_path(tmp_path, monkeypatch):
         # the caller never types it.
         monkeypatch.setenv("PATHEXT", ".CMD")
 
-        resolved = resolve_program(["fakeserver", "--root", "C:\\tmp"])
+    resolved = resolve_program(["fakeserver", "--root", "C:\\tmp"])
     # normcase, because which() builds each candidate by concatenating the
     # name with PATHEXT's own spelling: with PATHEXT=".CMD" it returns
     # fakeserver.CMD for a file on disk named fakeserver.cmd. Windows treats
