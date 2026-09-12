@@ -1,4 +1,5 @@
 # Callwitness
+<!-- mcp-name: io.github.AditiChaudharyy14/callwitness -->
 
 **Record every tool call an AI agent makes. Block nothing.**
 
