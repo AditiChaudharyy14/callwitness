@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 import uuid
@@ -139,6 +140,123 @@ def cmd_export(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_contribute(args: argparse.Namespace) -> int:
+    """Opt-in contribution. Nothing here runs unless a person typed it.
+
+    Deliberately the only path to `contribute`: no hook in the proxy, no timer,
+    no atexit. The proxy promises it cannot delay the stream, and a network call
+    it makes on your behalf breaks that promise whether or not it is fast.
+    """
+    from . import contribute as contrib
+
+    home = Path(args.home)
+    config = contrib.load_config(home)
+    install = config.get("install")
+
+    if args.forget:
+        contrib.save_config(home, {"enabled": False})
+        print("Disabled, and the local install id is deleted.")
+        if install:
+            print("To have data already sent under {} removed, quote that id\n"
+                  "at https://github.com/AditiChaudharyy14/callwitness/issues"
+                  .format(install))
+        return 0
+
+    if args.disable:
+        config["enabled"] = False
+        contrib.save_config(home, config)
+        print("Disabled. Nothing further will be sent.")
+        print("The install id is kept so removal of past data is still "
+              "possible; use --forget to delete it too.")
+        return 0
+
+    if args.enable:
+        if config.get("enabled"):
+            print("Already on since {}.".format(config.get("since", "?")))
+            return 0
+        sys.stdout.write(contrib.NOTICE)
+        if not args.yes:
+            try:
+                answer = input("\nEnable? [y/N] ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                answer = ""
+            if answer not in ("y", "yes"):
+                print("Not enabled. Nothing has left this machine.")
+                return 1
+        install = install or str(uuid.uuid4())
+        contrib.save_config(home, {
+            "enabled": True, "install": install,
+            "since": contrib.datetime.now(contrib.timezone.utc).isoformat(),
+        })
+        print("\nEnabled. Your install id is {}".format(install))
+        print("Stored at {} -- it is the only way to ask for your data back."
+              .format(contrib.config_path(home)))
+        print("\nNothing is sent until you run:  callwitness contribute --send")
+        return 0
+
+    if args.status or not (args.dry_run or args.send):
+        if config.get("enabled"):
+            print("contribute is ON since {}".format(config.get("since", "?")))
+            print("  install id  {}".format(install))
+            print("  last sent   {}".format(config.get("last_sent", "never")))
+        else:
+            print("contribute is OFF. Nothing has been sent.")
+        print("\n  callwitness contribute --dry-run   see exactly what would leave")
+        print("  callwitness contribute --enable    turn it on")
+        return 0
+
+    payload = contrib.build_payload(
+        home, install or "00000000-0000-4000-8000-000000000000",
+        since=config.get("last_sent_ts"))
+    calls = sum(t["calls"] for s in payload["servers"] for t in s["tools"])
+
+    if args.dry_run:
+        state = "ON" if config.get("enabled") else "OFF"
+        print("contribute is {}. This is what would be sent{}.\n".format(
+            state, "" if config.get("enabled") else " if you enabled it"))
+        sys.stdout.write(contrib.summarise(payload))
+        print()
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        print("\nNot sent. Nothing has left this machine.")
+        if not config.get("enabled"):
+            print("To send it:  callwitness contribute --enable"
+                  "  then  callwitness contribute --send")
+        return 0
+
+    # --send
+    if not config.get("enabled"):
+        print("contribute is off. Run `callwitness contribute --enable` first.",
+              file=sys.stderr)
+        return 2
+    if not calls:
+        print("Nothing new to send since {}.".format(
+            config.get("last_sent", "the last send")))
+        return 0
+
+    sys.stdout.write(contrib.summarise(payload))
+    print()
+    print(json.dumps(payload, indent=2, sort_keys=True))
+    if not args.yes:
+        # Asked every time on purpose. It is how someone notices the day the
+        # payload starts containing something new.
+        try:
+            answer = input("\nSend this? [y/N] ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            answer = ""
+        if answer not in ("y", "yes"):
+            print("Not sent. Nothing has left this machine.")
+            return 1
+
+    ok, message = contrib.send(payload)
+    print(message)
+    if not ok:
+        return 1
+    config["last_sent"] = contrib.datetime.now(contrib.timezone.utc).isoformat()
+    config["last_sent_ts"] = payload["window"]["to"]
+    contrib.save_config(home, config)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="callwitness",
@@ -220,6 +338,26 @@ def build_parser() -> argparse.ArgumentParser:
         "verify",
         help="check that recorded calls have not been altered since they were written")
     verify.set_defaults(func=cmd_verify)
+
+    contribute = sub.add_parser(
+        "contribute",
+        help="opt in to adding the shape of your traffic to a public baseline")
+    contribute.add_argument("--status", action="store_true",
+                            help="show whether it is on, and the install id")
+    contribute.add_argument("--enable", action="store_true",
+                            help="turn it on (off by default; nothing is sent "
+                                 "until you also run --send)")
+    contribute.add_argument("--disable", action="store_true",
+                            help="stop sending; keep the install id")
+    contribute.add_argument("--forget", action="store_true",
+                            help="stop sending and delete the local install id")
+    contribute.add_argument("--dry-run", action="store_true",
+                            help="print the exact payload and send nothing")
+    contribute.add_argument("--send", action="store_true",
+                            help="print the payload, confirm, then send it")
+    contribute.add_argument("--yes", action="store_true",
+                            help="skip the confirmation prompt")
+    contribute.set_defaults(func=cmd_contribute)
 
     export = sub.add_parser("export", help="dump all calls as JSONL")
     export.add_argument("out")
