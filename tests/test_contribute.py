@@ -10,7 +10,6 @@ realistic secrets, assert that none of them appear anywhere in the payload.
 
 import json
 import sqlite3
-import uuid
 from pathlib import Path
 
 import pytest
@@ -216,3 +215,33 @@ def test_window_covers_only_what_is_being_sent(tmp_path):
     assert full["window"]["from"] < later["window"]["from"]
     assert (sum(t["calls"] for s in later["servers"] for t in s["tools"]) <
             sum(t["calls"] for s in full["servers"] for t in s["tools"]))
+
+
+# -- the version stamp ----------------------------------------------------
+
+def test_the_reported_version_is_the_one_in_pyproject():
+    """It drifted once and nobody noticed for a whole release.
+
+    pyproject.toml said 0.1.1 while __init__.py said 0.1.0, so `--version` and
+    every contributed record named a version that was not running. The number
+    now comes from installed package metadata; this test fails if a second copy
+    of it ever reappears and disagrees.
+    """
+    import re
+    from pathlib import Path
+
+    import callwitness
+
+    root = Path(__file__).resolve().parents[1]
+    declared = re.search(r'^version\s*=\s*"([^"]+)"',
+                         (root / "pyproject.toml").read_text(encoding="utf-8"),
+                         re.M).group(1)
+    assert callwitness.__version__ == declared
+
+
+def test_the_payload_stamps_the_running_version(tmp_path):
+    """A baseline keyed on the wrong version is worse than one with no version."""
+    import callwitness
+
+    seed(tmp_path)
+    assert c.build_payload(tmp_path, "i")["version"] == callwitness.__version__
