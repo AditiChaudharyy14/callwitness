@@ -175,7 +175,7 @@
       "package": "mcp-deepwiki",
       "command": ["npx", "-y", "mcp-deepwiki@latest"],
       "calls": [
-        {"tool": "deepwiki_fetch", "arguments": {"url": "modelcontextprotocol/servers"}}
+        {"tool": "deepwiki_fetch", "arguments": {"url": "AditiChaudharyy14/callwitness"}}
       ]
     },
     {
