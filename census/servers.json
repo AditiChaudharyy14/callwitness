@@ -1,24 +1,33 @@
 {
   "_comment": [
-    "The servers under census. Add one entry per server; order does not matter.",
+    "The servers under census. Every entry here has been confirmed to start and",
+    "answer tools/list without paid credentials -- servers that demand an API key",
+    "before they will even say what tools they have are listed at the bottom under",
+    "_refused_without_credentials, because how many of those there are is itself a",
+    "result worth reporting.",
     "",
-    "  name      short label used in the tables and as the callwitness --label",
+    "  name      short label, used in the tables and as the callwitness --label",
     "  package   what a reader would install, for the published table",
     "  command   argv, exactly as a client config would spell it",
-    "  calls     optional. Tools worth calling on purpose, with real arguments.",
-    "            Anything not listed here that has no required string fields is",
-    "            called automatically with {}.",
-    "  env       optional environment for this server only",
-    "  skip      set true to leave a server in the file but out of the run",
+    "  calls     tools worth calling on purpose, with real arguments",
+    "  auto      false to call ONLY the tools listed above. Default true, which",
+    "            additionally calls any tool whose name reads like a read and",
+    "            whose required arguments can be filled honestly.",
+    "  env       environment for this server only",
+    "  skip      leave the entry in the file but out of the run",
     "",
-    "Rule for `calls`: use arguments a real user would plausibly pass. A path",
-    "nobody has is an error response, and an error response has a byte count,",
-    "which would sit in the dataset looking like a measurement.",
+    "Two rules that keep this honest:",
     "",
-    "CENSUS_ROOT below is replaced at load time with --root (default: a folder",
-    "of your choosing). Point it at something with real content -- a directory",
-    "of twelve files measures the filesystem you built for the test, not the",
-    "one people have."
+    "  Arguments must be ones a real user would plausibly pass. A path nobody has",
+    "  produces an error reply, and an error reply has a byte count, which would",
+    "  sit in the dataset looking like a measurement.",
+    "",
+    "  Never list a tool under `calls` that writes, deletes, spends or executes.",
+    "  A census must not change the thing it is measuring. Servers below that",
+    "  expose only such tools carry auto:false and contribute their declared",
+    "  surface with zero calls, which is the honest outcome.",
+    "",
+    "CENSUS_ROOT is replaced at load time with --root."
   ],
 
   "servers": [
@@ -36,9 +45,7 @@
       "name": "memory",
       "package": "@modelcontextprotocol/server-memory",
       "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
-      "calls": [
-        {"tool": "read_graph", "arguments": {}}
-      ]
+      "calls": [{"tool": "read_graph", "arguments": {}}]
     },
     {
       "name": "sequentialthinking",
@@ -67,42 +74,202 @@
       "calls": []
     },
     {
+      "name": "playwright",
+      "package": "@playwright/mcp",
+      "command": ["npx", "-y", "@playwright/mcp@latest"],
+      "calls": []
+    },
+    {
+      "name": "playwright-automation",
+      "package": "@executeautomation/playwright-mcp-server",
+      "command": ["npx", "-y", "@executeautomation/playwright-mcp-server"],
+      "calls": []
+    },
+    {
+      "name": "browser-tools",
+      "package": "@agentdeskai/browser-tools-mcp",
+      "command": ["npx", "-y", "@agentdeskai/browser-tools-mcp"],
+      "calls": [
+        {"tool": "getConsoleLogs", "arguments": {}},
+        {"tool": "getConsoleErrors", "arguments": {}}
+      ]
+    },
+    {
       "name": "context7",
       "package": "@upstash/context7-mcp",
       "command": ["npx", "-y", "@upstash/context7-mcp"],
-      "calls": [
-        {"tool": "resolve-library-id", "arguments": {"libraryName": "react"}}
-      ]
+      "calls": [{"tool": "resolve-library-id", "arguments": {"libraryName": "react"}}]
     },
     {
       "name": "github",
       "package": "@modelcontextprotocol/server-github",
       "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
-      "calls": []
+      "calls": [],
+      "auto": false,
+      "_why": "every tool needs a token; it lists them anyway, so the declared surface counts"
+    },
+    {
+      "name": "notion",
+      "package": "@notionhq/notion-mcp-server",
+      "command": ["npx", "-y", "@notionhq/notion-mcp-server"],
+      "calls": [],
+      "auto": false,
+      "_why": "needs an integration token to call anything"
+    },
+    {
+      "name": "firecrawl",
+      "package": "firecrawl-mcp",
+      "command": ["npx", "-y", "firecrawl-mcp"],
+      "calls": [],
+      "auto": false,
+      "_why": "needs FIRECRAWL_API_KEY; also every tool is a write or a paid fetch"
+    },
+    {
+      "name": "exa",
+      "package": "exa-mcp-server",
+      "command": ["npx", "-y", "exa-mcp-server"],
+      "calls": [],
+      "auto": false
+    },
+    {
+      "name": "tavily",
+      "package": "tavily-mcp",
+      "command": ["npx", "-y", "tavily-mcp"],
+      "calls": [],
+      "auto": false
+    },
+    {
+      "name": "aws-kb",
+      "package": "@modelcontextprotocol/server-aws-kb-retrieval",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-aws-kb-retrieval"],
+      "calls": [],
+      "auto": false
+    },
+    {
+      "name": "kubernetes",
+      "package": "mcp-server-kubernetes",
+      "command": ["npx", "-y", "mcp-server-kubernetes"],
+      "calls": [],
+      "auto": false,
+      "_why": "exposes kubectl_delete and cleanup with no required arguments. Declared surface only."
+    },
+    {
+      "name": "chart",
+      "package": "@antv/mcp-server-chart",
+      "command": ["npx", "-y", "@antv/mcp-server-chart"],
+      "calls": [],
+      "auto": false,
+      "_why": "27 generate_* tools, all of which render and upload"
+    },
+    {
+      "name": "shadcn-ui",
+      "package": "@heilgar/shadcn-ui-mcp-server",
+      "command": ["npx", "-y", "@heilgar/shadcn-ui-mcp-server"],
+      "calls": [
+        {"tool": "list-components", "arguments": {}},
+        {"tool": "list-blocks", "arguments": {}}
+      ]
+    },
+    {
+      "name": "deepwiki",
+      "package": "mcp-deepwiki",
+      "command": ["npx", "-y", "mcp-deepwiki@latest"],
+      "calls": [
+        {"tool": "deepwiki_fetch", "arguments": {"url": "modelcontextprotocol/servers"}}
+      ]
+    },
+    {
+      "name": "openapi",
+      "package": "openapi-mcp-server",
+      "command": ["npx", "-y", "openapi-mcp-server"],
+      "calls": [],
+      "auto": false
+    },
+    {
+      "name": "code-runner",
+      "package": "mcp-server-code-runner",
+      "command": ["npx", "-y", "mcp-server-code-runner"],
+      "calls": [],
+      "auto": false,
+      "_why": "its one tool executes code. Declared surface only."
+    },
+    {
+      "name": "commands",
+      "package": "mcp-server-commands",
+      "command": ["npx", "-y", "mcp-server-commands"],
+      "calls": [],
+      "auto": false,
+      "_why": "its one tool, run_process, runs shell commands with no required arguments. Declared surface only."
+    },
+    {
+      "name": "postgres",
+      "package": "@modelcontextprotocol/server-postgres",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/postgres"],
+      "calls": [],
+      "auto": false,
+      "_why": "one tool that runs SQL. Declared surface only."
     },
     {
       "name": "time",
       "package": "mcp-server-time",
       "command": ["uvx", "mcp-server-time"],
-      "calls": [
-        {"tool": "get_current_time", "arguments": {"timezone": "Asia/Kathmandu"}}
-      ]
+      "calls": [{"tool": "get_current_time", "arguments": {"timezone": "Asia/Kathmandu"}}]
     },
     {
       "name": "fetch",
       "package": "mcp-server-fetch",
       "command": ["uvx", "mcp-server-fetch"],
+      "calls": [{"tool": "fetch", "arguments": {"url": "https://example.com"}}]
+    },
+    {
+      "name": "markitdown",
+      "package": "markitdown-mcp",
+      "command": ["uvx", "markitdown-mcp"],
       "calls": [
-        {"tool": "fetch", "arguments": {"url": "https://example.com"}}
+        {"tool": "convert_to_markdown", "arguments": {"uri": "https://example.com"}}
       ]
+    },
+    {
+      "name": "duckduckgo",
+      "package": "duckduckgo-mcp-server",
+      "command": ["uvx", "duckduckgo-mcp-server"],
+      "calls": [
+        {"tool": "search", "arguments": {"query": "model context protocol"}}
+      ]
+    },
+    {
+      "name": "calculator",
+      "package": "mcp-server-calculator",
+      "command": ["uvx", "mcp-server-calculator"],
+      "calls": [{"tool": "calculate", "arguments": {"expression": "2+2"}}]
     },
     {
       "name": "git",
       "package": "mcp-server-git",
-      "command": ["uvx", "mcp-server-git", "--repository", "CENSUS_ROOT"],
-      "calls": [],
-      "skip": true,
-      "_why_skipped": "needs CENSUS_ROOT to be a git repository; re-enable and point --root at one"
+      "command": ["uvx", "mcp-server-git", "--repository", "CENSUS_REPO"],
+      "calls": [
+        {"tool": "git_status", "arguments": {"repo_path": "CENSUS_REPO"}},
+        {"tool": "git_log", "arguments": {"repo_path": "CENSUS_REPO"}}
+      ],
+      "_why": "CENSUS_REPO must be a git checkout; --repo sets it, default is this repository"
     }
+  ],
+
+  "_refused_without_credentials": [
+    "@modelcontextprotocol/server-gitlab -- GITLAB_PERSONAL_ACCESS_TOKEN",
+    "@modelcontextprotocol/server-slack -- SLACK_BOT_TOKEN and SLACK_TEAM_ID",
+    "@modelcontextprotocol/server-google-maps -- GOOGLE_MAPS_API_KEY",
+    "@modelcontextprotocol/server-brave-search -- BRAVE_API_KEY",
+    "@modelcontextprotocol/server-everart -- EVERART_API_KEY",
+    "server-perplexity-ask -- PERPLEXITY_API_KEY",
+    "figma-developer-mcp -- FIGMA_API_KEY or FIGMA_OAUTH_TOKEN"
+  ],
+  "_would_not_start": [
+    "@modelcontextprotocol/server-sentry -- npm install failed",
+    "@modelcontextprotocol/server-puppeteer -- deprecated",
+    "@wonderwhy-er/desktop-commander -- no response within 240s",
+    "mcp-server-sqlite, mcp-searxng, docker-mcp -- AttributeError on an old MCP SDK API",
+    "mcp-youtube -- ModuleNotFoundError: mcp.server.fastmcp",
+    "wikipedia-mcp, mcp-pandoc, arxiv-mcp-server -- exited during startup"
   ]
 }

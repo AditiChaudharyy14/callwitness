@@ -23,3 +23,6 @@ htmlcov/
 .vscode/
 
 runs/
+
+# the census dataset is published evidence, not recorded traffic
+!census/data/*.jsonl
