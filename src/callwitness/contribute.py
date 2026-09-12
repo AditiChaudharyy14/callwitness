@@ -35,10 +35,10 @@ from . import __version__
 
 SCHEMA = "callwitness.contribution.v1"
 
-# No collector is running yet. This stays None until the endpoint exists, and
-# --send refuses rather than failing at a URL that was never going to answer.
-# A build that points at a dead host teaches people the feature is broken.
-CONTRIBUTE_URL: Optional[str] = None
+# The collector, a Cloudflare Worker that validates the payload against the same
+# key list this file enforces and stores it unchanged. Overridable by env var so
+# anyone can run their own and point their installs at it.
+CONTRIBUTE_URL: Optional[str] = "https://callwitness-contribute.aditichaudharyy14.workers.dev/v1/contributions"
 
 ENV_URL = "CALLWITNESS_CONTRIBUTE_URL"
 
