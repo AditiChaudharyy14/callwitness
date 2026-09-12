@@ -289,6 +289,36 @@ the CRM you always use* is a Tuesday.
 
 SQLite at `~/.callwitness/callwitness.db`, plus an append-only `calls.jsonl`.
 
+## The public baseline
+
+`callwitness contribute` sends the *shape* of your tool traffic — which public
+packages you wrap, how many calls, how many bytes came back, how long it took —
+to a public baseline. Nothing else.
+
+```
+callwitness contribute --dry-run   # print the exact bytes, send nothing
+callwitness contribute --enable    # off until you type this
+callwitness contribute --send      # shows the payload, asks, then sends
+```
+
+Never sent: arguments, paths, filenames, hostnames, results, or any part of
+them — including hashed, which is not anonymisation when the input space is
+small enough to enumerate. A server that is not a published package is reported
+as `unlisted` and its tool names become `tool_1`, `tool_2`. A published package
+identifies software; a path identifies an organisation.
+
+Nothing is sent while the proxy is running. There is no thread, no timer and no
+`atexit` hook — the only route to the network is a command you type. Your
+install id is a random UUID kept locally, and it is the only way to ask for your
+data to be removed.
+
+The collector is 190 lines of JavaScript in [`worker/index.js`](worker/index.js).
+It validates against the same key list the client enforces, rejects unknown
+fields rather than stripping them, and never reads the caller's IP. Both halves
+of that promise are in this repository, so you can check them instead of
+trusting them.
+
+Full specification: [docs/CONTRIBUTE.md](docs/CONTRIBUTE.md)
 ## Design rule
 
 The recorder must never corrupt the protocol stream, and must never delay it.
