@@ -21,6 +21,7 @@ transport so both record identically.
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 import threading
@@ -31,6 +32,34 @@ from .record import Recorder
 from .tracker import MAX_ARG_BYTES_DEFAULT, RESULT_PREVIEW_BYTES, CallTracker
 
 __all__ = ["Proxy", "MAX_ARG_BYTES_DEFAULT", "RESULT_PREVIEW_BYTES"]
+
+
+def resolve_program(command: List[str]) -> List[str]:
+    """Look the program name up on PATH the way a shell would, before spawning.
+
+    Popen does not do this itself on Windows. `npx` on PATH is really
+    `npx.cmd`, and CreateProcess appends only the extensions the loader knows
+    about -- not PATHEXT -- so Popen(["npx", ...]) raises WinError 2 for the
+    very command that works at the prompt one line above.
+
+    This is not a Windows nicety. Most MCP servers published today are npm
+    packages launched with npx, and most of the desktops running MCP clients
+    are Windows. Without this the proxy cannot wrap the majority of real
+    servers on the majority of machines, which is the entire product.
+
+    shutil.which applies the platform's own rules, including PATHEXT, and is a
+    no-op for a path that is already absolute. When it finds nothing the
+    original name is passed through untouched, so the error the user reads
+    still names the command they actually typed rather than a resolved path
+    they never wrote.
+    """
+    if not command:
+        return list(command)
+    found = shutil.which(command[0])
+    if found is None:
+        return list(command)
+    return [found] + list(command[1:])
+
 
 
 class Proxy(CallTracker):
@@ -95,7 +124,7 @@ class Proxy(CallTracker):
         self.rec.start_session(self.command)
         try:
             self.proc = subprocess.Popen(
-                self.command,
+                resolve_program(self.command),
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
