@@ -163,6 +163,62 @@ class Server:
                 return message, len(line)
 
 
+# Auto-calling is how the census gets coverage without hand-writing arguments
+# for hundreds of tools, and it is the most dangerous thing in this file. Some
+# popular servers expose `kubectl_delete`, `cleanup` and `run_process` with no
+# required arguments at all -- a caller that simply invokes everything callable
+# would delete a namespace or run a shell command on the machine doing the
+# measuring. A census must not change the thing it is measuring.
+#
+# So the rule is an allowlist, not a denylist: a tool is auto-called only if its
+# name reads like a read. Anything else needs an explicit entry in the
+# catalogue, written by a person who looked at it. A server whose tools are all
+# writes still contributes its declared surface and simply shows zero calls,
+# which is the honest outcome.
+READ_VERBS = {
+    "list", "get", "read", "search", "find", "fetch", "query", "describe",
+    "show", "info", "inspect", "view", "browse", "check", "count", "resolve",
+    "lookup", "docs", "doc", "help", "echo", "add", "status", "current",
+    "tabs", "snapshot", "logs", "errors", "console", "screenshot", "tree",
+}
+WRITE_VERBS = {
+    "delete", "remove", "destroy", "drop", "purge", "clean", "cleanup", "kill",
+    "stop", "restart", "reset", "write", "create", "update", "insert", "upsert",
+    "patch", "put", "post", "send", "push", "apply", "exec", "execute", "run",
+    "spawn", "shell", "command", "eval", "install", "upload", "move", "rename",
+    "copy", "close", "click", "fill", "submit", "navigate", "type", "press",
+    "pay", "charge", "transfer", "set", "edit", "modify", "save", "scrape",
+    "crawl", "start", "launch", "open", "connect", "login", "auth",
+}
+_SPLIT = re.compile(r"[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])")
+
+
+def words_of(name: str) -> List[str]:
+    """kubectl_delete, listBrowserTabs and API-get-users all become words.
+
+    Underscores are word characters to a regex, so a `\\b` after `list` does not
+    match in `list_directory`. Splitting explicitly is the only way this reads
+    the same for every naming convention in the wild.
+    """
+    return [w.lower() for w in _SPLIT.split(name or "") if w]
+
+
+def is_safe_to_auto_call(name: str) -> bool:
+    """Would invoking this tool, unasked, only read something?
+
+    Judged on the name, which is crude on purpose -- a subtler rule would be one
+    I could talk myself into. Any write word anywhere in the name disqualifies
+    it outright; a read word has to appear in the first two, because that is
+    where the verb lives in every convention people actually use.
+    """
+    words = words_of(name)
+    if not words:
+        return False
+    if any(w in WRITE_VERBS for w in words):
+        return False
+    return any(w in READ_VERBS for w in words[:2])
+
+
 def plausible_arguments(schema: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Arguments for a tool we know nothing about, or None to skip it.
 
@@ -247,16 +303,24 @@ def census_one(spec: Dict[str, Any], timeout: float, call_timeout: float,
             for c in spec.get("calls") or []
         ]
         named = {t for t, _, _ in planned}
-        for tool in tools:
-            if len(planned) >= max_calls:
-                break
-            tool_name = tool.get("name")
-            if not tool_name or tool_name in named:
-                continue
-            arguments = plausible_arguments(tool.get("inputSchema") or {})
-            if arguments is None:
-                continue
-            planned.append((tool_name, arguments, "auto"))
+        skipped_unsafe = []
+        if spec.get("auto", True):
+            for tool in tools:
+                if len(planned) >= max_calls:
+                    break
+                tool_name = tool.get("name")
+                if not tool_name or tool_name in named:
+                    continue
+                if not is_safe_to_auto_call(tool_name):
+                    skipped_unsafe.append(tool_name)
+                    continue
+                arguments = plausible_arguments(tool.get("inputSchema") or {})
+                if arguments is None:
+                    continue
+                planned.append((tool_name, arguments, "auto"))
+        # Recorded, not hidden: a reader needs to know the census did not call
+        # every tool, and which ones it left alone.
+        row["not_auto_called"] = skipped_unsafe
 
         for index, (tool_name, arguments, origin) in enumerate(planned):
             request_id = 100 + index
@@ -289,7 +353,7 @@ def census_one(spec: Dict[str, Any], timeout: float, call_timeout: float,
     return row
 
 
-def substitute(value: Any, root: str) -> Any:
+def substitute(value: Any, root: str, repo: str) -> Any:
     """Replace CENSUS_ROOT everywhere it appears in the catalogue.
 
     Servers that touch the filesystem need somewhere real to look. Keeping that
@@ -298,17 +362,17 @@ def substitute(value: Any, root: str) -> Any:
     a dataset and a screenshot.
     """
     if isinstance(value, str):
-        return value.replace("CENSUS_ROOT", root)
+        return value.replace("CENSUS_ROOT", root).replace("CENSUS_REPO", repo)
     if isinstance(value, list):
-        return [substitute(v, root) for v in value]
+        return [substitute(v, root, repo) for v in value]
     if isinstance(value, dict):
-        return {k: substitute(v, root) for k, v in value.items()}
+        return {k: substitute(v, root, repo) for k, v in value.items()}
     return value
 
 
-def load_catalogue(path: pathlib.Path, root: str) -> List[Dict[str, Any]]:
+def load_catalogue(path: pathlib.Path, root: str, repo: str) -> List[Dict[str, Any]]:
     servers = json.loads(path.read_text(encoding="utf-8"))["servers"]
-    return [substitute(s, root) for s in servers if not s.get("skip")]
+    return [substitute(s, root, repo) for s in servers if not s.get("skip")]
 
 
 def main() -> int:
@@ -320,6 +384,8 @@ def main() -> int:
                              "Point it somewhere with actual content -- a folder of "
                              "twelve files measures your test fixture, not the "
                              "filesystems people have")
+    parser.add_argument("--repo", default=".",
+                        help="a git checkout, for git-shaped servers (default: this one)")
     parser.add_argument("--only", help="substring: run just the servers matching it")
     parser.add_argument("--timeout", type=float, default=180.0,
                         help="seconds for the handshake; the first run of an "
@@ -338,7 +404,8 @@ def main() -> int:
     if not pathlib.Path(root).is_dir():
         print("--root {} is not a folder".format(root))
         return 2
-    servers = load_catalogue(catalogue, root)
+    repo = str(pathlib.Path(args.repo).expanduser().resolve())
+    servers = load_catalogue(catalogue, root, repo)
     if args.only:
         servers = [s for s in servers if args.only.lower() in s["name"].lower()]
     if not servers:
