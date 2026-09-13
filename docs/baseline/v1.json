@@ -1,0 +1,1026 @@
+{
+  "schema": "callwitness.baseline.v1",
+  "generated_at": "2026-09-13T04:03:45Z",
+  "commit": "312f590735a837c356158ed092013a687ceeded6",
+  "source": "https://github.com/AditiChaudharyy14/callwitness",
+  "raw_data": "https://github.com/AditiChaudharyy14/callwitness/tree/main/census/data",
+  "method": "https://callwitness.tech/research",
+  "licence": "MIT",
+  "stability": "Within callwitness.baseline.v1, fields may be added but existing field names, units (bytes, milliseconds) and meanings will not change. A breaking change becomes v2 at a new path; v1 keeps resolving. The raw census JSONL carries no such promise -- depend on this document, not on that file.",
+  "sample": {
+    "servers_started": 29,
+    "servers_called": 16,
+    "tools_declared": 306,
+    "calls": 41
+  },
+  "caveat": "Delivered sizes come from 41 successful calls across 16 servers, measured on one machine. This is the only published measurement of what MCP servers actually return rather than what they declare, which makes it the best number available and still a small one. Report n alongside any value taken from here.",
+  "returned_bytes_all": [
+    88,
+    100,
+    111,
+    113,
+    115,
+    118,
+    124,
+    128,
+    129,
+    129,
+    136,
+    138,
+    139,
+    142,
+    160,
+    167,
+    173,
+    213,
+    218,
+    237,
+    264,
+    265,
+    281,
+    332,
+    332,
+    332,
+    332,
+    338,
+    388,
+    487,
+    558,
+    620,
+    2329,
+    3398,
+    4161,
+    5595,
+    7999,
+    9503,
+    25039,
+    334987,
+    701216
+  ],
+  "overall": {
+    "returned_bytes": {
+      "n": 41,
+      "min": 88,
+      "p50": 264,
+      "p95": 25039,
+      "max": 701216
+    },
+    "argument_bytes": {
+      "n": 41,
+      "min": 2,
+      "p50": 13,
+      "p95": 64,
+      "max": 99
+    },
+    "declared_bytes": {
+      "n": 29,
+      "min": 176,
+      "p50": 5955,
+      "p95": 59905,
+      "max": 76260
+    }
+  },
+  "servers": [
+    {
+      "server": "browser-tools",
+      "package": "@agentdeskai/browser-tools-mcp",
+      "declared_bytes": 26361,
+      "tool_count": 16,
+      "returned_bytes": {
+        "n": 9,
+        "min": 128,
+        "p50": 332,
+        "p95": 558,
+        "max": 558
+      },
+      "argument_bytes": {
+        "n": 9,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "getConsoleLogs",
+          "arguments_bytes": 2,
+          "returned_bytes": 332,
+          "ms": 6
+        },
+        {
+          "tool": "getConsoleErrors",
+          "arguments_bytes": 2,
+          "returned_bytes": 332,
+          "ms": 2
+        },
+        {
+          "tool": "listBrowserTabs",
+          "arguments_bytes": 2,
+          "returned_bytes": 218,
+          "ms": 2
+        },
+        {
+          "tool": "getNetworkLogs",
+          "arguments_bytes": 2,
+          "returned_bytes": 332,
+          "ms": 1
+        },
+        {
+          "tool": "getNetworkErrors",
+          "arguments_bytes": 2,
+          "returned_bytes": 332,
+          "ms": 4
+        },
+        {
+          "tool": "getSelectedElement",
+          "arguments_bytes": 2,
+          "returned_bytes": 138,
+          "ms": 2
+        },
+        {
+          "tool": "getPageInfo",
+          "arguments_bytes": 2,
+          "returned_bytes": 265,
+          "ms": 1
+        },
+        {
+          "tool": "getConnectionStatus",
+          "arguments_bytes": 2,
+          "returned_bytes": 558,
+          "ms": 2
+        },
+        {
+          "tool": "wipeLogs",
+          "arguments_bytes": 2,
+          "returned_bytes": 128,
+          "ms": 0
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.01,
+        "max": 0.02
+      }
+    },
+    {
+      "server": "chart",
+      "package": "@antv/mcp-server-chart",
+      "declared_bytes": 59905,
+      "tool_count": 27,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "playwright-automation",
+      "package": "@executeautomation/playwright-mcp-server",
+      "declared_bytes": 13896,
+      "tool_count": 33,
+      "returned_bytes": {
+        "n": 1,
+        "min": 129,
+        "p50": 129,
+        "p95": 129,
+        "max": 129
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "playwright_console_logs",
+          "arguments_bytes": 2,
+          "returned_bytes": 129,
+          "ms": 6
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.01,
+        "max": 0.01
+      }
+    },
+    {
+      "server": "shadcn-ui",
+      "package": "@heilgar/shadcn-ui-mcp-server",
+      "declared_bytes": 1623,
+      "tool_count": 6,
+      "returned_bytes": {
+        "n": 2,
+        "min": 2329,
+        "p50": 2329,
+        "p95": 3398,
+        "max": 3398
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list-components",
+          "arguments_bytes": 2,
+          "returned_bytes": 2329,
+          "ms": 1615
+        },
+        {
+          "tool": "list-blocks",
+          "arguments_bytes": 2,
+          "returned_bytes": 3398,
+          "ms": 1134
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 1.43,
+        "max": 2.09
+      }
+    },
+    {
+      "server": "aws-kb",
+      "package": "@modelcontextprotocol/server-aws-kb-retrieval",
+      "declared_bytes": 516,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "everything",
+      "package": "@modelcontextprotocol/server-everything",
+      "declared_bytes": 7698,
+      "tool_count": 13,
+      "returned_bytes": {
+        "n": 8,
+        "min": 88,
+        "p50": 388,
+        "p95": 9503,
+        "max": 9503
+      },
+      "argument_bytes": {
+        "n": 8,
+        "min": 2,
+        "p50": 16,
+        "p95": 24,
+        "max": 24
+      },
+      "calls": [
+        {
+          "tool": "echo",
+          "arguments_bytes": 21,
+          "returned_bytes": 88,
+          "ms": 3
+        },
+        {
+          "tool": "get-annotated-message",
+          "arguments_bytes": 24,
+          "returned_bytes": 160,
+          "ms": 1
+        },
+        {
+          "tool": "get-env",
+          "arguments_bytes": 2,
+          "returned_bytes": 9503,
+          "ms": 11
+        },
+        {
+          "tool": "get-resource-links",
+          "arguments_bytes": 2,
+          "returned_bytes": 620,
+          "ms": 26
+        },
+        {
+          "tool": "get-resource-reference",
+          "arguments_bytes": 2,
+          "returned_bytes": 388,
+          "ms": 3
+        },
+        {
+          "tool": "get-structured-content",
+          "arguments_bytes": 24,
+          "returned_bytes": 213,
+          "ms": 0
+        },
+        {
+          "tool": "get-sum",
+          "arguments_bytes": 16,
+          "returned_bytes": 100,
+          "ms": 1
+        },
+        {
+          "tool": "get-tiny-image",
+          "arguments_bytes": 2,
+          "returned_bytes": 5595,
+          "ms": 9
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.05,
+        "max": 1.23
+      }
+    },
+    {
+      "server": "filesystem",
+      "package": "@modelcontextprotocol/server-filesystem",
+      "declared_bytes": 13018,
+      "tool_count": 14,
+      "returned_bytes": {
+        "n": 1,
+        "min": 334987,
+        "p50": 334987,
+        "p95": 334987,
+        "max": 334987
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 38,
+        "p50": 38,
+        "p95": 38,
+        "max": 38
+      },
+      "calls": [
+        {
+          "tool": "list_directory",
+          "arguments_bytes": 38,
+          "returned_bytes": 334987,
+          "ms": 535
+        },
+        {
+          "tool": "directory_tree",
+          "arguments_bytes": null,
+          "returned_bytes": null,
+          "ms": 60011
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 25.73,
+        "max": 25.73
+      }
+    },
+    {
+      "server": "github",
+      "package": "@modelcontextprotocol/server-github",
+      "declared_bytes": 15899,
+      "tool_count": 26,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "memory",
+      "package": "@modelcontextprotocol/server-memory",
+      "declared_bytes": 10795,
+      "tool_count": 9,
+      "returned_bytes": {
+        "n": 2,
+        "min": 113,
+        "p50": 113,
+        "p95": 173,
+        "max": 173
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 20,
+        "max": 20
+      },
+      "calls": [
+        {
+          "tool": "read_graph",
+          "arguments_bytes": 2,
+          "returned_bytes": 173,
+          "ms": 17
+        },
+        {
+          "tool": "add_observations",
+          "arguments_bytes": 20,
+          "returned_bytes": 113,
+          "ms": 25
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.01,
+        "max": 0.02
+      }
+    },
+    {
+      "server": "postgres",
+      "package": "@modelcontextprotocol/server-postgres",
+      "declared_bytes": 176,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "sequentialthinking",
+      "package": "@modelcontextprotocol/server-sequential-thinking",
+      "declared_bytes": 4685,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 338,
+        "p50": 338,
+        "p95": 338,
+        "max": 338
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 99,
+        "p50": 99,
+        "p95": 99,
+        "max": 99
+      },
+      "calls": [
+        {
+          "tool": "sequentialthinking",
+          "arguments_bytes": 99,
+          "returned_bytes": 338,
+          "ms": 7
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.07,
+        "max": 0.07
+      }
+    },
+    {
+      "server": "notion",
+      "package": "@notionhq/notion-mcp-server",
+      "declared_bytes": 76260,
+      "tool_count": 24,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "playwright",
+      "package": "@playwright/mcp",
+      "declared_bytes": 18547,
+      "tool_count": 24,
+      "returned_bytes": {
+        "n": 3,
+        "min": 118,
+        "p50": 139,
+        "p95": 167,
+        "max": 167
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 18,
+        "p95": 18,
+        "max": 18
+      },
+      "calls": [
+        {
+          "tool": "browser_console_messages",
+          "arguments_bytes": 18,
+          "returned_bytes": 167,
+          "ms": 2569
+        },
+        {
+          "tool": "browser_snapshot",
+          "arguments_bytes": 2,
+          "returned_bytes": 139,
+          "ms": 94
+        },
+        {
+          "tool": "browser_tabs",
+          "arguments_bytes": 18,
+          "returned_bytes": 118,
+          "ms": 24
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.01,
+        "max": 0.01
+      }
+    },
+    {
+      "server": "context7",
+      "package": "@upstash/context7-mcp",
+      "declared_bytes": 4909,
+      "tool_count": 2,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "chrome-devtools",
+      "package": "chrome-devtools-mcp",
+      "declared_bytes": 26063,
+      "tool_count": 29,
+      "returned_bytes": {
+        "n": 6,
+        "min": 111,
+        "p50": 124,
+        "p95": 25039,
+        "max": 25039
+      },
+      "argument_bytes": {
+        "n": 6,
+        "min": 2,
+        "p50": 13,
+        "p95": 13,
+        "max": 13
+      },
+      "calls": [
+        {
+          "tool": "get_network_request",
+          "arguments_bytes": 13,
+          "returned_bytes": 136,
+          "ms": 58
+        },
+        {
+          "tool": "list_console_messages",
+          "arguments_bytes": 13,
+          "returned_bytes": 124,
+          "ms": 12
+        },
+        {
+          "tool": "list_network_requests",
+          "arguments_bytes": 13,
+          "returned_bytes": 115,
+          "ms": 13
+        },
+        {
+          "tool": "list_pages",
+          "arguments_bytes": 2,
+          "returned_bytes": 111,
+          "ms": 26
+        },
+        {
+          "tool": "take_screenshot",
+          "arguments_bytes": 13,
+          "returned_bytes": 25039,
+          "ms": 3564
+        },
+        {
+          "tool": "take_snapshot",
+          "arguments_bytes": 13,
+          "returned_bytes": 142,
+          "ms": 96
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.0,
+        "max": 0.96
+      }
+    },
+    {
+      "server": "duckduckgo",
+      "package": "duckduckgo-mcp-server",
+      "declared_bytes": 4622,
+      "tool_count": 3,
+      "returned_bytes": {
+        "n": 1,
+        "min": 7999,
+        "p50": 7999,
+        "p95": 7999,
+        "max": 7999
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 35,
+        "p50": 35,
+        "p95": 35,
+        "max": 35
+      },
+      "calls": [
+        {
+          "tool": "search",
+          "arguments_bytes": 35,
+          "returned_bytes": 7999,
+          "ms": 1704
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 1.73,
+        "max": 1.73
+      }
+    },
+    {
+      "server": "exa",
+      "package": "exa-mcp-server",
+      "declared_bytes": 2184,
+      "tool_count": 2,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "firecrawl",
+      "package": "firecrawl-mcp",
+      "declared_bytes": 36357,
+      "tool_count": 25,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "markitdown",
+      "package": "markitdown-mcp",
+      "declared_bytes": 318,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 264,
+        "p50": 264,
+        "p95": 264,
+        "max": 264
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 30,
+        "p50": 30,
+        "p95": 30,
+        "max": 30
+      },
+      "calls": [
+        {
+          "tool": "convert_to_markdown",
+          "arguments_bytes": 30,
+          "returned_bytes": 264,
+          "ms": 398
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.83,
+        "max": 0.83
+      }
+    },
+    {
+      "server": "deepwiki",
+      "package": "mcp-deepwiki",
+      "declared_bytes": 774,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 701216,
+        "p50": 701216,
+        "p95": 701216,
+        "max": 701216
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 39,
+        "p50": 39,
+        "p95": 39,
+        "max": 39
+      },
+      "calls": [
+        {
+          "tool": "deepwiki_fetch",
+          "arguments_bytes": 39,
+          "returned_bytes": 701216,
+          "ms": 11265
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 905.96,
+        "max": 905.96
+      }
+    },
+    {
+      "server": "calculator",
+      "package": "mcp-server-calculator",
+      "declared_bytes": 421,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 129,
+        "p50": 129,
+        "p95": 129,
+        "max": 129
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 21,
+        "p50": 21,
+        "p95": 21,
+        "max": 21
+      },
+      "calls": [
+        {
+          "tool": "calculate",
+          "arguments_bytes": 21,
+          "returned_bytes": 129,
+          "ms": 7
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.31,
+        "max": 0.31
+      }
+    },
+    {
+      "server": "code-runner",
+      "package": "mcp-server-code-runner",
+      "declared_bytes": 762,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "commands",
+      "package": "mcp-server-commands",
+      "declared_bytes": 947,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "fetch",
+      "package": "mcp-server-fetch",
+      "declared_bytes": 1150,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 281,
+        "p50": 281,
+        "p95": 281,
+        "max": 281
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 30,
+        "p50": 30,
+        "p95": 30,
+        "max": 30
+      },
+      "calls": [
+        {
+          "tool": "fetch",
+          "arguments_bytes": 30,
+          "returned_bytes": 281,
+          "ms": 717
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.24,
+        "max": 0.24
+      }
+    },
+    {
+      "server": "git",
+      "package": "mcp-server-git",
+      "declared_bytes": 5955,
+      "tool_count": 12,
+      "returned_bytes": {
+        "n": 2,
+        "min": 487,
+        "p50": 487,
+        "p95": 4161,
+        "max": 4161
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 64,
+        "p50": 64,
+        "p95": 64,
+        "max": 64
+      },
+      "calls": [
+        {
+          "tool": "git_status",
+          "arguments_bytes": 64,
+          "returned_bytes": 487,
+          "ms": 440
+        },
+        {
+          "tool": "git_log",
+          "arguments_bytes": 64,
+          "returned_bytes": 4161,
+          "ms": 1381
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.08,
+        "max": 0.7
+      }
+    },
+    {
+      "server": "kubernetes",
+      "package": "mcp-server-kubernetes",
+      "declared_bytes": 23899,
+      "tool_count": 23,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "time",
+      "package": "mcp-server-time",
+      "declared_bytes": 1263,
+      "tool_count": 2,
+      "returned_bytes": {
+        "n": 1,
+        "min": 237,
+        "p50": 237,
+        "p95": 237,
+        "max": 237
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 30,
+        "p50": 30,
+        "p95": 30,
+        "max": 30
+      },
+      "calls": [
+        {
+          "tool": "get_current_time",
+          "arguments_bytes": 30,
+          "returned_bytes": 237,
+          "ms": 4
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.19,
+        "max": 0.19
+      }
+    },
+    {
+      "server": "openapi",
+      "package": "openapi-mcp-server",
+      "declared_bytes": 7832,
+      "tool_count": 2,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "tavily",
+      "package": "tavily-mcp",
+      "declared_bytes": 7739,
+      "tool_count": 5,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    }
+  ]
+}
