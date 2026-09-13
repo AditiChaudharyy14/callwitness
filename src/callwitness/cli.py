@@ -257,6 +257,46 @@ def cmd_contribute(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_baseline(args: argparse.Namespace) -> int:
+    """Emit callwitness.baseline.v1 from what this machine recorded.
+
+    The same document published at callwitness.tech/baseline/v1.json, built
+    from your traffic instead of the census. A tool that reads the public one
+    reads this one unchanged, which is the entire point: a benchmark pointed at
+    this file is calibrated against your servers rather than somebody else's.
+
+    Safe to hand to someone without reading it first. Naming follows the
+    contribute rules -- public packages named, everything else "unlisted" with
+    pseudonymous tool names -- so no path, hostname or private tool name can
+    appear in it.
+    """
+    from . import baseline as bl
+
+    document = bl.build(Path(args.home), since=args.since)
+    blob = json.dumps(document, indent=2) + "\n"
+
+    if not args.out:
+        sys.stdout.write(blob)
+        return 0
+
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(blob, encoding="utf-8")
+
+    sample = document["sample"]
+    returned = document["overall"]["returned_bytes"]
+    print("wrote {} ({:,} bytes)".format(out, len(blob.encode())))
+    print("  servers  {}".format(sample["servers_called"]))
+    print("  calls    {}".format(sample["calls"]))
+    print("  returned p50 {:,}  p95 {:,}  max {:,}".format(
+        returned["p50"], returned["p95"], returned["max"]))
+    if not sample["calls"]:
+        print("")
+        print("Nothing recorded yet, so the distribution is empty. Run a server")
+        print("through the proxy first:  callwitness run -- npx -y <server>")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="callwitness",
@@ -358,6 +398,15 @@ def build_parser() -> argparse.ArgumentParser:
     contribute.add_argument("--yes", action="store_true",
                             help="skip the confirmation prompt")
     contribute.set_defaults(func=cmd_contribute)
+
+    baseline = sub.add_parser(
+        "baseline",
+        help="emit a baseline document from your own recorded traffic")
+    baseline.add_argument("--out",
+                          help="write to this file instead of standard output")
+    baseline.add_argument("--since",
+                          help="only calls after this ISO timestamp")
+    baseline.set_defaults(func=cmd_baseline)
 
     export = sub.add_parser("export", help="dump all calls as JSONL")
     export.add_argument("out")
