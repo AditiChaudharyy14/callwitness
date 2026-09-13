@@ -1,83 +1,182 @@
 {
   "schema": "callwitness.baseline.v1",
-  "generated_at": "2026-09-13T04:03:45Z",
-  "commit": "312f590735a837c356158ed092013a687ceeded6",
+  "generated_at": "2026-09-13T08:36:21Z",
+  "commit": "ce9c268c9a56acac5de8f6720e0f83bb6282e5e3",
   "source": "https://github.com/AditiChaudharyy14/callwitness",
   "raw_data": "https://github.com/AditiChaudharyy14/callwitness/tree/main/census/data",
   "method": "https://callwitness.tech/research",
   "licence": "MIT",
   "stability": "Within callwitness.baseline.v1, fields may be added but existing field names, units (bytes, milliseconds) and meanings will not change. A breaking change becomes v2 at a new path; v1 keeps resolving. The raw census JSONL carries no such promise -- depend on this document, not on that file.",
   "sample": {
-    "servers_started": 29,
-    "servers_called": 16,
-    "tools_declared": 306,
-    "calls": 41
+    "servers_started": 82,
+    "servers_called": 65,
+    "tools_declared": 1070,
+    "calls": 140
   },
-  "caveat": "Delivered sizes come from 41 successful calls across 16 servers, measured on one machine. This is the only published measurement of what MCP servers actually return rather than what they declare, which makes it the best number available and still a small one. Report n alongside any value taken from here.",
+  "caveat": "Delivered sizes come from 140 successful calls across 65 servers, measured on one machine. This is the only published measurement of what MCP servers actually return rather than what they declare, which makes it the best number available and still a small one. Report n alongside any value taken from here.",
   "returned_bytes_all": [
+    77,
+    78,
     88,
+    96,
+    99,
     100,
+    101,
+    102,
+    111,
     111,
     113,
     115,
     118,
     124,
+    127,
     128,
     129,
     129,
+    129,
+    133,
+    135,
     136,
+    137,
     138,
     139,
+    139,
     142,
+    143,
+    153,
     160,
     167,
+    167,
+    169,
+    172,
     173,
+    183,
+    198,
+    204,
+    208,
     213,
     218,
-    237,
+    235,
+    249,
+    253,
+    258,
+    261,
+    261,
     264,
     265,
+    269,
     281,
+    319,
+    319,
+    327,
     332,
     332,
     332,
     332,
     338,
     388,
-    487,
+    389,
+    402,
+    455,
+    509,
+    511,
+    520,
+    544,
+    553,
     558,
+    575,
+    580,
     620,
+    655,
+    665,
+    762,
+    765,
+    840,
+    869,
+    935,
+    951,
+    969,
+    971,
+    1035,
+    1262,
+    1275,
+    1378,
+    1570,
+    1627,
+    1777,
+    1857,
+    1939,
+    1957,
+    2057,
+    2229,
     2329,
+    2562,
+    2578,
+    2610,
+    2610,
+    2727,
+    2863,
+    2923,
+    3284,
     3398,
-    4161,
+    3734,
+    3917,
+    4004,
+    4040,
+    4114,
+    4739,
+    5036,
+    5414,
     5595,
-    7999,
-    9503,
-    25039,
-    334987,
-    701216
+    5678,
+    5980,
+    6518,
+    6860,
+    7125,
+    7593,
+    7768,
+    7900,
+    9243,
+    9328,
+    9509,
+    10126,
+    11513,
+    12886,
+    13581,
+    13703,
+    20724,
+    21066,
+    25155,
+    35695,
+    35788,
+    39857,
+    62401,
+    97097,
+    130648,
+    192522,
+    495671
   ],
   "overall": {
     "returned_bytes": {
-      "n": 41,
-      "min": 88,
-      "p50": 264,
-      "p95": 25039,
-      "max": 701216
+      "n": 140,
+      "min": 77,
+      "p50": 580,
+      "p95": 35695,
+      "max": 495671
     },
     "argument_bytes": {
-      "n": 41,
+      "n": 140,
       "min": 2,
-      "p50": 13,
-      "p95": 64,
-      "max": 99
+      "p50": 2,
+      "p95": 54,
+      "max": 118
     },
     "declared_bytes": {
-      "n": 29,
+      "n": 82,
       "min": 176,
-      "p50": 5955,
-      "p95": 59905,
-      "max": 76260
+      "p50": 4716,
+      "p95": 63050,
+      "max": 144742
     }
   },
   "servers": [
@@ -105,13 +204,13 @@
           "tool": "getConsoleLogs",
           "arguments_bytes": 2,
           "returned_bytes": 332,
-          "ms": 6
+          "ms": 7
         },
         {
           "tool": "getConsoleErrors",
           "arguments_bytes": 2,
           "returned_bytes": 332,
-          "ms": 2
+          "ms": 4
         },
         {
           "tool": "listBrowserTabs",
@@ -123,37 +222,37 @@
           "tool": "getNetworkLogs",
           "arguments_bytes": 2,
           "returned_bytes": 332,
-          "ms": 1
+          "ms": 2
         },
         {
           "tool": "getNetworkErrors",
           "arguments_bytes": 2,
           "returned_bytes": 332,
-          "ms": 4
+          "ms": 2
         },
         {
           "tool": "getSelectedElement",
           "arguments_bytes": 2,
           "returned_bytes": 138,
-          "ms": 2
+          "ms": 1
         },
         {
           "tool": "getPageInfo",
           "arguments_bytes": 2,
           "returned_bytes": 265,
-          "ms": 1
+          "ms": 2
         },
         {
           "tool": "getConnectionStatus",
           "arguments_bytes": 2,
           "returned_bytes": 558,
-          "ms": 2
+          "ms": 4
         },
         {
           "tool": "wipeLogs",
           "arguments_bytes": 2,
           "returned_bytes": 128,
-          "ms": 0
+          "ms": 1
         }
       ],
       "returned_over_declared": {
@@ -206,7 +305,7 @@
           "tool": "playwright_console_logs",
           "arguments_bytes": 2,
           "returned_bytes": 129,
-          "ms": 6
+          "ms": 10
         }
       ],
       "returned_over_declared": {
@@ -238,18 +337,126 @@
           "tool": "list-components",
           "arguments_bytes": 2,
           "returned_bytes": 2329,
-          "ms": 1615
+          "ms": 2274
         },
         {
           "tool": "list-blocks",
           "arguments_bytes": 2,
           "returned_bytes": 3398,
-          "ms": 1134
+          "ms": 1173
         }
       ],
       "returned_over_declared": {
         "p50": 1.43,
         "max": 2.09
+      }
+    },
+    {
+      "server": "shadcn-jpisnice",
+      "package": "@jpisnice/shadcn-ui-mcp-server",
+      "declared_bytes": 3093,
+      "tool_count": 10,
+      "returned_bytes": {
+        "n": 3,
+        "min": 1275,
+        "p50": 3917,
+        "p95": 192522,
+        "max": 192522
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list_components",
+          "arguments_bytes": 2,
+          "returned_bytes": 1275,
+          "ms": 702
+        },
+        {
+          "tool": "get_directory_structure",
+          "arguments_bytes": 2,
+          "returned_bytes": 192522,
+          "ms": 20509
+        },
+        {
+          "tool": "list_themes",
+          "arguments_bytes": 2,
+          "returned_bytes": 3917,
+          "ms": 591
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 1.27,
+        "max": 62.24
+      }
+    },
+    {
+      "server": "knip",
+      "package": "@knip/mcp",
+      "declared_bytes": 3604,
+      "tool_count": 2,
+      "returned_bytes": {
+        "n": 1,
+        "min": 2727,
+        "p50": 2727,
+        "p95": 2727,
+        "max": 2727
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 26,
+        "p50": 26,
+        "p95": 26,
+        "max": 26
+      },
+      "calls": [
+        {
+          "tool": "knip-docs",
+          "arguments_bytes": 26,
+          "returned_bytes": 2727,
+          "ms": 7
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.76,
+        "max": 0.76
+      }
+    },
+    {
+      "server": "mantine",
+      "package": "@mantine/mcp-server",
+      "declared_bytes": 1272,
+      "tool_count": 4,
+      "returned_bytes": {
+        "n": 1,
+        "min": 78,
+        "p50": 78,
+        "p95": 78,
+        "max": 78
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 16,
+        "p50": 16,
+        "p95": 16,
+        "max": 16
+      },
+      "calls": [
+        {
+          "tool": "list_items",
+          "arguments_bytes": 16,
+          "returned_bytes": 78,
+          "ms": 1252
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.06,
+        "max": 0.06
       }
     },
     {
@@ -282,8 +489,8 @@
         "n": 8,
         "min": 88,
         "p50": 388,
-        "p95": 9503,
-        "max": 9503
+        "p95": 9509,
+        "max": 9509
       },
       "argument_bytes": {
         "n": 8,
@@ -297,54 +504,54 @@
           "tool": "echo",
           "arguments_bytes": 21,
           "returned_bytes": 88,
-          "ms": 3
+          "ms": 9
         },
         {
           "tool": "get-annotated-message",
           "arguments_bytes": 24,
           "returned_bytes": 160,
-          "ms": 1
+          "ms": 3
         },
         {
           "tool": "get-env",
           "arguments_bytes": 2,
-          "returned_bytes": 9503,
-          "ms": 11
+          "returned_bytes": 9509,
+          "ms": 57
         },
         {
           "tool": "get-resource-links",
           "arguments_bytes": 2,
           "returned_bytes": 620,
-          "ms": 26
+          "ms": 119
         },
         {
           "tool": "get-resource-reference",
           "arguments_bytes": 2,
           "returned_bytes": 388,
-          "ms": 3
+          "ms": 5
         },
         {
           "tool": "get-structured-content",
           "arguments_bytes": 24,
           "returned_bytes": 213,
-          "ms": 0
+          "ms": 2
         },
         {
           "tool": "get-sum",
           "arguments_bytes": 16,
           "returned_bytes": 100,
-          "ms": 1
+          "ms": 2
         },
         {
           "tool": "get-tiny-image",
           "arguments_bytes": 2,
           "returned_bytes": 5595,
-          "ms": 9
+          "ms": 31
         }
       ],
       "returned_over_declared": {
         "p50": 0.05,
-        "max": 1.23
+        "max": 1.24
       }
     },
     {
@@ -353,36 +560,42 @@
       "declared_bytes": 13018,
       "tool_count": 14,
       "returned_bytes": {
-        "n": 1,
-        "min": 334987,
-        "p50": 334987,
-        "p95": 334987,
-        "max": 334987
+        "n": 3,
+        "min": 249,
+        "p50": 553,
+        "p95": 97097,
+        "max": 97097
       },
       "argument_bytes": {
-        "n": 1,
-        "min": 38,
-        "p50": 38,
-        "p95": 38,
-        "max": 38
+        "n": 3,
+        "min": 2,
+        "p50": 59,
+        "p95": 59,
+        "max": 59
       },
       "calls": [
         {
           "tool": "list_directory",
-          "arguments_bytes": 38,
-          "returned_bytes": 334987,
-          "ms": 535
+          "arguments_bytes": 59,
+          "returned_bytes": 553,
+          "ms": 7
         },
         {
           "tool": "directory_tree",
-          "arguments_bytes": null,
-          "returned_bytes": null,
-          "ms": 60011
+          "arguments_bytes": 59,
+          "returned_bytes": 97097,
+          "ms": 291
+        },
+        {
+          "tool": "list_allowed_directories",
+          "arguments_bytes": 2,
+          "returned_bytes": 249,
+          "ms": 2
         }
       ],
       "returned_over_declared": {
-        "p50": 25.73,
-        "max": 25.73
+        "p50": 0.04,
+        "max": 7.46
       }
     },
     {
@@ -430,13 +643,13 @@
           "tool": "read_graph",
           "arguments_bytes": 2,
           "returned_bytes": 173,
-          "ms": 17
+          "ms": 14
         },
         {
           "tool": "add_observations",
           "arguments_bytes": 20,
           "returned_bytes": 113,
-          "ms": 25
+          "ms": 46
         }
       ],
       "returned_over_declared": {
@@ -489,7 +702,7 @@
           "tool": "sequentialthinking",
           "arguments_bytes": 99,
           "returned_bytes": 338,
-          "ms": 7
+          "ms": 9
         }
       ],
       "returned_over_declared": {
@@ -542,24 +755,182 @@
           "tool": "browser_console_messages",
           "arguments_bytes": 18,
           "returned_bytes": 167,
-          "ms": 2569
+          "ms": 4334
         },
         {
           "tool": "browser_snapshot",
           "arguments_bytes": 2,
           "returned_bytes": 139,
-          "ms": 94
+          "ms": 86
         },
         {
           "tool": "browser_tabs",
           "arguments_bytes": 18,
           "returned_bytes": 118,
-          "ms": 24
+          "ms": 17
         }
       ],
       "returned_over_declared": {
         "p50": 0.01,
         "max": 0.01
+      }
+    },
+    {
+      "server": "primeng",
+      "package": "@primeng/mcp",
+      "declared_bytes": 8384,
+      "tool_count": 8,
+      "returned_bytes": {
+        "n": 3,
+        "min": 1035,
+        "p50": 2863,
+        "p95": 13581,
+        "max": 13581
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list",
+          "arguments_bytes": 2,
+          "returned_bytes": 13581,
+          "ms": 21
+        },
+        {
+          "tool": "version",
+          "arguments_bytes": 2,
+          "returned_bytes": 1035,
+          "ms": 4
+        },
+        {
+          "tool": "get_setup",
+          "arguments_bytes": 2,
+          "returned_bytes": 2863,
+          "ms": 6
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.34,
+        "max": 1.62
+      }
+    },
+    {
+      "server": "primevue",
+      "package": "@primevue/mcp",
+      "declared_bytes": 8384,
+      "tool_count": 8,
+      "returned_bytes": {
+        "n": 3,
+        "min": 520,
+        "p50": 1570,
+        "p95": 12886,
+        "max": 12886
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list",
+          "arguments_bytes": 2,
+          "returned_bytes": 12886,
+          "ms": 20
+        },
+        {
+          "tool": "version",
+          "arguments_bytes": 2,
+          "returned_bytes": 1570,
+          "ms": 3
+        },
+        {
+          "tool": "get_setup",
+          "arguments_bytes": 2,
+          "returned_bytes": 520,
+          "ms": 5
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.19,
+        "max": 1.54
+      }
+    },
+    {
+      "server": "react-spectrum",
+      "package": "@react-spectrum/mcp",
+      "declared_bytes": 4136,
+      "tool_count": 9,
+      "returned_bytes": {
+        "n": 2,
+        "min": 4739,
+        "p50": 4739,
+        "p95": 9243,
+        "max": 9243
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list_s2_pages",
+          "arguments_bytes": 2,
+          "returned_bytes": 4739,
+          "ms": 16
+        },
+        {
+          "tool": "list_react_aria_pages",
+          "arguments_bytes": 2,
+          "returned_bytes": 9243,
+          "ms": 24
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 1.15,
+        "max": 2.23
+      }
+    },
+    {
+      "server": "youtube-transcript",
+      "package": "@sinco-lab/mcp-youtube-transcript",
+      "declared_bytes": 3911,
+      "tool_count": 5,
+      "returned_bytes": {
+        "n": 1,
+        "min": 1627,
+        "p50": 1627,
+        "p95": 1627,
+        "max": 1627
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 54,
+        "p50": 54,
+        "p95": 54,
+        "max": 54
+      },
+      "calls": [
+        {
+          "tool": "get_video_info",
+          "arguments_bytes": 54,
+          "returned_bytes": 1627,
+          "ms": 1384
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.42,
+        "max": 0.42
       }
     },
     {
@@ -584,6 +955,152 @@
       "calls": []
     },
     {
+      "server": "calculator-wrtn",
+      "package": "@wrtnlabs/calculator-mcp",
+      "declared_bytes": 1482,
+      "tool_count": 6,
+      "returned_bytes": {
+        "n": 1,
+        "min": 99,
+        "p50": 99,
+        "p95": 99,
+        "max": 99
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 16,
+        "p50": 16,
+        "p95": 16,
+        "max": 16
+      },
+      "calls": [
+        {
+          "tool": "add",
+          "arguments_bytes": 16,
+          "returned_bytes": 99,
+          "ms": 0
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.07,
+        "max": 0.07
+      }
+    },
+    {
+      "server": "arxiv",
+      "package": "arxiv-mcp-server",
+      "declared_bytes": 17748,
+      "tool_count": 19,
+      "returned_bytes": {
+        "n": 4,
+        "min": 139,
+        "p50": 169,
+        "p95": 1957,
+        "max": 1957
+      },
+      "argument_bytes": {
+        "n": 4,
+        "min": 2,
+        "p50": 2,
+        "p95": 42,
+        "max": 42
+      },
+      "calls": [
+        {
+          "tool": "search_papers",
+          "arguments_bytes": 42,
+          "returned_bytes": 1957,
+          "ms": 53881
+        },
+        {
+          "tool": "list_papers",
+          "arguments_bytes": 2,
+          "returned_bytes": 139,
+          "ms": 117
+        },
+        {
+          "tool": "check_alerts",
+          "arguments_bytes": 2,
+          "returned_bytes": 169,
+          "ms": 11
+        },
+        {
+          "tool": "list_watches",
+          "arguments_bytes": 2,
+          "returned_bytes": 167,
+          "ms": 95
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.01,
+        "max": 0.11
+      }
+    },
+    {
+      "server": "astronomy",
+      "package": "astronomy-mcp",
+      "declared_bytes": 7261,
+      "tool_count": 9,
+      "returned_bytes": {
+        "n": 1,
+        "min": 319,
+        "p50": 319,
+        "p95": 319,
+        "max": 319
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 32,
+        "p50": 32,
+        "p95": 32,
+        "max": 32
+      },
+      "calls": [
+        {
+          "tool": "cone_search",
+          "arguments_bytes": 32,
+          "returned_bytes": 319,
+          "ms": 5
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.04,
+        "max": 0.04
+      }
+    },
+    {
+      "server": "calculator-min",
+      "package": "calculator-mcp-server",
+      "declared_bytes": 294,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 77,
+        "p50": 77,
+        "p95": 77,
+        "max": 77
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 16,
+        "p50": 16,
+        "p95": 16,
+        "max": 16
+      },
+      "calls": [
+        {
+          "tool": "add",
+          "arguments_bytes": 16,
+          "returned_bytes": 77,
+          "ms": 2
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.26,
+        "max": 0.26
+      }
+    },
+    {
       "server": "chrome-devtools",
       "package": "chrome-devtools-mcp",
       "declared_bytes": 26063,
@@ -592,8 +1109,8 @@
         "n": 6,
         "min": 111,
         "p50": 124,
-        "p95": 25039,
-        "max": 25039
+        "p95": 25155,
+        "max": 25155
       },
       "argument_bytes": {
         "n": 6,
@@ -607,42 +1124,192 @@
           "tool": "get_network_request",
           "arguments_bytes": 13,
           "returned_bytes": 136,
-          "ms": 58
+          "ms": 40
         },
         {
           "tool": "list_console_messages",
           "arguments_bytes": 13,
           "returned_bytes": 124,
-          "ms": 12
+          "ms": 8
         },
         {
           "tool": "list_network_requests",
           "arguments_bytes": 13,
           "returned_bytes": 115,
-          "ms": 13
+          "ms": 8
         },
         {
           "tool": "list_pages",
           "arguments_bytes": 2,
           "returned_bytes": 111,
-          "ms": 26
+          "ms": 30
         },
         {
           "tool": "take_screenshot",
           "arguments_bytes": 13,
-          "returned_bytes": 25039,
-          "ms": 3564
+          "returned_bytes": 25155,
+          "ms": 2188
         },
         {
           "tool": "take_snapshot",
           "arguments_bytes": 13,
           "returned_bytes": 142,
-          "ms": 96
+          "ms": 143
         }
       ],
       "returned_over_declared": {
         "p50": 0.0,
-        "max": 0.96
+        "max": 0.97
+      }
+    },
+    {
+      "server": "code-index",
+      "package": "code-index-mcp",
+      "declared_bytes": 8511,
+      "tool_count": 14,
+      "returned_bytes": {
+        "n": 4,
+        "min": 253,
+        "p50": 869,
+        "p95": 1262,
+        "max": 1262
+      },
+      "argument_bytes": {
+        "n": 4,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "get_settings_info",
+          "arguments_bytes": 2,
+          "returned_bytes": 762,
+          "ms": 7
+        },
+        {
+          "tool": "check_temp_directory",
+          "arguments_bytes": 2,
+          "returned_bytes": 869,
+          "ms": 4
+        },
+        {
+          "tool": "refresh_search_tools",
+          "arguments_bytes": 2,
+          "returned_bytes": 253,
+          "ms": 15
+        },
+        {
+          "tool": "get_file_watcher_status",
+          "arguments_bytes": 2,
+          "returned_bytes": 1262,
+          "ms": 4
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.1,
+        "max": 0.15
+      }
+    },
+    {
+      "server": "crossref",
+      "package": "crossref-mcp",
+      "declared_bytes": 10819,
+      "tool_count": 18,
+      "returned_bytes": {
+        "n": 7,
+        "min": 183,
+        "p50": 3734,
+        "p95": 9328,
+        "max": 9328
+      },
+      "argument_bytes": {
+        "n": 7,
+        "min": 2,
+        "p50": 2,
+        "p95": 38,
+        "max": 38
+      },
+      "calls": [
+        {
+          "tool": "ping",
+          "arguments_bytes": 2,
+          "returned_bytes": 183,
+          "ms": 12
+        },
+        {
+          "tool": "search_works",
+          "arguments_bytes": 38,
+          "returned_bytes": 9328,
+          "ms": 9046
+        },
+        {
+          "tool": "search_members",
+          "arguments_bytes": 2,
+          "returned_bytes": 3734,
+          "ms": 1011
+        },
+        {
+          "tool": "search_journals",
+          "arguments_bytes": 2,
+          "returned_bytes": 4114,
+          "ms": 550
+        },
+        {
+          "tool": "search_funders",
+          "arguments_bytes": 2,
+          "returned_bytes": 4004,
+          "ms": 288
+        },
+        {
+          "tool": "list_types",
+          "arguments_bytes": 2,
+          "returned_bytes": 2610,
+          "ms": 254
+        },
+        {
+          "tool": "list_licenses",
+          "arguments_bytes": 2,
+          "returned_bytes": 2229,
+          "ms": 4147
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.35,
+        "max": 0.86
+      }
+    },
+    {
+      "server": "dictionary",
+      "package": "dictionary-mcp-server",
+      "declared_bytes": 7233,
+      "tool_count": 15,
+      "returned_bytes": {
+        "n": 1,
+        "min": 969,
+        "p50": 969,
+        "p95": 969,
+        "max": 969
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "tool_get_server_info",
+          "arguments_bytes": 2,
+          "returned_bytes": 969,
+          "ms": 10
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.13,
+        "max": 0.13
       }
     },
     {
@@ -652,10 +1319,10 @@
       "tool_count": 3,
       "returned_bytes": {
         "n": 1,
-        "min": 7999,
-        "p50": 7999,
-        "p95": 7999,
-        "max": 7999
+        "min": 7593,
+        "p50": 7593,
+        "p95": 7593,
+        "max": 7593
       },
       "argument_bytes": {
         "n": 1,
@@ -668,13 +1335,13 @@
         {
           "tool": "search",
           "arguments_bytes": 35,
-          "returned_bytes": 7999,
-          "ms": 1704
+          "returned_bytes": 7593,
+          "ms": 1441
         }
       ],
       "returned_over_declared": {
-        "p50": 1.73,
-        "max": 1.73
+        "p50": 1.64,
+        "max": 1.64
       }
     },
     {
@@ -699,6 +1366,38 @@
       "calls": []
     },
     {
+      "server": "feed",
+      "package": "feed-mcp",
+      "declared_bytes": 3331,
+      "tool_count": 9,
+      "returned_bytes": {
+        "n": 1,
+        "min": 319,
+        "p50": 319,
+        "p95": 319,
+        "max": 319
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list_feeds",
+          "arguments_bytes": 2,
+          "returned_bytes": 319,
+          "ms": 2
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.1,
+        "max": 0.1
+      }
+    },
+    {
       "server": "firecrawl",
       "package": "firecrawl-mcp",
       "declared_bytes": 36357,
@@ -718,6 +1417,97 @@
         "max": 0
       },
       "calls": []
+    },
+    {
+      "server": "geocode",
+      "package": "geocode-mcp",
+      "declared_bytes": 497,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 655,
+        "p50": 655,
+        "p95": 655,
+        "max": 655
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 29,
+        "p50": 29,
+        "p95": 29,
+        "max": 29
+      },
+      "calls": [
+        {
+          "tool": "get_coordinates",
+          "arguments_bytes": 29,
+          "returned_bytes": 655,
+          "ms": 880
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 1.32,
+        "max": 1.32
+      }
+    },
+    {
+      "server": "holidays",
+      "package": "holidays-mcp",
+      "declared_bytes": 1917,
+      "tool_count": 2,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
+      "server": "kegg",
+      "package": "kegg-mcp-server",
+      "declared_bytes": 108536,
+      "tool_count": 34,
+      "returned_bytes": {
+        "n": 2,
+        "min": 575,
+        "p50": 575,
+        "p95": 2057,
+        "max": 2057
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list_organisms",
+          "arguments_bytes": 2,
+          "returned_bytes": 575,
+          "ms": 1908
+        },
+        {
+          "tool": "get_database_info",
+          "arguments_bytes": 2,
+          "returned_bytes": 2057,
+          "ms": 817
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.01,
+        "max": 0.02
+      }
     },
     {
       "server": "markitdown",
@@ -743,7 +1533,7 @@
           "tool": "convert_to_markdown",
           "arguments_bytes": 30,
           "returned_bytes": 264,
-          "ms": 398
+          "ms": 828
         }
       ],
       "returned_over_declared": {
@@ -752,16 +1542,341 @@
       }
     },
     {
+      "server": "math-npm",
+      "package": "math-mcp",
+      "declared_bytes": 1409,
+      "tool_count": 6,
+      "returned_bytes": {
+        "n": 2,
+        "min": 96,
+        "p50": 96,
+        "p95": 153,
+        "max": 153
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 23,
+        "max": 23
+      },
+      "calls": [
+        {
+          "tool": "evaluate",
+          "arguments_bytes": 23,
+          "returned_bytes": 153,
+          "ms": 5
+        },
+        {
+          "tool": "list_variables",
+          "arguments_bytes": 2,
+          "returned_bytes": 96,
+          "ms": 4
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.07,
+        "max": 0.11
+      }
+    },
+    {
+      "server": "abacus",
+      "package": "mcp-abacus",
+      "declared_bytes": 33318,
+      "tool_count": 6,
+      "returned_bytes": {
+        "n": 3,
+        "min": 258,
+        "p50": 511,
+        "p95": 935,
+        "max": 935
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 20,
+        "p95": 24,
+        "max": 24
+      },
+      "calls": [
+        {
+          "tool": "calculate",
+          "arguments_bytes": 24,
+          "returned_bytes": 511,
+          "ms": 12
+        },
+        {
+          "tool": "info",
+          "arguments_bytes": 2,
+          "returned_bytes": 258,
+          "ms": 11
+        },
+        {
+          "tool": "help",
+          "arguments_bytes": 20,
+          "returned_bytes": 935,
+          "ms": 17
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.02,
+        "max": 0.03
+      }
+    },
+    {
+      "server": "ast-explorer",
+      "package": "mcp-ast-explorer",
+      "declared_bytes": 4570,
+      "tool_count": 6,
+      "returned_bytes": {
+        "n": 1,
+        "min": 172,
+        "p50": 172,
+        "p95": 172,
+        "max": 172
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "health",
+          "arguments_bytes": 2,
+          "returned_bytes": 172,
+          "ms": 14
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.04,
+        "max": 0.04
+      }
+    },
+    {
+      "server": "chess",
+      "package": "mcp-chess",
+      "declared_bytes": 3070,
+      "tool_count": 6,
+      "returned_bytes": {
+        "n": 3,
+        "min": 137,
+        "p50": 840,
+        "p95": 39857,
+        "max": 39857
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "get_board_visualization",
+          "arguments_bytes": 2,
+          "returned_bytes": 39857,
+          "ms": 384
+        },
+        {
+          "tool": "get_valid_moves",
+          "arguments_bytes": 2,
+          "returned_bytes": 840,
+          "ms": 6
+        },
+        {
+          "tool": "get_turn",
+          "arguments_bytes": 2,
+          "returned_bytes": 137,
+          "ms": 3
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.27,
+        "max": 12.98
+      }
+    },
+    {
+      "server": "currency",
+      "package": "mcp-currency",
+      "declared_bytes": 1228,
+      "tool_count": 3,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
       "server": "deepwiki",
       "package": "mcp-deepwiki",
       "declared_bytes": 774,
       "tool_count": 1,
       "returned_bytes": {
         "n": 1,
-        "min": 701216,
-        "p50": 701216,
-        "p95": 701216,
-        "max": 701216
+        "min": 62401,
+        "p50": 62401,
+        "p95": 62401,
+        "max": 62401
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 40,
+        "p50": 40,
+        "p95": 40,
+        "max": 40
+      },
+      "calls": [
+        {
+          "tool": "deepwiki_fetch",
+          "arguments_bytes": 40,
+          "returned_bytes": 62401,
+          "ms": 2329
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 80.62,
+        "max": 80.62
+      }
+    },
+    {
+      "server": "dice",
+      "package": "mcp-dice",
+      "declared_bytes": 335,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 261,
+        "p50": 261,
+        "p95": 261,
+        "max": 261
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 19,
+        "p50": 19,
+        "p95": 19,
+        "max": 19
+      },
+      "calls": [
+        {
+          "tool": "roll_dice",
+          "arguments_bytes": 19,
+          "returned_bytes": 261,
+          "ms": 8
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.78,
+        "max": 0.78
+      }
+    },
+    {
+      "server": "geo",
+      "package": "mcp-geo",
+      "declared_bytes": 18296,
+      "tool_count": 44,
+      "returned_bytes": {
+        "n": 3,
+        "min": 111,
+        "p50": 133,
+        "p95": 11513,
+        "max": 11513
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 2,
+        "p95": 118,
+        "max": 118
+      },
+      "calls": [
+        {
+          "tool": "distance",
+          "arguments_bytes": 118,
+          "returned_bytes": 111,
+          "ms": 5
+        },
+        {
+          "tool": "workspace_list",
+          "arguments_bytes": 2,
+          "returned_bytes": 133,
+          "ms": 1
+        },
+        {
+          "tool": "list_all_tools",
+          "arguments_bytes": 2,
+          "returned_bytes": 11513,
+          "ms": 15
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.01,
+        "max": 0.63
+      }
+    },
+    {
+      "server": "gnu-units",
+      "package": "mcp-gnu-units",
+      "declared_bytes": 10209,
+      "tool_count": 6,
+      "returned_bytes": {
+        "n": 2,
+        "min": 389,
+        "p50": 389,
+        "p95": 10126,
+        "max": 10126
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "info",
+          "arguments_bytes": 2,
+          "returned_bytes": 389,
+          "ms": 14
+        },
+        {
+          "tool": "list_prefixes",
+          "arguments_bytes": 2,
+          "returned_bytes": 10126,
+          "ms": 362
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.04,
+        "max": 0.99
+      }
+    },
+    {
+      "server": "hackernews",
+      "package": "mcp-hn",
+      "declared_bytes": 1665,
+      "tool_count": 4,
+      "returned_bytes": {
+        "n": 1,
+        "min": 951,
+        "p50": 951,
+        "p95": 951,
+        "max": 951
       },
       "argument_bytes": {
         "n": 1,
@@ -772,16 +1887,145 @@
       },
       "calls": [
         {
-          "tool": "deepwiki_fetch",
+          "tool": "get_stories",
           "arguments_bytes": 39,
-          "returned_bytes": 701216,
-          "ms": 11265
+          "returned_bytes": 951,
+          "ms": 992
         }
       ],
       "returned_over_declared": {
-        "p50": 905.96,
-        "max": 905.96
+        "p50": 0.57,
+        "max": 0.57
       }
+    },
+    {
+      "server": "molecules",
+      "package": "mcp-molecules",
+      "declared_bytes": 6894,
+      "tool_count": 4,
+      "returned_bytes": {
+        "n": 2,
+        "min": 261,
+        "p50": 261,
+        "p95": 765,
+        "max": 765
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 18,
+        "max": 18
+      },
+      "calls": [
+        {
+          "tool": "molecular_weight_calculator",
+          "arguments_bytes": 18,
+          "returned_bytes": 765,
+          "ms": 99
+        },
+        {
+          "tool": "info",
+          "arguments_bytes": 2,
+          "returned_bytes": 261,
+          "ms": 4
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.04,
+        "max": 0.11
+      }
+    },
+    {
+      "server": "nixos",
+      "package": "mcp-nixos",
+      "declared_bytes": 6788,
+      "tool_count": 2,
+      "returned_bytes": {
+        "n": 1,
+        "min": 3284,
+        "p50": 3284,
+        "p95": 3284,
+        "max": 3284
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 18,
+        "p50": 18,
+        "p95": 18,
+        "max": 18
+      },
+      "calls": [
+        {
+          "tool": "nix_versions",
+          "arguments_bytes": 18,
+          "returned_bytes": 3284,
+          "ms": 983
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.48,
+        "max": 0.48
+      }
+    },
+    {
+      "server": "numpy",
+      "package": "mcp-numpy",
+      "declared_bytes": 38388,
+      "tool_count": 72,
+      "returned_bytes": {
+        "n": 2,
+        "min": 143,
+        "p50": 143,
+        "p95": 208,
+        "max": 208
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 18,
+        "p50": 18,
+        "p95": 23,
+        "max": 23
+      },
+      "calls": [
+        {
+          "tool": "np_arange",
+          "arguments_bytes": 23,
+          "returned_bytes": 208,
+          "ms": 19
+        },
+        {
+          "tool": "np_add",
+          "arguments_bytes": 18,
+          "returned_bytes": 143,
+          "ms": 4
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.0,
+        "max": 0.01
+      }
+    },
+    {
+      "server": "pandoc",
+      "package": "mcp-pandoc",
+      "declared_bytes": 6074,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
     },
     {
       "server": "calculator",
@@ -807,7 +2051,7 @@
           "tool": "calculate",
           "arguments_bytes": 21,
           "returned_bytes": 129,
-          "ms": 7
+          "ms": 5
         }
       ],
       "returned_over_declared": {
@@ -881,12 +2125,44 @@
           "tool": "fetch",
           "arguments_bytes": 30,
           "returned_bytes": 281,
-          "ms": 717
+          "ms": 2198
         }
       ],
       "returned_over_declared": {
         "p50": 0.24,
         "max": 0.24
+      }
+    },
+    {
+      "server": "fetch-python",
+      "package": "mcp-server-fetch-python",
+      "declared_bytes": 1906,
+      "tool_count": 4,
+      "returned_bytes": {
+        "n": 1,
+        "min": 665,
+        "p50": 665,
+        "p95": 665,
+        "max": 665
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 30,
+        "p50": 30,
+        "p95": 30,
+        "max": 30
+      },
+      "calls": [
+        {
+          "tool": "get-raw-text",
+          "arguments_bytes": 30,
+          "returned_bytes": 665,
+          "ms": 584
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.35,
+        "max": 0.35
       }
     },
     {
@@ -896,10 +2172,10 @@
       "tool_count": 12,
       "returned_bytes": {
         "n": 2,
-        "min": 487,
-        "p50": 487,
-        "p95": 4161,
-        "max": 4161
+        "min": 455,
+        "p50": 455,
+        "p95": 5414,
+        "max": 5414
       },
       "argument_bytes": {
         "n": 2,
@@ -912,19 +2188,19 @@
         {
           "tool": "git_status",
           "arguments_bytes": 64,
-          "returned_bytes": 487,
-          "ms": 440
+          "returned_bytes": 455,
+          "ms": 508
         },
         {
           "tool": "git_log",
           "arguments_bytes": 64,
-          "returned_bytes": 4161,
-          "ms": 1381
+          "returned_bytes": 5414,
+          "ms": 1624
         }
       ],
       "returned_over_declared": {
         "p50": 0.08,
-        "max": 0.7
+        "max": 0.91
       }
     },
     {
@@ -949,16 +2225,69 @@
       "calls": []
     },
     {
+      "server": "math",
+      "package": "mcp-server-math",
+      "declared_bytes": 4192,
+      "tool_count": 16,
+      "returned_bytes": {
+        "n": 1,
+        "min": 204,
+        "p50": 204,
+        "p95": 204,
+        "max": 204
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 22,
+        "p50": 22,
+        "p95": 22,
+        "max": 22
+      },
+      "calls": [
+        {
+          "tool": "average",
+          "arguments_bytes": 22,
+          "returned_bytes": 204,
+          "ms": 5
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.05,
+        "max": 0.05
+      }
+    },
+    {
+      "server": "rss",
+      "package": "mcp-server-rss",
+      "declared_bytes": 2083,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "argument_bytes": {
+        "n": 0,
+        "min": 0,
+        "p50": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": []
+    },
+    {
       "server": "time",
       "package": "mcp-server-time",
       "declared_bytes": 1263,
       "tool_count": 2,
       "returned_bytes": {
         "n": 1,
-        "min": 237,
-        "p50": 237,
-        "p95": 237,
-        "max": 237
+        "min": 235,
+        "p50": 235,
+        "p95": 235,
+        "max": 235
       },
       "argument_bytes": {
         "n": 1,
@@ -971,13 +2300,283 @@
         {
           "tool": "get_current_time",
           "arguments_bytes": 30,
-          "returned_bytes": 237,
-          "ms": 4
+          "returned_bytes": 235,
+          "ms": 5
         }
       ],
       "returned_over_declared": {
         "p50": 0.19,
         "max": 0.19
+      }
+    },
+    {
+      "server": "tree-sitter",
+      "package": "mcp-server-tree-sitter",
+      "declared_bytes": 20819,
+      "tool_count": 26,
+      "returned_bytes": {
+        "n": 3,
+        "min": 102,
+        "p50": 971,
+        "p95": 35695,
+        "max": 35695
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list_languages",
+          "arguments_bytes": 2,
+          "returned_bytes": 971,
+          "ms": 15
+        },
+        {
+          "tool": "list_query_templates_tool",
+          "arguments_bytes": 2,
+          "returned_bytes": 35695,
+          "ms": 165
+        },
+        {
+          "tool": "list_projects_tool",
+          "arguments_bytes": 2,
+          "returned_bytes": 102,
+          "ms": 14
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.05,
+        "max": 1.71
+      }
+    },
+    {
+      "server": "sympy",
+      "package": "mcp-sympy",
+      "declared_bytes": 63050,
+      "tool_count": 171,
+      "returned_bytes": {
+        "n": 1,
+        "min": 198,
+        "p50": 198,
+        "p95": 198,
+        "max": 198
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 18,
+        "p50": 18,
+        "p95": 18,
+        "max": 18
+      },
+      "calls": [
+        {
+          "tool": "sympy_factor",
+          "arguments_bytes": 18,
+          "returned_bytes": 198,
+          "ms": 287
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.0,
+        "max": 0.0
+      }
+    },
+    {
+      "server": "trends-hub",
+      "package": "mcp-trends-hub",
+      "declared_bytes": 12160,
+      "tool_count": 21,
+      "returned_bytes": {
+        "n": 11,
+        "min": 509,
+        "p50": 7900,
+        "p95": 130648,
+        "max": 130648
+      },
+      "argument_bytes": {
+        "n": 11,
+        "min": 2,
+        "p50": 2,
+        "p95": 47,
+        "max": 47
+      },
+      "calls": [
+        {
+          "tool": "get_bbc_news",
+          "arguments_bytes": 2,
+          "returned_bytes": 13703,
+          "ms": 622
+        },
+        {
+          "tool": "get_9to5mac_news",
+          "arguments_bytes": 2,
+          "returned_bytes": 130648,
+          "ms": 633
+        },
+        {
+          "tool": "get_douyin_trending",
+          "arguments_bytes": 2,
+          "returned_bytes": 20724,
+          "ms": 1233
+        },
+        {
+          "tool": "get_ifanr_news",
+          "arguments_bytes": 25,
+          "returned_bytes": 6860,
+          "ms": 1830
+        },
+        {
+          "tool": "get_infoq_news",
+          "arguments_bytes": 16,
+          "returned_bytes": 6518,
+          "ms": 2034
+        },
+        {
+          "tool": "get_netease_news_trending",
+          "arguments_bytes": 2,
+          "returned_bytes": 35788,
+          "ms": 2886
+        },
+        {
+          "tool": "get_sspai_rank",
+          "arguments_bytes": 47,
+          "returned_bytes": 509,
+          "ms": 1431
+        },
+        {
+          "tool": "get_tencent_news_trending",
+          "arguments_bytes": 16,
+          "returned_bytes": 1378,
+          "ms": 525
+        },
+        {
+          "tool": "get_thepaper_trending",
+          "arguments_bytes": 2,
+          "returned_bytes": 7900,
+          "ms": 1104
+        },
+        {
+          "tool": "get_theverge_news",
+          "arguments_bytes": 2,
+          "returned_bytes": 5678,
+          "ms": 270
+        },
+        {
+          "tool": "get_toutiao_trending",
+          "arguments_bytes": 2,
+          "returned_bytes": 21066,
+          "ms": 1673
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.65,
+        "max": 10.74
+      }
+    },
+    {
+      "server": "yahoo-finance",
+      "package": "mcp-yahoo-finance",
+      "declared_bytes": 3657,
+      "tool_count": 10,
+      "returned_bytes": {
+        "n": 1,
+        "min": 101,
+        "p50": 101,
+        "p95": 101,
+        "max": 101
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 18,
+        "p50": 18,
+        "p95": 18,
+        "max": 18
+      },
+      "calls": [
+        {
+          "tool": "get_current_stock_price",
+          "arguments_bytes": 18,
+          "returned_bytes": 101,
+          "ms": 1831
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.03,
+        "max": 0.03
+      }
+    },
+    {
+      "server": "mermaid-list",
+      "package": "mermaid-mcp-server",
+      "declared_bytes": 1688,
+      "tool_count": 4,
+      "returned_bytes": {
+        "n": 2,
+        "min": 544,
+        "p50": 544,
+        "p95": 5980,
+        "max": 5980
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 28,
+        "max": 28
+      },
+      "calls": [
+        {
+          "tool": "list_diagrams",
+          "arguments_bytes": 2,
+          "returned_bytes": 5980,
+          "ms": 13
+        },
+        {
+          "tool": "get_diagram",
+          "arguments_bytes": 28,
+          "returned_bytes": 544,
+          "ms": 2
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.32,
+        "max": 3.54
+      }
+    },
+    {
+      "server": "open-meteo",
+      "package": "open-meteo-mcp",
+      "declared_bytes": 1922,
+      "tool_count": 5,
+      "returned_bytes": {
+        "n": 1,
+        "min": 580,
+        "p50": 580,
+        "p95": 580,
+        "max": 580
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 21,
+        "p50": 21,
+        "p95": 21,
+        "max": 21
+      },
+      "calls": [
+        {
+          "tool": "get_weather",
+          "arguments_bytes": 21,
+          "returned_bytes": 580,
+          "ms": 1797
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.3,
+        "max": 0.3
       }
     },
     {
@@ -1002,6 +2601,318 @@
       "calls": []
     },
     {
+      "server": "orcid",
+      "package": "orcid-mcp-server",
+      "declared_bytes": 3028,
+      "tool_count": 5,
+      "returned_bytes": {
+        "n": 1,
+        "min": 327,
+        "p50": 327,
+        "p95": 327,
+        "max": 327
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 21,
+        "p50": 21,
+        "p95": 21,
+        "max": 21
+      },
+      "calls": [
+        {
+          "tool": "orcid_search",
+          "arguments_bytes": 21,
+          "returned_bytes": 327,
+          "ms": 755
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.11,
+        "max": 0.11
+      }
+    },
+    {
+      "server": "polars",
+      "package": "polars-mcp",
+      "declared_bytes": 4475,
+      "tool_count": 4,
+      "returned_bytes": {
+        "n": 1,
+        "min": 1857,
+        "p50": 1857,
+        "p95": 1857,
+        "max": 1857
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 21,
+        "p50": 21,
+        "p95": 21,
+        "max": 21
+      },
+      "calls": [
+        {
+          "tool": "polars_search_api",
+          "arguments_bytes": 21,
+          "returned_bytes": 1857,
+          "ms": 79
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.41,
+        "max": 0.41
+      }
+    },
+    {
+      "server": "pubchem",
+      "package": "pubchem_mcp_server",
+      "declared_bytes": 1385,
+      "tool_count": 3,
+      "returned_bytes": {
+        "n": 1,
+        "min": 135,
+        "p50": 135,
+        "p95": 135,
+        "max": 135
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 19,
+        "p50": 19,
+        "p95": 19,
+        "max": 19
+      },
+      "calls": [
+        {
+          "tool": "get_cid_by_name",
+          "arguments_bytes": 19,
+          "returned_bytes": 135,
+          "ms": 6895
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.1,
+        "max": 0.1
+      }
+    },
+    {
+      "server": "pypi-query",
+      "package": "pypi-query-mcp-server",
+      "declared_bytes": 13005,
+      "tool_count": 10,
+      "returned_bytes": {
+        "n": 2,
+        "min": 2610,
+        "p50": 2610,
+        "p95": 5036,
+        "max": 5036
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 28,
+        "max": 28
+      },
+      "calls": [
+        {
+          "tool": "get_package_info",
+          "arguments_bytes": 28,
+          "returned_bytes": 5036,
+          "ms": 740
+        },
+        {
+          "tool": "get_top_downloaded_packages",
+          "arguments_bytes": 2,
+          "returned_bytes": 2610,
+          "ms": 6052
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.2,
+        "max": 0.39
+      }
+    },
+    {
+      "server": "random-number",
+      "package": "random-number-mcp",
+      "declared_bytes": 4716,
+      "tool_count": 7,
+      "returned_bytes": {
+        "n": 1,
+        "min": 127,
+        "p50": 127,
+        "p95": 127,
+        "max": 127
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 21,
+        "p50": 21,
+        "p95": 21,
+        "max": 21
+      },
+      "calls": [
+        {
+          "tool": "random_int",
+          "arguments_bytes": 21,
+          "returned_bytes": 127,
+          "ms": 6
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.03,
+        "max": 0.03
+      }
+    },
+    {
+      "server": "rcsb",
+      "package": "rcsb-mcp",
+      "declared_bytes": 82463,
+      "tool_count": 38,
+      "returned_bytes": {
+        "n": 2,
+        "min": 1939,
+        "p50": 1939,
+        "p95": 495671,
+        "max": 495671
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 28,
+        "max": 28
+      },
+      "calls": [
+        {
+          "tool": "rcsb_list_pdb_search_attributes",
+          "arguments_bytes": 2,
+          "returned_bytes": 495671,
+          "ms": 1173
+        },
+        {
+          "tool": "rcsb_describe_seqcoord_object",
+          "arguments_bytes": 28,
+          "returned_bytes": 1939,
+          "ms": 2142
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.02,
+        "max": 6.01
+      }
+    },
+    {
+      "server": "readability",
+      "package": "readability-mcp",
+      "declared_bytes": 1590,
+      "tool_count": 4,
+      "returned_bytes": {
+        "n": 1,
+        "min": 269,
+        "p50": 269,
+        "p95": 269,
+        "max": 269
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 35,
+        "p50": 35,
+        "p95": 35,
+        "max": 35
+      },
+      "calls": [
+        {
+          "tool": "flesch_reading_ease",
+          "arguments_bytes": 35,
+          "returned_bytes": 269,
+          "ms": 1826
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.17,
+        "max": 0.17
+      }
+    },
+    {
+      "server": "company-registry",
+      "package": "registry-mcp",
+      "declared_bytes": 144742,
+      "tool_count": 7,
+      "returned_bytes": {
+        "n": 1,
+        "min": 4040,
+        "p50": 4040,
+        "p95": 4040,
+        "max": 4040
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list_countries",
+          "arguments_bytes": 2,
+          "returned_bytes": 4040,
+          "ms": 94
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.03,
+        "max": 0.03
+      }
+    },
+    {
+      "server": "swiss-holidays",
+      "package": "swiss-holidays-mcp",
+      "declared_bytes": 43654,
+      "tool_count": 13,
+      "returned_bytes": {
+        "n": 3,
+        "min": 1777,
+        "p50": 2562,
+        "p95": 7125,
+        "max": 7125
+      },
+      "argument_bytes": {
+        "n": 3,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "list_cantons",
+          "arguments_bytes": 2,
+          "returned_bytes": 7125,
+          "ms": 2031
+        },
+        {
+          "tool": "list_school_types",
+          "arguments_bytes": 2,
+          "returned_bytes": 2562,
+          "ms": 289
+        },
+        {
+          "tool": "source_status",
+          "arguments_bytes": 2,
+          "returned_bytes": 1777,
+          "ms": 636
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.06,
+        "max": 0.16
+      }
+    },
+    {
       "server": "tavily",
       "package": "tavily-mcp",
       "declared_bytes": 7739,
@@ -1021,6 +2932,140 @@
         "max": 0
       },
       "calls": []
+    },
+    {
+      "server": "uniprot",
+      "package": "uniprot-mcp-server",
+      "declared_bytes": 56026,
+      "tool_count": 41,
+      "returned_bytes": {
+        "n": 1,
+        "min": 2923,
+        "p50": 2923,
+        "p95": 2923,
+        "max": 2923
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 23,
+        "p50": 23,
+        "p95": 23,
+        "max": 23
+      },
+      "calls": [
+        {
+          "tool": "uniprot_get_entry",
+          "arguments_bytes": 23,
+          "returned_bytes": 2923,
+          "ms": 1961
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.05,
+        "max": 0.05
+      }
+    },
+    {
+      "server": "unit-converter",
+      "package": "unit-converter-mcp",
+      "declared_bytes": 14841,
+      "tool_count": 16,
+      "returned_bytes": {
+        "n": 2,
+        "min": 402,
+        "p50": 402,
+        "p95": 7768,
+        "max": 7768
+      },
+      "argument_bytes": {
+        "n": 2,
+        "min": 2,
+        "p50": 2,
+        "p95": 63,
+        "max": 63
+      },
+      "calls": [
+        {
+          "tool": "list_supported_units",
+          "arguments_bytes": 2,
+          "returned_bytes": 7768,
+          "ms": 19
+        },
+        {
+          "tool": "convert_temperature",
+          "arguments_bytes": 63,
+          "returned_bytes": 402,
+          "ms": 6
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.03,
+        "max": 0.52
+      }
+    },
+    {
+      "server": "uuid",
+      "package": "uuid-mcp",
+      "declared_bytes": 185,
+      "tool_count": 1,
+      "returned_bytes": {
+        "n": 1,
+        "min": 129,
+        "p50": 129,
+        "p95": 129,
+        "max": 129
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 2,
+        "p50": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": [
+        {
+          "tool": "generate_uuid",
+          "arguments_bytes": 2,
+          "returned_bytes": 129,
+          "ms": 2
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.7,
+        "max": 0.7
+      }
+    },
+    {
+      "server": "wikipedia",
+      "package": "wikipedia-mcp",
+      "declared_bytes": 23161,
+      "tool_count": 22,
+      "returned_bytes": {
+        "n": 1,
+        "min": 2578,
+        "p50": 2578,
+        "p95": 2578,
+        "max": 2578
+      },
+      "argument_bytes": {
+        "n": 1,
+        "min": 42,
+        "p50": 42,
+        "p95": 42,
+        "max": 42
+      },
+      "calls": [
+        {
+          "tool": "get_summary",
+          "arguments_bytes": 42,
+          "returned_bytes": 2578,
+          "ms": 2548
+        }
+      ],
+      "returned_over_declared": {
+        "p50": 0.11,
+        "max": 0.11
+      }
     }
   ]
 }

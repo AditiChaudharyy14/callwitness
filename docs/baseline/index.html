@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The MCP delivered-size baseline &middot; callwitness</title>
-<meta name="description" content="What MCP servers declare at install time, measured against what they actually hand a model at runtime. 41 calls, 16 servers, raw data published.">
+<meta name="description" content="What MCP servers declare at install time, measured against what they actually hand a model at runtime. 140 calls, 65 servers, raw data published.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -132,16 +132,16 @@ footer a{color:var(--ink-soft)}
 <p class="stand">Every published measurement of MCP context cost counts the schemas a server declares at install time. Nobody counts what it hands the model at runtime, because nobody runs the servers. This is that measurement.</p>
 
 <div class="meta">
-  <span>41 calls</span>
-  <span>16 of 29 servers</span>
-  <span>306 tools declared</span>
+  <span>140 calls</span>
+  <span>65 of 82 servers</span>
+  <span>1,070 tools declared</span>
   <span>generated 2026-09-13</span>
-  <span>commit 312f590</span>
+  <span>commit ce9c268</span>
 </div>
 
 <section>
   <p class="lede">Declared size does not predict delivered size. Not loosely &mdash; <b>not at all</b>.</p>
-  <p><code>mcp-deepwiki</code> declares 774 B of schema, close to the smallest menu in the census, and returned 701 KB in a single call &mdash; 906x its declared size. <code>playwright/mcp</code> declares 19 KB and returned 167 B. Ranked by what they declare, these two servers sit at opposite ends of the table from where they land when ranked by what they deliver.</p>
+  <p><code>mcp-deepwiki</code> declares 774 B of schema, close to the smallest menu in the census, and returned 62 KB in a single call &mdash; 81x its declared size. <code>mcp-sympy</code> declares 63 KB and returned 198 B. Ranked by what they declare, these two servers sit at opposite ends of the table from where they land when ranked by what they deliver.</p>
   <p>The install-time number, in other words, tells you almost nothing about the runtime cost &mdash; and the install-time number is the only one anyone currently publishes.</p>
 </section>
 
@@ -149,87 +149,234 @@ footer a{color:var(--ink-soft)}
   <h2>Declared against delivered</h2>
   <figure>
     <div class="chart-card">
-      <svg class="chart" viewBox="0 0 738 496" role="img" aria-label="Declared size against largest delivered size, by server, on a logarithmic scale">
-<line class="grid" x1="210.0" y1="20" x2="210.0" y2="472" />
-<text class="tick" x="210.0" y="486">100 B</text>
-<line class="grid" x1="327.5" y1="20" x2="327.5" y2="472" />
-<text class="tick" x="327.5" y="486">1 KB</text>
-<line class="grid" x1="445.0" y1="20" x2="445.0" y2="472" />
-<text class="tick" x="445.0" y="486">10 KB</text>
-<line class="grid" x1="562.5" y1="20" x2="562.5" y2="472" />
-<text class="tick" x="562.5" y="486">100 KB</text>
-<line class="grid" x1="680.0" y1="20" x2="680.0" y2="472" />
-<text class="tick" x="680.0" y="486">1.0 MB</text>
+      <svg class="chart" viewBox="0 0 738 1819" role="img" aria-label="Declared size against largest delivered size, by server, on a logarithmic scale">
+<line class="grid" x1="210.0" y1="20" x2="210.0" y2="1795" />
+<text class="tick" x="210.0" y="1809">100 B</text>
+<line class="grid" x1="327.5" y1="20" x2="327.5" y2="1795" />
+<text class="tick" x="327.5" y="1809">1 KB</text>
+<line class="grid" x1="445.0" y1="20" x2="445.0" y2="1795" />
+<text class="tick" x="445.0" y="1809">10 KB</text>
+<line class="grid" x1="562.5" y1="20" x2="562.5" y2="1795" />
+<text class="tick" x="562.5" y="1809">100 KB</text>
+<line class="grid" x1="680.0" y1="20" x2="680.0" y2="1795" />
+<text class="tick" x="680.0" y="1809">1.0 MB</text>
 <text class="rowlab" x="198" y="51.5">mcp-deepwiki</text>
-<line class="link" x1="314.4" y1="47.5" x2="661.9" y2="47.5" />
-<g><title>mcp-deepwiki declared 774 B and returned 701 KB (906x)</title><circle class="declared" cx="314.4" cy="47.5" r="5" /><circle class="delivered" cx="661.9" cy="47.5" r="5" /></g>
-<text class="callout" x="672.9" y="51.5">906x</text>
-<text class="rowlab" x="198" y="78.5">server-filesystem</text>
-<line class="link" x1="458.5" y1="74.5" x2="624.2" y2="74.5" />
-<g><title>server-filesystem declared 13 KB and returned 335 KB (26x)</title><circle class="declared" cx="458.5" cy="74.5" r="5" /><circle class="delivered" cx="624.2" cy="74.5" r="5" /></g>
-<text class="rowlab" x="198" y="105.5">shadcn-ui-mcp-server</text>
-<line class="link" x1="352.2" y1="101.5" x2="389.9" y2="101.5" />
-<g><title>shadcn-ui-mcp-server declared 2 KB and returned 3 KB (2.09x)</title><circle class="declared" cx="352.2" cy="101.5" r="5" /><circle class="delivered" cx="389.9" cy="101.5" r="5" /></g>
-<text class="rowlab" x="198" y="132.5">duckduckgo-mcp-server</text>
-<line class="link" x1="405.6" y1="128.5" x2="433.6" y2="128.5" />
-<g><title>duckduckgo-mcp-server declared 5 KB and returned 8 KB (1.73x)</title><circle class="declared" cx="405.6" cy="128.5" r="5" /><circle class="delivered" cx="433.6" cy="128.5" r="5" /></g>
-<text class="rowlab" x="198" y="159.5">server-everything</text>
-<line class="link" x1="431.6" y1="155.5" x2="442.4" y2="155.5" />
-<g><title>server-everything declared 8 KB and returned 10 KB (1.23x)</title><circle class="declared" cx="431.6" cy="155.5" r="5" /><circle class="delivered" cx="442.4" cy="155.5" r="5" /></g>
-<text class="rowlab" x="198" y="186.5">chrome-devtools-mcp</text>
-<line class="link" x1="493.9" y1="182.5" x2="491.8" y2="182.5" />
-<g><title>chrome-devtools-mcp declared 26 KB and returned 25 KB (0.96x)</title><circle class="declared" cx="493.9" cy="182.5" r="5" /><circle class="delivered" cx="491.8" cy="182.5" r="5" /></g>
-<text class="rowlab" x="198" y="213.5">markitdown-mcp</text>
-<line class="link" x1="269.0" y1="209.5" x2="259.5" y2="209.5" />
-<g><title>markitdown-mcp declared 318 B and returned 264 B (0.83x)</title><circle class="declared" cx="269.0" cy="209.5" r="5" /><circle class="delivered" cx="259.5" cy="209.5" r="5" /></g>
-<text class="rowlab" x="198" y="240.5">mcp-server-git</text>
-<line class="link" x1="418.5" y1="236.5" x2="400.3" y2="236.5" />
-<g><title>mcp-server-git declared 6 KB and returned 4 KB (0.70x)</title><circle class="declared" cx="418.5" cy="236.5" r="5" /><circle class="delivered" cx="400.3" cy="236.5" r="5" /></g>
-<text class="rowlab" x="198" y="267.5">mcp-server-calculator</text>
-<line class="link" x1="283.4" y1="263.5" x2="223.0" y2="263.5" />
-<g><title>mcp-server-calculator declared 421 B and returned 129 B (0.31x)</title><circle class="declared" cx="283.4" cy="263.5" r="5" /><circle class="delivered" cx="223.0" cy="263.5" r="5" /></g>
-<text class="rowlab" x="198" y="294.5">mcp-server-fetch</text>
-<line class="link" x1="334.6" y1="290.5" x2="262.7" y2="290.5" />
-<g><title>mcp-server-fetch declared 1 KB and returned 281 B (0.24x)</title><circle class="declared" cx="334.6" cy="290.5" r="5" /><circle class="delivered" cx="262.7" cy="290.5" r="5" /></g>
-<text class="rowlab" x="198" y="321.5">mcp-server-time</text>
-<line class="link" x1="339.4" y1="317.5" x2="254.0" y2="317.5" />
-<g><title>mcp-server-time declared 1 KB and returned 237 B (0.19x)</title><circle class="declared" cx="339.4" cy="317.5" r="5" /><circle class="delivered" cx="254.0" cy="317.5" r="5" /></g>
-<text class="rowlab" x="198" y="348.5">server-sequential-thinking</text>
-<line class="link" x1="406.3" y1="344.5" x2="272.1" y2="344.5" />
-<g><title>server-sequential-thinking declared 5 KB and returned 338 B (0.07x)</title><circle class="declared" cx="406.3" cy="344.5" r="5" /><circle class="delivered" cx="272.1" cy="344.5" r="5" /></g>
-<text class="rowlab" x="198" y="375.5">browser-tools-mcp</text>
-<line class="link" x1="494.5" y1="371.5" x2="297.7" y2="371.5" />
-<g><title>browser-tools-mcp declared 26 KB and returned 558 B (0.02x)</title><circle class="declared" cx="494.5" cy="371.5" r="5" /><circle class="delivered" cx="297.7" cy="371.5" r="5" /></g>
-<text class="rowlab" x="198" y="402.5">server-memory</text>
-<line class="link" x1="448.9" y1="398.5" x2="238.0" y2="398.5" />
-<g><title>server-memory declared 11 KB and returned 173 B (0.02x)</title><circle class="declared" cx="448.9" cy="398.5" r="5" /><circle class="delivered" cx="238.0" cy="398.5" r="5" /></g>
-<text class="rowlab" x="198" y="429.5">playwright-mcp-server</text>
-<line class="link" x1="461.8" y1="425.5" x2="223.0" y2="425.5" />
-<g><title>playwright-mcp-server declared 14 KB and returned 129 B (0.01x)</title><circle class="declared" cx="461.8" cy="425.5" r="5" /><circle class="delivered" cx="223.0" cy="425.5" r="5" /></g>
-<text class="rowlab" x="198" y="456.5">playwright/mcp</text>
-<line class="link" x1="476.5" y1="452.5" x2="236.2" y2="452.5" />
-<g><title>playwright/mcp declared 19 KB and returned 167 B (0.01x)</title><circle class="declared" cx="476.5" cy="452.5" r="5" /><circle class="delivered" cx="236.2" cy="452.5" r="5" /></g>
-<text class="callout" x="247.2" y="456.5">0.01x</text>
+<line class="link" x1="314.4" y1="47.5" x2="538.4" y2="47.5" />
+<g><title>mcp-deepwiki declared 774 B and returned 62 KB (81x)</title><circle class="declared" cx="314.4" cy="47.5" r="5" /><circle class="delivered" cx="538.4" cy="47.5" r="5" /></g>
+<text class="callout" x="549.4" y="51.5">81x</text>
+<text class="rowlab" x="198" y="78.5">shadcn-ui-mcp-server</text>
+<line class="link" x1="385.1" y1="74.5" x2="595.9" y2="74.5" />
+<g><title>shadcn-ui-mcp-server declared 3 KB and returned 193 KB (62x)</title><circle class="declared" cx="385.1" cy="74.5" r="5" /><circle class="delivered" cx="595.9" cy="74.5" r="5" /></g>
+<text class="rowlab" x="198" y="105.5">mcp-chess</text>
+<line class="link" x1="384.7" y1="101.5" x2="515.6" y2="101.5" />
+<g><title>mcp-chess declared 3 KB and returned 40 KB (13x)</title><circle class="declared" cx="384.7" cy="101.5" r="5" /><circle class="delivered" cx="515.6" cy="101.5" r="5" /></g>
+<text class="rowlab" x="198" y="132.5">mcp-trends-hub</text>
+<line class="link" x1="455.0" y1="128.5" x2="576.1" y2="128.5" />
+<g><title>mcp-trends-hub declared 12 KB and returned 131 KB (11x)</title><circle class="declared" cx="455.0" cy="128.5" r="5" /><circle class="delivered" cx="576.1" cy="128.5" r="5" /></g>
+<text class="rowlab" x="198" y="159.5">server-filesystem</text>
+<line class="link" x1="458.5" y1="155.5" x2="561.0" y2="155.5" />
+<g><title>server-filesystem declared 13 KB and returned 97 KB (7.46x)</title><circle class="declared" cx="458.5" cy="155.5" r="5" /><circle class="delivered" cx="561.0" cy="155.5" r="5" /></g>
+<text class="rowlab" x="198" y="186.5">rcsb-mcp</text>
+<line class="link" x1="552.7" y1="182.5" x2="644.2" y2="182.5" />
+<g><title>rcsb-mcp declared 82 KB and returned 496 KB (6.01x)</title><circle class="declared" cx="552.7" cy="182.5" r="5" /><circle class="delivered" cx="644.2" cy="182.5" r="5" /></g>
+<text class="rowlab" x="198" y="213.5">mermaid-mcp-server</text>
+<line class="link" x1="354.2" y1="209.5" x2="418.8" y2="209.5" />
+<g><title>mermaid-mcp-server declared 2 KB and returned 6 KB (3.54x)</title><circle class="declared" cx="354.2" cy="209.5" r="5" /><circle class="delivered" cx="418.8" cy="209.5" r="5" /></g>
+<text class="rowlab" x="198" y="240.5">react-spectrum/mcp</text>
+<line class="link" x1="399.9" y1="236.5" x2="441.0" y2="236.5" />
+<g><title>react-spectrum/mcp declared 4 KB and returned 9 KB (2.23x)</title><circle class="declared" cx="399.9" cy="236.5" r="5" /><circle class="delivered" cx="441.0" cy="236.5" r="5" /></g>
+<text class="rowlab" x="198" y="267.5">shadcn-ui-mcp-server</text>
+<line class="link" x1="352.2" y1="263.5" x2="389.9" y2="263.5" />
+<g><title>shadcn-ui-mcp-server declared 2 KB and returned 3 KB (2.09x)</title><circle class="declared" cx="352.2" cy="263.5" r="5" /><circle class="delivered" cx="389.9" cy="263.5" r="5" /></g>
+<text class="rowlab" x="198" y="294.5">mcp-server-tree-sitter</text>
+<line class="link" x1="482.4" y1="290.5" x2="509.9" y2="290.5" />
+<g><title>mcp-server-tree-sitter declared 21 KB and returned 36 KB (1.71x)</title><circle class="declared" cx="482.4" cy="290.5" r="5" /><circle class="delivered" cx="509.9" cy="290.5" r="5" /></g>
+<text class="rowlab" x="198" y="321.5">duckduckgo-mcp-server</text>
+<line class="link" x1="405.6" y1="317.5" x2="430.9" y2="317.5" />
+<g><title>duckduckgo-mcp-server declared 5 KB and returned 8 KB (1.64x)</title><circle class="declared" cx="405.6" cy="317.5" r="5" /><circle class="delivered" cx="430.9" cy="317.5" r="5" /></g>
+<text class="rowlab" x="198" y="348.5">primeng/mcp</text>
+<line class="link" x1="436.0" y1="344.5" x2="460.6" y2="344.5" />
+<g><title>primeng/mcp declared 8 KB and returned 14 KB (1.62x)</title><circle class="declared" cx="436.0" cy="344.5" r="5" /><circle class="delivered" cx="460.6" cy="344.5" r="5" /></g>
+<text class="rowlab" x="198" y="375.5">primevue/mcp</text>
+<line class="link" x1="436.0" y1="371.5" x2="457.9" y2="371.5" />
+<g><title>primevue/mcp declared 8 KB and returned 13 KB (1.54x)</title><circle class="declared" cx="436.0" cy="371.5" r="5" /><circle class="delivered" cx="457.9" cy="371.5" r="5" /></g>
+<text class="rowlab" x="198" y="402.5">geocode-mcp</text>
+<line class="link" x1="291.8" y1="398.5" x2="305.9" y2="398.5" />
+<g><title>geocode-mcp declared 497 B and returned 655 B (1.32x)</title><circle class="declared" cx="291.8" cy="398.5" r="5" /><circle class="delivered" cx="305.9" cy="398.5" r="5" /></g>
+<text class="rowlab" x="198" y="429.5">server-everything</text>
+<line class="link" x1="431.6" y1="425.5" x2="442.4" y2="425.5" />
+<g><title>server-everything declared 8 KB and returned 10 KB (1.24x)</title><circle class="declared" cx="431.6" cy="425.5" r="5" /><circle class="delivered" cx="442.4" cy="425.5" r="5" /></g>
+<text class="rowlab" x="198" y="456.5">mcp-gnu-units</text>
+<line class="link" x1="446.1" y1="452.5" x2="445.6" y2="452.5" />
+<g><title>mcp-gnu-units declared 10 KB and returned 10 KB (0.99x)</title><circle class="declared" cx="446.1" cy="452.5" r="5" /><circle class="delivered" cx="445.6" cy="452.5" r="5" /></g>
+<text class="rowlab" x="198" y="483.5">chrome-devtools-mcp</text>
+<line class="link" x1="493.9" y1="479.5" x2="492.1" y2="479.5" />
+<g><title>chrome-devtools-mcp declared 26 KB and returned 25 KB (0.97x)</title><circle class="declared" cx="493.9" cy="479.5" r="5" /><circle class="delivered" cx="492.1" cy="479.5" r="5" /></g>
+<text class="rowlab" x="198" y="510.5">mcp-server-git</text>
+<line class="link" x1="418.5" y1="506.5" x2="413.7" y2="506.5" />
+<g><title>mcp-server-git declared 6 KB and returned 5 KB (0.91x)</title><circle class="declared" cx="418.5" cy="506.5" r="5" /><circle class="delivered" cx="413.7" cy="506.5" r="5" /></g>
+<text class="rowlab" x="198" y="537.5">crossref-mcp</text>
+<line class="link" x1="449.0" y1="533.5" x2="441.5" y2="533.5" />
+<g><title>crossref-mcp declared 11 KB and returned 9 KB (0.86x)</title><circle class="declared" cx="449.0" cy="533.5" r="5" /><circle class="delivered" cx="441.5" cy="533.5" r="5" /></g>
+<text class="rowlab" x="198" y="564.5">markitdown-mcp</text>
+<line class="link" x1="269.0" y1="560.5" x2="259.5" y2="560.5" />
+<g><title>markitdown-mcp declared 318 B and returned 264 B (0.83x)</title><circle class="declared" cx="269.0" cy="560.5" r="5" /><circle class="delivered" cx="259.5" cy="560.5" r="5" /></g>
+<text class="rowlab" x="198" y="591.5">mcp-dice</text>
+<line class="link" x1="271.7" y1="587.5" x2="259.0" y2="587.5" />
+<g><title>mcp-dice declared 335 B and returned 261 B (0.78x)</title><circle class="declared" cx="271.7" cy="587.5" r="5" /><circle class="delivered" cx="259.0" cy="587.5" r="5" /></g>
+<text class="rowlab" x="198" y="618.5">knip/mcp</text>
+<line class="link" x1="392.9" y1="614.5" x2="378.7" y2="614.5" />
+<g><title>knip/mcp declared 4 KB and returned 3 KB (0.76x)</title><circle class="declared" cx="392.9" cy="614.5" r="5" /><circle class="delivered" cx="378.7" cy="614.5" r="5" /></g>
+<text class="rowlab" x="198" y="645.5">uuid-mcp</text>
+<line class="link" x1="241.4" y1="641.5" x2="223.0" y2="641.5" />
+<g><title>uuid-mcp declared 185 B and returned 129 B (0.70x)</title><circle class="declared" cx="241.4" cy="641.5" r="5" /><circle class="delivered" cx="223.0" cy="641.5" r="5" /></g>
+<text class="rowlab" x="198" y="672.5">mcp-geo</text>
+<line class="link" x1="475.8" y1="668.5" x2="452.2" y2="668.5" />
+<g><title>mcp-geo declared 18 KB and returned 12 KB (0.63x)</title><circle class="declared" cx="475.8" cy="668.5" r="5" /><circle class="delivered" cx="452.2" cy="668.5" r="5" /></g>
+<text class="rowlab" x="198" y="699.5">mcp-hn</text>
+<line class="link" x1="353.5" y1="695.5" x2="324.9" y2="695.5" />
+<g><title>mcp-hn declared 2 KB and returned 951 B (0.57x)</title><circle class="declared" cx="353.5" cy="695.5" r="5" /><circle class="delivered" cx="324.9" cy="695.5" r="5" /></g>
+<text class="rowlab" x="198" y="726.5">unit-converter-mcp</text>
+<line class="link" x1="465.1" y1="722.5" x2="432.1" y2="722.5" />
+<g><title>unit-converter-mcp declared 15 KB and returned 8 KB (0.52x)</title><circle class="declared" cx="465.1" cy="722.5" r="5" /><circle class="delivered" cx="432.1" cy="722.5" r="5" /></g>
+<text class="rowlab" x="198" y="753.5">mcp-nixos</text>
+<line class="link" x1="425.2" y1="749.5" x2="388.2" y2="749.5" />
+<g><title>mcp-nixos declared 7 KB and returned 3 KB (0.48x)</title><circle class="declared" cx="425.2" cy="749.5" r="5" /><circle class="delivered" cx="388.2" cy="749.5" r="5" /></g>
+<text class="rowlab" x="198" y="780.5">mcp-youtube-transcript</text>
+<line class="link" x1="397.1" y1="776.5" x2="352.3" y2="776.5" />
+<g><title>mcp-youtube-transcript declared 4 KB and returned 2 KB (0.42x)</title><circle class="declared" cx="397.1" cy="776.5" r="5" /><circle class="delivered" cx="352.3" cy="776.5" r="5" /></g>
+<text class="rowlab" x="198" y="807.5">polars-mcp</text>
+<line class="link" x1="404.0" y1="803.5" x2="359.1" y2="803.5" />
+<g><title>polars-mcp declared 4 KB and returned 2 KB (0.41x)</title><circle class="declared" cx="404.0" cy="803.5" r="5" /><circle class="delivered" cx="359.1" cy="803.5" r="5" /></g>
+<text class="rowlab" x="198" y="834.5">pypi-query-mcp-server</text>
+<line class="link" x1="458.4" y1="830.5" x2="410.0" y2="830.5" />
+<g><title>pypi-query-mcp-server declared 13 KB and returned 5 KB (0.39x)</title><circle class="declared" cx="458.4" cy="830.5" r="5" /><circle class="delivered" cx="410.0" cy="830.5" r="5" /></g>
+<text class="rowlab" x="198" y="861.5">mcp-server-fetch-python</text>
+<line class="link" x1="360.4" y1="857.5" x2="306.7" y2="857.5" />
+<g><title>mcp-server-fetch-python declared 2 KB and returned 665 B (0.35x)</title><circle class="declared" cx="360.4" cy="857.5" r="5" /><circle class="delivered" cx="306.7" cy="857.5" r="5" /></g>
+<text class="rowlab" x="198" y="888.5">mcp-server-calculator</text>
+<line class="link" x1="283.4" y1="884.5" x2="223.0" y2="884.5" />
+<g><title>mcp-server-calculator declared 421 B and returned 129 B (0.31x)</title><circle class="declared" cx="283.4" cy="884.5" r="5" /><circle class="delivered" cx="223.0" cy="884.5" r="5" /></g>
+<text class="rowlab" x="198" y="915.5">open-meteo-mcp</text>
+<line class="link" x1="360.8" y1="911.5" x2="299.7" y2="911.5" />
+<g><title>open-meteo-mcp declared 2 KB and returned 580 B (0.30x)</title><circle class="declared" cx="360.8" cy="911.5" r="5" /><circle class="delivered" cx="299.7" cy="911.5" r="5" /></g>
+<text class="rowlab" x="198" y="942.5">calculator-mcp-server</text>
+<line class="link" x1="265.0" y1="938.5" x2="196.7" y2="938.5" />
+<g><title>calculator-mcp-server declared 294 B and returned 77 B (0.26x)</title><circle class="declared" cx="265.0" cy="938.5" r="5" /><circle class="delivered" cx="196.7" cy="938.5" r="5" /></g>
+<text class="rowlab" x="198" y="969.5">mcp-server-fetch</text>
+<line class="link" x1="334.6" y1="965.5" x2="262.7" y2="965.5" />
+<g><title>mcp-server-fetch declared 1 KB and returned 281 B (0.24x)</title><circle class="declared" cx="334.6" cy="965.5" r="5" /><circle class="delivered" cx="262.7" cy="965.5" r="5" /></g>
+<text class="rowlab" x="198" y="996.5">mcp-server-time</text>
+<line class="link" x1="339.4" y1="992.5" x2="253.6" y2="992.5" />
+<g><title>mcp-server-time declared 1 KB and returned 235 B (0.19x)</title><circle class="declared" cx="339.4" cy="992.5" r="5" /><circle class="delivered" cx="253.6" cy="992.5" r="5" /></g>
+<text class="rowlab" x="198" y="1023.5">readability-mcp</text>
+<line class="link" x1="351.2" y1="1019.5" x2="260.5" y2="1019.5" />
+<g><title>readability-mcp declared 2 KB and returned 269 B (0.17x)</title><circle class="declared" cx="351.2" cy="1019.5" r="5" /><circle class="delivered" cx="260.5" cy="1019.5" r="5" /></g>
+<text class="rowlab" x="198" y="1050.5">swiss-holidays-mcp</text>
+<line class="link" x1="520.2" y1="1046.5" x2="427.7" y2="1046.5" />
+<g><title>swiss-holidays-mcp declared 44 KB and returned 7 KB (0.16x)</title><circle class="declared" cx="520.2" cy="1046.5" r="5" /><circle class="delivered" cx="427.7" cy="1046.5" r="5" /></g>
+<text class="rowlab" x="198" y="1077.5">code-index-mcp</text>
+<line class="link" x1="436.8" y1="1073.5" x2="339.4" y2="1073.5" />
+<g><title>code-index-mcp declared 9 KB and returned 1 KB (0.15x)</title><circle class="declared" cx="436.8" cy="1073.5" r="5" /><circle class="delivered" cx="339.4" cy="1073.5" r="5" /></g>
+<text class="rowlab" x="198" y="1104.5">dictionary-mcp-server</text>
+<line class="link" x1="428.5" y1="1100.5" x2="325.9" y2="1100.5" />
+<g><title>dictionary-mcp-server declared 7 KB and returned 969 B (0.13x)</title><circle class="declared" cx="428.5" cy="1100.5" r="5" /><circle class="delivered" cx="325.9" cy="1100.5" r="5" /></g>
+<text class="rowlab" x="198" y="1131.5">wikipedia-mcp</text>
+<line class="link" x1="487.9" y1="1127.5" x2="375.8" y2="1127.5" />
+<g><title>wikipedia-mcp declared 23 KB and returned 3 KB (0.11x)</title><circle class="declared" cx="487.9" cy="1127.5" r="5" /><circle class="delivered" cx="375.8" cy="1127.5" r="5" /></g>
+<text class="rowlab" x="198" y="1158.5">mcp-molecules</text>
+<line class="link" x1="426.0" y1="1154.5" x2="313.8" y2="1154.5" />
+<g><title>mcp-molecules declared 7 KB and returned 765 B (0.11x)</title><circle class="declared" cx="426.0" cy="1154.5" r="5" /><circle class="delivered" cx="313.8" cy="1154.5" r="5" /></g>
+<text class="rowlab" x="198" y="1185.5">arxiv-mcp-server</text>
+<line class="link" x1="474.3" y1="1181.5" x2="361.8" y2="1181.5" />
+<g><title>arxiv-mcp-server declared 18 KB and returned 2 KB (0.11x)</title><circle class="declared" cx="474.3" cy="1181.5" r="5" /><circle class="delivered" cx="361.8" cy="1181.5" r="5" /></g>
+<text class="rowlab" x="198" y="1212.5">math-mcp</text>
+<line class="link" x1="345.0" y1="1208.5" x2="231.7" y2="1208.5" />
+<g><title>math-mcp declared 1 KB and returned 153 B (0.11x)</title><circle class="declared" cx="345.0" cy="1208.5" r="5" /><circle class="delivered" cx="231.7" cy="1208.5" r="5" /></g>
+<text class="rowlab" x="198" y="1239.5">orcid-mcp-server</text>
+<line class="link" x1="384.0" y1="1235.5" x2="270.5" y2="1235.5" />
+<g><title>orcid-mcp-server declared 3 KB and returned 327 B (0.11x)</title><circle class="declared" cx="384.0" cy="1235.5" r="5" /><circle class="delivered" cx="270.5" cy="1235.5" r="5" /></g>
+<text class="rowlab" x="198" y="1266.5">pubchem_mcp_server</text>
+<line class="link" x1="344.1" y1="1262.5" x2="225.3" y2="1262.5" />
+<g><title>pubchem_mcp_server declared 1 KB and returned 135 B (0.10x)</title><circle class="declared" cx="344.1" cy="1262.5" r="5" /><circle class="delivered" cx="225.3" cy="1262.5" r="5" /></g>
+<text class="rowlab" x="198" y="1293.5">feed-mcp</text>
+<line class="link" x1="388.9" y1="1289.5" x2="269.2" y2="1289.5" />
+<g><title>feed-mcp declared 3 KB and returned 319 B (0.10x)</title><circle class="declared" cx="388.9" cy="1289.5" r="5" /><circle class="delivered" cx="269.2" cy="1289.5" r="5" /></g>
+<text class="rowlab" x="198" y="1320.5">server-sequential-thinking</text>
+<line class="link" x1="406.3" y1="1316.5" x2="272.1" y2="1316.5" />
+<g><title>server-sequential-thinking declared 5 KB and returned 338 B (0.07x)</title><circle class="declared" cx="406.3" cy="1316.5" r="5" /><circle class="delivered" cx="272.1" cy="1316.5" r="5" /></g>
+<text class="rowlab" x="198" y="1347.5">calculator-mcp</text>
+<line class="link" x1="347.6" y1="1343.5" x2="209.5" y2="1343.5" />
+<g><title>calculator-mcp declared 1 KB and returned 99 B (0.07x)</title><circle class="declared" cx="347.6" cy="1343.5" r="5" /><circle class="delivered" cx="209.5" cy="1343.5" r="5" /></g>
+<text class="rowlab" x="198" y="1374.5">mantine/mcp-server</text>
+<line class="link" x1="339.8" y1="1370.5" x2="197.3" y2="1370.5" />
+<g><title>mantine/mcp-server declared 1 KB and returned 78 B (0.06x)</title><circle class="declared" cx="339.8" cy="1370.5" r="5" /><circle class="delivered" cx="197.3" cy="1370.5" r="5" /></g>
+<text class="rowlab" x="198" y="1401.5">uniprot-mcp-server</text>
+<line class="link" x1="532.9" y1="1397.5" x2="382.2" y2="1397.5" />
+<g><title>uniprot-mcp-server declared 56 KB and returned 3 KB (0.05x)</title><circle class="declared" cx="532.9" cy="1397.5" r="5" /><circle class="delivered" cx="382.2" cy="1397.5" r="5" /></g>
+<text class="rowlab" x="198" y="1428.5">mcp-server-math</text>
+<line class="link" x1="400.6" y1="1424.5" x2="246.4" y2="1424.5" />
+<g><title>mcp-server-math declared 4 KB and returned 204 B (0.05x)</title><circle class="declared" cx="400.6" cy="1424.5" r="5" /><circle class="delivered" cx="246.4" cy="1424.5" r="5" /></g>
+<text class="rowlab" x="198" y="1455.5">astronomy-mcp</text>
+<line class="link" x1="428.7" y1="1451.5" x2="269.2" y2="1451.5" />
+<g><title>astronomy-mcp declared 7 KB and returned 319 B (0.04x)</title><circle class="declared" cx="428.7" cy="1451.5" r="5" /><circle class="delivered" cx="269.2" cy="1451.5" r="5" /></g>
+<text class="rowlab" x="198" y="1482.5">mcp-ast-explorer</text>
+<line class="link" x1="405.0" y1="1478.5" x2="237.7" y2="1478.5" />
+<g><title>mcp-ast-explorer declared 5 KB and returned 172 B (0.04x)</title><circle class="declared" cx="405.0" cy="1478.5" r="5" /><circle class="delivered" cx="237.7" cy="1478.5" r="5" /></g>
+<text class="rowlab" x="198" y="1509.5">mcp-abacus</text>
+<line class="link" x1="506.4" y1="1505.5" x2="324.1" y2="1505.5" />
+<g><title>mcp-abacus declared 33 KB and returned 935 B (0.03x)</title><circle class="declared" cx="506.4" cy="1505.5" r="5" /><circle class="delivered" cx="324.1" cy="1505.5" r="5" /></g>
+<text class="rowlab" x="198" y="1536.5">registry-mcp</text>
+<line class="link" x1="581.4" y1="1532.5" x2="398.7" y2="1532.5" />
+<g><title>registry-mcp declared 145 KB and returned 4 KB (0.03x)</title><circle class="declared" cx="581.4" cy="1532.5" r="5" /><circle class="delivered" cx="398.7" cy="1532.5" r="5" /></g>
+<text class="rowlab" x="198" y="1563.5">mcp-yahoo-finance</text>
+<line class="link" x1="393.7" y1="1559.5" x2="210.5" y2="1559.5" />
+<g><title>mcp-yahoo-finance declared 4 KB and returned 101 B (0.03x)</title><circle class="declared" cx="393.7" cy="1559.5" r="5" /><circle class="delivered" cx="210.5" cy="1559.5" r="5" /></g>
+<text class="rowlab" x="198" y="1590.5">random-number-mcp</text>
+<line class="link" x1="406.6" y1="1586.5" x2="222.2" y2="1586.5" />
+<g><title>random-number-mcp declared 5 KB and returned 127 B (0.03x)</title><circle class="declared" cx="406.6" cy="1586.5" r="5" /><circle class="delivered" cx="222.2" cy="1586.5" r="5" /></g>
+<text class="rowlab" x="198" y="1617.5">browser-tools-mcp</text>
+<line class="link" x1="494.5" y1="1613.5" x2="297.7" y2="1613.5" />
+<g><title>browser-tools-mcp declared 26 KB and returned 558 B (0.02x)</title><circle class="declared" cx="494.5" cy="1613.5" r="5" /><circle class="delivered" cx="297.7" cy="1613.5" r="5" /></g>
+<text class="rowlab" x="198" y="1644.5">kegg-mcp-server</text>
+<line class="link" x1="566.7" y1="1640.5" x2="364.3" y2="1640.5" />
+<g><title>kegg-mcp-server declared 109 KB and returned 2 KB (0.02x)</title><circle class="declared" cx="566.7" cy="1640.5" r="5" /><circle class="delivered" cx="364.3" cy="1640.5" r="5" /></g>
+<text class="rowlab" x="198" y="1671.5">server-memory</text>
+<line class="link" x1="448.9" y1="1667.5" x2="238.0" y2="1667.5" />
+<g><title>server-memory declared 11 KB and returned 173 B (0.02x)</title><circle class="declared" cx="448.9" cy="1667.5" r="5" /><circle class="delivered" cx="238.0" cy="1667.5" r="5" /></g>
+<text class="rowlab" x="198" y="1698.5">playwright-mcp-server</text>
+<line class="link" x1="461.8" y1="1694.5" x2="223.0" y2="1694.5" />
+<g><title>playwright-mcp-server declared 14 KB and returned 129 B (0.01x)</title><circle class="declared" cx="461.8" cy="1694.5" r="5" /><circle class="delivered" cx="223.0" cy="1694.5" r="5" /></g>
+<text class="rowlab" x="198" y="1725.5">playwright/mcp</text>
+<line class="link" x1="476.5" y1="1721.5" x2="236.2" y2="1721.5" />
+<g><title>playwright/mcp declared 19 KB and returned 167 B (0.01x)</title><circle class="declared" cx="476.5" cy="1721.5" r="5" /><circle class="delivered" cx="236.2" cy="1721.5" r="5" /></g>
+<text class="rowlab" x="198" y="1752.5">mcp-numpy</text>
+<line class="link" x1="513.6" y1="1748.5" x2="247.4" y2="1748.5" />
+<g><title>mcp-numpy declared 38 KB and returned 208 B (0.01x)</title><circle class="declared" cx="513.6" cy="1748.5" r="5" /><circle class="delivered" cx="247.4" cy="1748.5" r="5" /></g>
+<text class="rowlab" x="198" y="1779.5">mcp-sympy</text>
+<line class="link" x1="539.0" y1="1775.5" x2="244.9" y2="1775.5" />
+<g><title>mcp-sympy declared 63 KB and returned 198 B (0.00x)</title><circle class="declared" cx="539.0" cy="1775.5" r="5" /><circle class="delivered" cx="244.9" cy="1775.5" r="5" /></g>
+<text class="callout" x="255.9" y="1779.5">0.00x</text>
 </svg>
     </div>
     <div class="legend">
       <span><i class="d1"></i>declared at install time (<code>tools/list</code>)</span>
       <span><i class="d2"></i>largest single response observed</span>
     </div>
-    <figcaption>16 servers where both halves were measured, ordered by ratio. Logarithmic scale &mdash; the delivered values span four orders of magnitude, and a linear axis would stack fifteen of these rows on one pixel. Hover any pair for its numbers.</figcaption>
+    <figcaption>65 servers where both halves were measured, ordered by ratio. Logarithmic scale &mdash; the delivered values span four orders of magnitude, and a linear axis would stack fifteen of these rows on one pixel. Hover any pair for its numbers.</figcaption>
   </figure>
 </section>
 
 <section>
   <h2>The distribution</h2>
   <div class="stats">
-    <div class="stat"><div class="stat-v">264 B</div><div class="stat-k">median response</div></div>
-    <div class="stat"><div class="stat-v">25 KB</div><div class="stat-k">95th percentile</div></div>
-    <div class="stat"><div class="stat-v">701 KB</div><div class="stat-k">largest observed</div></div>
-    <div class="stat"><div class="stat-v">7,968x</div><div class="stat-k">min to max spread</div></div>
+    <div class="stat"><div class="stat-v">580 B</div><div class="stat-k">median response</div></div>
+    <div class="stat"><div class="stat-v">36 KB</div><div class="stat-k">95th percentile</div></div>
+    <div class="stat"><div class="stat-v">496 KB</div><div class="stat-k">largest observed</div></div>
+    <div class="stat"><div class="stat-v">6,437x</div><div class="stat-k">min to max spread</div></div>
   </div>
-  <p style="margin-top:1.5rem">A typical tool response is 264 B. One in twenty is 25 KB or larger. The largest single response measured was 701 KB, from 774 B of declared schema and a handful of bytes of argument.</p>
-  <p>This is why a fixed context budget behaves unpredictably in practice: the cut point is static, and the pressure on it varies by 7,968x depending on which argument the model happens to pick at runtime.</p>
+  <p style="margin-top:1.5rem">A typical tool response is 580 B. One in twenty is 36 KB or larger. The largest single response measured was 496 KB, from 774 B of declared schema and a handful of bytes of argument.</p>
+  <p>This is why a fixed context budget behaves unpredictably in practice: the cut point is static, and the pressure on it varies by 6,437x depending on which argument the model happens to pick at runtime.</p>
 </section>
 
 <section>
@@ -241,32 +388,81 @@ footer a{color:var(--ink-soft)}
         <th class="num">largest returned</th><th class="num">ratio</th><th class="num">calls</th>
       </tr></thead>
       <tbody>
-<tr><td class="pkg">mcp-deepwiki</td><td class="num">774 B</td><td class="num">701 KB</td><td class="num ratio">906x</td><td class="num n">1</td></tr>
-<tr><td class="pkg">@modelcontextprotocol/server-filesystem</td><td class="num">13 KB</td><td class="num">335 KB</td><td class="num ratio">26x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">mcp-deepwiki</td><td class="num">774 B</td><td class="num">62 KB</td><td class="num ratio">81x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">@jpisnice/shadcn-ui-mcp-server</td><td class="num">3 KB</td><td class="num">193 KB</td><td class="num ratio">62x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">mcp-chess</td><td class="num">3 KB</td><td class="num">40 KB</td><td class="num ratio">13x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">mcp-trends-hub</td><td class="num">12 KB</td><td class="num">131 KB</td><td class="num ratio">11x</td><td class="num n">11</td></tr>
+<tr><td class="pkg">@modelcontextprotocol/server-filesystem</td><td class="num">13 KB</td><td class="num">97 KB</td><td class="num ratio">7.46x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">rcsb-mcp</td><td class="num">82 KB</td><td class="num">496 KB</td><td class="num ratio">6.01x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">mermaid-mcp-server</td><td class="num">2 KB</td><td class="num">6 KB</td><td class="num ratio">3.54x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">@react-spectrum/mcp</td><td class="num">4 KB</td><td class="num">9 KB</td><td class="num ratio">2.23x</td><td class="num n">2</td></tr>
 <tr><td class="pkg">@heilgar/shadcn-ui-mcp-server</td><td class="num">2 KB</td><td class="num">3 KB</td><td class="num ratio">2.09x</td><td class="num n">2</td></tr>
-<tr><td class="pkg">duckduckgo-mcp-server</td><td class="num">5 KB</td><td class="num">8 KB</td><td class="num ratio">1.73x</td><td class="num n">1</td></tr>
-<tr><td class="pkg">@modelcontextprotocol/server-everything</td><td class="num">8 KB</td><td class="num">10 KB</td><td class="num ratio">1.23x</td><td class="num n">8</td></tr>
-<tr><td class="pkg">chrome-devtools-mcp</td><td class="num">26 KB</td><td class="num">25 KB</td><td class="num ratio">0.96x</td><td class="num n">6</td></tr>
+<tr><td class="pkg">mcp-server-tree-sitter</td><td class="num">21 KB</td><td class="num">36 KB</td><td class="num ratio">1.71x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">duckduckgo-mcp-server</td><td class="num">5 KB</td><td class="num">8 KB</td><td class="num ratio">1.64x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">@primeng/mcp</td><td class="num">8 KB</td><td class="num">14 KB</td><td class="num ratio">1.62x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">@primevue/mcp</td><td class="num">8 KB</td><td class="num">13 KB</td><td class="num ratio">1.54x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">geocode-mcp</td><td class="num">497 B</td><td class="num">655 B</td><td class="num ratio">1.32x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">@modelcontextprotocol/server-everything</td><td class="num">8 KB</td><td class="num">10 KB</td><td class="num ratio">1.24x</td><td class="num n">8</td></tr>
+<tr><td class="pkg">mcp-gnu-units</td><td class="num">10 KB</td><td class="num">10 KB</td><td class="num ratio">0.99x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">chrome-devtools-mcp</td><td class="num">26 KB</td><td class="num">25 KB</td><td class="num ratio">0.97x</td><td class="num n">6</td></tr>
+<tr><td class="pkg">mcp-server-git</td><td class="num">6 KB</td><td class="num">5 KB</td><td class="num ratio">0.91x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">crossref-mcp</td><td class="num">11 KB</td><td class="num">9 KB</td><td class="num ratio">0.86x</td><td class="num n">7</td></tr>
 <tr><td class="pkg">markitdown-mcp</td><td class="num">318 B</td><td class="num">264 B</td><td class="num ratio">0.83x</td><td class="num n">1</td></tr>
-<tr><td class="pkg">mcp-server-git</td><td class="num">6 KB</td><td class="num">4 KB</td><td class="num ratio">0.70x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">mcp-dice</td><td class="num">335 B</td><td class="num">261 B</td><td class="num ratio">0.78x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">@knip/mcp</td><td class="num">4 KB</td><td class="num">3 KB</td><td class="num ratio">0.76x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">uuid-mcp</td><td class="num">185 B</td><td class="num">129 B</td><td class="num ratio">0.70x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">mcp-geo</td><td class="num">18 KB</td><td class="num">12 KB</td><td class="num ratio">0.63x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">mcp-hn</td><td class="num">2 KB</td><td class="num">951 B</td><td class="num ratio">0.57x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">unit-converter-mcp</td><td class="num">15 KB</td><td class="num">8 KB</td><td class="num ratio">0.52x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">mcp-nixos</td><td class="num">7 KB</td><td class="num">3 KB</td><td class="num ratio">0.48x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">@sinco-lab/mcp-youtube-transcript</td><td class="num">4 KB</td><td class="num">2 KB</td><td class="num ratio">0.42x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">polars-mcp</td><td class="num">4 KB</td><td class="num">2 KB</td><td class="num ratio">0.41x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">pypi-query-mcp-server</td><td class="num">13 KB</td><td class="num">5 KB</td><td class="num ratio">0.39x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">mcp-server-fetch-python</td><td class="num">2 KB</td><td class="num">665 B</td><td class="num ratio">0.35x</td><td class="num n">1</td></tr>
 <tr><td class="pkg">mcp-server-calculator</td><td class="num">421 B</td><td class="num">129 B</td><td class="num ratio">0.31x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">open-meteo-mcp</td><td class="num">2 KB</td><td class="num">580 B</td><td class="num ratio">0.30x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">calculator-mcp-server</td><td class="num">294 B</td><td class="num">77 B</td><td class="num ratio">0.26x</td><td class="num n">1</td></tr>
 <tr><td class="pkg">mcp-server-fetch</td><td class="num">1 KB</td><td class="num">281 B</td><td class="num ratio">0.24x</td><td class="num n">1</td></tr>
-<tr><td class="pkg">mcp-server-time</td><td class="num">1 KB</td><td class="num">237 B</td><td class="num ratio">0.19x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">mcp-server-time</td><td class="num">1 KB</td><td class="num">235 B</td><td class="num ratio">0.19x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">readability-mcp</td><td class="num">2 KB</td><td class="num">269 B</td><td class="num ratio">0.17x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">swiss-holidays-mcp</td><td class="num">44 KB</td><td class="num">7 KB</td><td class="num ratio">0.16x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">code-index-mcp</td><td class="num">9 KB</td><td class="num">1 KB</td><td class="num ratio">0.15x</td><td class="num n">4</td></tr>
+<tr><td class="pkg">dictionary-mcp-server</td><td class="num">7 KB</td><td class="num">969 B</td><td class="num ratio">0.13x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">wikipedia-mcp</td><td class="num">23 KB</td><td class="num">3 KB</td><td class="num ratio">0.11x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">mcp-molecules</td><td class="num">7 KB</td><td class="num">765 B</td><td class="num ratio">0.11x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">arxiv-mcp-server</td><td class="num">18 KB</td><td class="num">2 KB</td><td class="num ratio">0.11x</td><td class="num n">4</td></tr>
+<tr><td class="pkg">math-mcp</td><td class="num">1 KB</td><td class="num">153 B</td><td class="num ratio">0.11x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">orcid-mcp-server</td><td class="num">3 KB</td><td class="num">327 B</td><td class="num ratio">0.11x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">pubchem_mcp_server</td><td class="num">1 KB</td><td class="num">135 B</td><td class="num ratio">0.10x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">feed-mcp</td><td class="num">3 KB</td><td class="num">319 B</td><td class="num ratio">0.10x</td><td class="num n">1</td></tr>
 <tr><td class="pkg">@modelcontextprotocol/server-sequential-thinking</td><td class="num">5 KB</td><td class="num">338 B</td><td class="num ratio">0.07x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">@wrtnlabs/calculator-mcp</td><td class="num">1 KB</td><td class="num">99 B</td><td class="num ratio">0.07x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">@mantine/mcp-server</td><td class="num">1 KB</td><td class="num">78 B</td><td class="num ratio">0.06x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">uniprot-mcp-server</td><td class="num">56 KB</td><td class="num">3 KB</td><td class="num ratio">0.05x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">mcp-server-math</td><td class="num">4 KB</td><td class="num">204 B</td><td class="num ratio">0.05x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">astronomy-mcp</td><td class="num">7 KB</td><td class="num">319 B</td><td class="num ratio">0.04x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">mcp-ast-explorer</td><td class="num">5 KB</td><td class="num">172 B</td><td class="num ratio">0.04x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">mcp-abacus</td><td class="num">33 KB</td><td class="num">935 B</td><td class="num ratio">0.03x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">registry-mcp</td><td class="num">145 KB</td><td class="num">4 KB</td><td class="num ratio">0.03x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">mcp-yahoo-finance</td><td class="num">4 KB</td><td class="num">101 B</td><td class="num ratio">0.03x</td><td class="num n">1</td></tr>
+<tr><td class="pkg">random-number-mcp</td><td class="num">5 KB</td><td class="num">127 B</td><td class="num ratio">0.03x</td><td class="num n">1</td></tr>
 <tr><td class="pkg">@agentdeskai/browser-tools-mcp</td><td class="num">26 KB</td><td class="num">558 B</td><td class="num ratio">0.02x</td><td class="num n">9</td></tr>
+<tr><td class="pkg">kegg-mcp-server</td><td class="num">109 KB</td><td class="num">2 KB</td><td class="num ratio">0.02x</td><td class="num n">2</td></tr>
 <tr><td class="pkg">@modelcontextprotocol/server-memory</td><td class="num">11 KB</td><td class="num">173 B</td><td class="num ratio">0.02x</td><td class="num n">2</td></tr>
 <tr><td class="pkg">@executeautomation/playwright-mcp-server</td><td class="num">14 KB</td><td class="num">129 B</td><td class="num ratio">0.01x</td><td class="num n">1</td></tr>
 <tr><td class="pkg">@playwright/mcp</td><td class="num">19 KB</td><td class="num">167 B</td><td class="num ratio">0.01x</td><td class="num n">3</td></tr>
+<tr><td class="pkg">mcp-numpy</td><td class="num">38 KB</td><td class="num">208 B</td><td class="num ratio">0.01x</td><td class="num n">2</td></tr>
+<tr><td class="pkg">mcp-sympy</td><td class="num">63 KB</td><td class="num">198 B</td><td class="num ratio">0.00x</td><td class="num n">1</td></tr>
       </tbody>
     </table>
   </div>
-  <p style="margin-top:1rem;font-size:.92rem;color:var(--ink-faint)">13 further servers declared a menu but exposed no tool that could be called safely without side effects, so they have a declared size and no delivered one. They are in the raw data with their declared sizes intact.</p>
+  <p style="margin-top:1rem;font-size:.92rem;color:var(--ink-faint)">17 further servers declared a menu but exposed no tool that could be called safely without side effects, so they have a declared size and no delivered one. They are in the raw data with their declared sizes intact.</p>
 </section>
 
 <section>
   <h2>What this is not</h2>
   <div class="note">
-    <p><b>41 calls across 16 servers, on one machine.</b> That is a small sample, and it is the weakest thing about this work. I could not find another published measurement of delivered size, which makes this the best number available and still a thin one. If one exists, I would rather cite it than be the only source.</p>
+    <p><b>140 calls across 65 servers, on one machine.</b> That is a small sample, and it is the weakest thing about this work. I could not find another published measurement of delivered size, which makes this the best number available and still a thin one. If one exists, I would rather cite it than be the only source.</p>
     <p>Every figure here carries its <code>n</code>. If you take a number from this page, take the <code>n</code> with it.</p>
     <p>The servers were exercised with read-only tools chosen by an allowlist, one request at a time. Nothing was written, deleted or executed. Servers that refused without credentials, and servers that would not start, are published as part of the dataset rather than dropped from it &mdash; a census that silently excludes its failures is not a census.</p>
   </div>
@@ -293,7 +489,7 @@ callwitness baseline --out mine.json</code></pre>
   <a href="https://github.com/AditiChaudharyy14/callwitness">source and raw data</a> &nbsp;&middot;&nbsp;
   <a href="https://callwitness.tech/baseline/v1.json">baseline/v1.json</a> &nbsp;&middot;&nbsp;
   MIT<br>
-  generated from the dataset at commit 312f590 &mdash; this page is rendered from
+  generated from the dataset at commit ce9c268 &mdash; this page is rendered from
   v1.json, so it cannot disagree with the endpoint
 </footer>
 
