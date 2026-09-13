@@ -113,6 +113,10 @@ def build(source: Path) -> Dict[str, Any]:
 
     return {
         "schema": SCHEMA,
+        # Stated, never inferred: a consumer must be able to tell a
+        # published census from a local run without guessing from the
+        # URL it happened to arrive by.
+        "origin": "census",
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "commit": commit(),
         "source": REPO,
