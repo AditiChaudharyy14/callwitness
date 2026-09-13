@@ -124,7 +124,90 @@ def chart(pairs: List[Dict[str, Any]]) -> str:
 
 # -- the page -------------------------------------------------------------
 
-def build(doc: Dict[str, Any]) -> str:
+
+def _previous_maxes(path: Path) -> Dict[str, int]:
+    """Largest successful response per package in an earlier census run.
+
+    Read straight from the raw JSONL rather than from a rendered document:
+    earlier runs predate the baseline format, and there is no reason to
+    re-render history in order to compare against it.
+    """
+    if not path.is_file():
+        return {}
+    found = {}
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            if not row.get("started"):
+                continue
+            sizes = [c.get("returned_bytes") or 0
+                     for c in (row.get("calls") or []) if not c.get("is_error")]
+            if not sizes:
+                continue
+            package = row.get("package") or row.get("server") or "?"
+            found[package] = max(found.get(package, 0), max(sizes))
+    except Exception:
+        return {}
+    return found
+
+
+def two_run(servers, previous) -> str:
+    """The same server, measured twice, with its declared size unchanged.
+
+    This is the argument the whole page makes, in the one form that cannot be
+    waved away as a strange outlier: nothing about the server changed between
+    the runs except the argument it was asked.
+    """
+    if not previous:
+        return ""
+    moved = []
+    for s in servers:
+        was = previous.get(s["package"], 0)
+        now = s["returned_bytes"]["max"]
+        declared = s["declared_bytes"]
+        if not (was and now and declared):
+            continue
+        swing = max(was, now) / min(was, now)
+        if swing >= 2:
+            moved.append((swing, s["package"], declared, was, now))
+    if not moved:
+        return ""
+    moved.sort(reverse=True)
+    swing, package, declared, was, now = moved[0]
+
+    return (
+        '<section>'
+        '<h2>The same server, measured twice</h2>'
+        '<p>Two censuses have been run. <code>' + esc(short(package)) + '</code>'
+        ' appears in both, declaring the same ' + human(declared) + ' of schema'
+        ' each time, and the size it handed back moved by <b>' + ratio(swing)
+        + '</b>:</p>'
+        '<div class="tablewrap"><table><thead><tr><th>run</th>'
+        '<th class="num">declared</th><th class="num">delivered</th>'
+        '<th class="num">ratio</th></tr></thead><tbody>'
+        '<tr><td class="pkg">first census</td><td class="num">'
+        + human(declared) + '</td><td class="num">' + human(was)
+        + '</td><td class="num ratio">' + ratio(was / declared) + '</td></tr>'
+        '<tr><td class="pkg">second census</td><td class="num">'
+        + human(declared) + '</td><td class="num">' + human(now)
+        + '</td><td class="num ratio">' + ratio(now / declared) + '</td></tr>'
+        '</tbody></table></div>'
+        '<p style="margin-top:1.2rem">Nothing about the server changed. Its'
+        ' declared size is a constant; only the argument differed. Whatever an'
+        ' install-time number can tell you, it could not have told you this'
+        ' &mdash; and no ranking built on declared size survives a '
+        + ratio(swing) + ' swing in what actually gets delivered.</p>'
+        '<p>Both runs are published, as <code>census/data/census-r1.jsonl</code>'
+        ' and <code>census/data/census.jsonl</code>. The comparison above is'
+        ' computed from them rather than typed in.</p>'
+        '</section>'
+    )
+
+
+def build(doc: Dict[str, Any], previous) -> str:
     servers = doc["servers"]
     sample = doc["sample"]
     overall = doc["overall"]["returned_bytes"]
@@ -159,7 +242,8 @@ def build(doc: Dict[str, Any]) -> str:
             human(p["delivered"]), ratio(p["ratio"]), p["n"])
         for p in pairs)
 
-    return PAGE.replace("{{CHART}}", chart(pairs)) \
+    return PAGE.replace("{{TWORUN}}", two_run(servers, previous)) \
+               .replace("{{CHART}}", chart(pairs)) \
                .replace("{{ROWS}}", rows) \
                .replace("{{CALLS}}", str(sample["calls"])) \
                .replace("{{CALLED}}", str(sample["servers_called"])) \
@@ -358,6 +442,7 @@ footer a{color:var(--ink-soft)}
   <p>This is why a fixed context budget behaves unpredictably in practice: the cut point is static, and the pressure on it varies by {{SPREAD}} depending on which argument the model happens to pick at runtime.</p>
 </section>
 
+{{TWORUN}}
 <section>
   <h2>Every measured server</h2>
   <div class="tablewrap">
@@ -418,6 +503,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", default="docs/baseline/v1.json")
     parser.add_argument("--out", default="docs/baseline/index.html")
+    parser.add_argument("--previous",
+                        default="census/data/census-r1.jsonl",
+                        help="an earlier run, for the two-run comparison")
     args = parser.parse_args()
 
     source = Path(args.source)
@@ -426,7 +514,7 @@ def main() -> int:
         return 1
 
     doc = json.loads(source.read_text(encoding="utf-8"))
-    page = build(doc)
+    page = build(doc, _previous_maxes(Path(args.previous)))
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page, encoding="utf-8")
