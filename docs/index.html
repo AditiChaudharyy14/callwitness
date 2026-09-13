@@ -369,6 +369,32 @@ footer a:hover{color:var(--accent)}
   </div>
 </header>
 
+<section class="seq" style="border-top:2px solid var(--accent);padding-top:1.6rem">
+  <span class="mark" style="color:var(--accent)">measured</span>
+  <h2>Declared size does not predict<br>what a server actually hands back.</h2>
+
+  <p style="max-width:54ch;color:var(--ink-soft)">
+    82 MCP servers run behind this proxy, 140 calls, 1,070 tools declared.
+    <code>mcp-deepwiki</code> declares 774 bytes of schema and returned 62 KB.
+    <code>mcp-sympy</code> declares 63 KB across 171 tools and returned 198 B.
+    Median response 580 B, p95 36 KB, largest 496 KB.
+  </p>
+
+  <p style="max-width:54ch;color:var(--ink-soft)">
+    Every published estimate of MCP context cost counts the schemas a server
+    declares. Nobody counted what it delivers, because that means running the
+    servers. The raw data, the harness and every failure are published.
+  </p>
+
+  <p style="font-family:var(--f-mono);font-size:.8rem;letter-spacing:.04em;margin-top:1.4rem">
+    <a href="/baseline/">the results &rarr;</a>
+    &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+    <a href="/research/">how it was measured &rarr;</a>
+    &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+    <a href="/baseline/v1.json">v1.json</a>
+  </p>
+</section>
+
 <section class="seq">
   <span class="mark">seq</span>
   <h2>Same tool. Same permission.<br>Two very different acts.</h2>
