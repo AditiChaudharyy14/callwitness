@@ -26,3 +26,6 @@ runs/
 
 # the census dataset is published evidence, not recorded traffic
 !census/data/*.jsonl
+
+# a census server writes a cache here when the census runs from the repo root
+data/
