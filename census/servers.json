@@ -29,81 +29,172 @@
     "",
     "CENSUS_ROOT is replaced at load time with --root."
   ],
-
   "servers": [
     {
       "name": "filesystem",
       "package": "@modelcontextprotocol/server-filesystem",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "CENSUS_ROOT"],
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "CENSUS_ROOT"
+      ],
       "calls": [
-        {"tool": "list_directory", "arguments": {"path": "CENSUS_ROOT"}},
-        {"tool": "directory_tree", "arguments": {"path": "CENSUS_ROOT"}},
-        {"tool": "list_allowed_directories", "arguments": {}}
+        {
+          "tool": "list_directory",
+          "arguments": {
+            "path": "CENSUS_ROOT"
+          }
+        },
+        {
+          "tool": "directory_tree",
+          "arguments": {
+            "path": "CENSUS_ROOT"
+          }
+        },
+        {
+          "tool": "list_allowed_directories",
+          "arguments": {}
+        }
       ]
     },
     {
       "name": "memory",
       "package": "@modelcontextprotocol/server-memory",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
-      "calls": [{"tool": "read_graph", "arguments": {}}]
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "calls": [
+        {
+          "tool": "read_graph",
+          "arguments": {}
+        }
+      ]
     },
     {
       "name": "sequentialthinking",
       "package": "@modelcontextprotocol/server-sequential-thinking",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
       "calls": [
-        {"tool": "sequentialthinking", "arguments": {
-          "thought": "A first thought.", "nextThoughtNeeded": false,
-          "thoughtNumber": 1, "totalThoughts": 1}}
+        {
+          "tool": "sequentialthinking",
+          "arguments": {
+            "thought": "A first thought.",
+            "nextThoughtNeeded": false,
+            "thoughtNumber": 1,
+            "totalThoughts": 1
+          }
+        }
       ]
     },
     {
       "name": "everything",
       "package": "@modelcontextprotocol/server-everything",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-everything"],
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ],
       "calls": [
-        {"tool": "echo", "arguments": {"message": "census"}},
-        {"tool": "add", "arguments": {"a": 2, "b": 3}},
-        {"tool": "getTinyImage", "arguments": {}}
+        {
+          "tool": "echo",
+          "arguments": {
+            "message": "census"
+          }
+        },
+        {
+          "tool": "add",
+          "arguments": {
+            "a": 2,
+            "b": 3
+          }
+        },
+        {
+          "tool": "getTinyImage",
+          "arguments": {}
+        }
       ]
     },
     {
       "name": "chrome-devtools",
       "package": "chrome-devtools-mcp",
-      "command": ["npx", "-y", "chrome-devtools-mcp@latest"],
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
       "calls": []
     },
     {
       "name": "playwright",
       "package": "@playwright/mcp",
-      "command": ["npx", "-y", "@playwright/mcp@latest"],
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest"
+      ],
       "calls": []
     },
     {
       "name": "playwright-automation",
       "package": "@executeautomation/playwright-mcp-server",
-      "command": ["npx", "-y", "@executeautomation/playwright-mcp-server"],
+      "command": [
+        "npx",
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ],
       "calls": []
     },
     {
       "name": "browser-tools",
       "package": "@agentdeskai/browser-tools-mcp",
-      "command": ["npx", "-y", "@agentdeskai/browser-tools-mcp"],
+      "command": [
+        "npx",
+        "-y",
+        "@agentdeskai/browser-tools-mcp"
+      ],
       "calls": [
-        {"tool": "getConsoleLogs", "arguments": {}},
-        {"tool": "getConsoleErrors", "arguments": {}}
+        {
+          "tool": "getConsoleLogs",
+          "arguments": {}
+        },
+        {
+          "tool": "getConsoleErrors",
+          "arguments": {}
+        }
       ]
     },
     {
       "name": "context7",
       "package": "@upstash/context7-mcp",
-      "command": ["npx", "-y", "@upstash/context7-mcp"],
-      "calls": [{"tool": "resolve-library-id", "arguments": {"libraryName": "react"}}]
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "resolve-library-id",
+          "arguments": {
+            "libraryName": "react"
+          }
+        }
+      ]
     },
     {
       "name": "github",
       "package": "@modelcontextprotocol/server-github",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
       "calls": [],
       "auto": false,
       "_why": "every tool needs a token; it lists them anyway, so the declared surface counts"
@@ -111,7 +202,11 @@
     {
       "name": "notion",
       "package": "@notionhq/notion-mcp-server",
-      "command": ["npx", "-y", "@notionhq/notion-mcp-server"],
+      "command": [
+        "npx",
+        "-y",
+        "@notionhq/notion-mcp-server"
+      ],
       "calls": [],
       "auto": false,
       "_why": "needs an integration token to call anything"
@@ -119,7 +214,11 @@
     {
       "name": "firecrawl",
       "package": "firecrawl-mcp",
-      "command": ["npx", "-y", "firecrawl-mcp"],
+      "command": [
+        "npx",
+        "-y",
+        "firecrawl-mcp"
+      ],
       "calls": [],
       "auto": false,
       "_why": "needs FIRECRAWL_API_KEY; also every tool is a write or a paid fetch"
@@ -127,28 +226,44 @@
     {
       "name": "exa",
       "package": "exa-mcp-server",
-      "command": ["npx", "-y", "exa-mcp-server"],
+      "command": [
+        "npx",
+        "-y",
+        "exa-mcp-server"
+      ],
       "calls": [],
       "auto": false
     },
     {
       "name": "tavily",
       "package": "tavily-mcp",
-      "command": ["npx", "-y", "tavily-mcp"],
+      "command": [
+        "npx",
+        "-y",
+        "tavily-mcp"
+      ],
       "calls": [],
       "auto": false
     },
     {
       "name": "aws-kb",
       "package": "@modelcontextprotocol/server-aws-kb-retrieval",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-aws-kb-retrieval"],
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-aws-kb-retrieval"
+      ],
       "calls": [],
       "auto": false
     },
     {
       "name": "kubernetes",
       "package": "mcp-server-kubernetes",
-      "command": ["npx", "-y", "mcp-server-kubernetes"],
+      "command": [
+        "npx",
+        "-y",
+        "mcp-server-kubernetes"
+      ],
       "calls": [],
       "auto": false,
       "_why": "exposes kubectl_delete and cleanup with no required arguments. Declared surface only."
@@ -156,7 +271,11 @@
     {
       "name": "chart",
       "package": "@antv/mcp-server-chart",
-      "command": ["npx", "-y", "@antv/mcp-server-chart"],
+      "command": [
+        "npx",
+        "-y",
+        "@antv/mcp-server-chart"
+      ],
       "calls": [],
       "auto": false,
       "_why": "27 generate_* tools, all of which render and upload"
@@ -164,31 +283,58 @@
     {
       "name": "shadcn-ui",
       "package": "@heilgar/shadcn-ui-mcp-server",
-      "command": ["npx", "-y", "@heilgar/shadcn-ui-mcp-server"],
+      "command": [
+        "npx",
+        "-y",
+        "@heilgar/shadcn-ui-mcp-server"
+      ],
       "calls": [
-        {"tool": "list-components", "arguments": {}},
-        {"tool": "list-blocks", "arguments": {}}
+        {
+          "tool": "list-components",
+          "arguments": {}
+        },
+        {
+          "tool": "list-blocks",
+          "arguments": {}
+        }
       ]
     },
     {
       "name": "deepwiki",
       "package": "mcp-deepwiki",
-      "command": ["npx", "-y", "mcp-deepwiki@latest"],
+      "command": [
+        "npx",
+        "-y",
+        "mcp-deepwiki@latest"
+      ],
       "calls": [
-        {"tool": "deepwiki_fetch", "arguments": {"url": "AditiChaudharyy14/callwitness"}}
+        {
+          "tool": "deepwiki_fetch",
+          "arguments": {
+            "url": "AditiChaudharyy14/callwitness"
+          }
+        }
       ]
     },
     {
       "name": "openapi",
       "package": "openapi-mcp-server",
-      "command": ["npx", "-y", "openapi-mcp-server"],
+      "command": [
+        "npx",
+        "-y",
+        "openapi-mcp-server"
+      ],
       "calls": [],
       "auto": false
     },
     {
       "name": "code-runner",
       "package": "mcp-server-code-runner",
-      "command": ["npx", "-y", "mcp-server-code-runner"],
+      "command": [
+        "npx",
+        "-y",
+        "mcp-server-code-runner"
+      ],
       "calls": [],
       "auto": false,
       "_why": "its one tool executes code. Declared surface only."
@@ -196,7 +342,11 @@
     {
       "name": "commands",
       "package": "mcp-server-commands",
-      "command": ["npx", "-y", "mcp-server-commands"],
+      "command": [
+        "npx",
+        "-y",
+        "mcp-server-commands"
+      ],
       "calls": [],
       "auto": false,
       "_why": "its one tool, run_process, runs shell commands with no required arguments. Declared surface only."
@@ -204,7 +354,12 @@
     {
       "name": "postgres",
       "package": "@modelcontextprotocol/server-postgres",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/postgres"],
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://localhost/postgres"
+      ],
       "calls": [],
       "auto": false,
       "_why": "one tool that runs SQL. Declared surface only."
@@ -212,49 +367,1118 @@
     {
       "name": "time",
       "package": "mcp-server-time",
-      "command": ["uvx", "mcp-server-time"],
-      "calls": [{"tool": "get_current_time", "arguments": {"timezone": "Asia/Kathmandu"}}]
+      "command": [
+        "uvx",
+        "mcp-server-time"
+      ],
+      "calls": [
+        {
+          "tool": "get_current_time",
+          "arguments": {
+            "timezone": "Asia/Kathmandu"
+          }
+        }
+      ]
     },
     {
       "name": "fetch",
       "package": "mcp-server-fetch",
-      "command": ["uvx", "mcp-server-fetch"],
-      "calls": [{"tool": "fetch", "arguments": {"url": "https://example.com"}}]
+      "command": [
+        "uvx",
+        "mcp-server-fetch"
+      ],
+      "calls": [
+        {
+          "tool": "fetch",
+          "arguments": {
+            "url": "https://example.com"
+          }
+        }
+      ]
     },
     {
       "name": "markitdown",
       "package": "markitdown-mcp",
-      "command": ["uvx", "markitdown-mcp"],
+      "command": [
+        "uvx",
+        "markitdown-mcp"
+      ],
       "calls": [
-        {"tool": "convert_to_markdown", "arguments": {"uri": "https://example.com"}}
+        {
+          "tool": "convert_to_markdown",
+          "arguments": {
+            "uri": "https://example.com"
+          }
+        }
       ]
     },
     {
       "name": "duckduckgo",
       "package": "duckduckgo-mcp-server",
-      "command": ["uvx", "duckduckgo-mcp-server"],
+      "command": [
+        "uvx",
+        "duckduckgo-mcp-server"
+      ],
       "calls": [
-        {"tool": "search", "arguments": {"query": "model context protocol"}}
+        {
+          "tool": "search",
+          "arguments": {
+            "query": "model context protocol"
+          }
+        }
       ]
     },
     {
       "name": "calculator",
       "package": "mcp-server-calculator",
-      "command": ["uvx", "mcp-server-calculator"],
-      "calls": [{"tool": "calculate", "arguments": {"expression": "2+2"}}]
+      "command": [
+        "uvx",
+        "mcp-server-calculator"
+      ],
+      "calls": [
+        {
+          "tool": "calculate",
+          "arguments": {
+            "expression": "2+2"
+          }
+        }
+      ]
     },
     {
       "name": "git",
       "package": "mcp-server-git",
-      "command": ["uvx", "mcp-server-git", "--repository", "CENSUS_REPO"],
+      "command": [
+        "uvx",
+        "mcp-server-git",
+        "--repository",
+        "CENSUS_REPO"
+      ],
       "calls": [
-        {"tool": "git_status", "arguments": {"repo_path": "CENSUS_REPO"}},
-        {"tool": "git_log", "arguments": {"repo_path": "CENSUS_REPO"}}
+        {
+          "tool": "git_status",
+          "arguments": {
+            "repo_path": "CENSUS_REPO"
+          }
+        },
+        {
+          "tool": "git_log",
+          "arguments": {
+            "repo_path": "CENSUS_REPO"
+          }
+        }
       ],
       "_why": "CENSUS_REPO must be a git checkout; --repo sets it, default is this repository"
+    },
+    {
+      "name": "sympy",
+      "package": "mcp-sympy",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-sympy"
+      ],
+      "calls": [
+        {
+          "tool": "sympy_factor",
+          "arguments": {
+            "expr": "x**2-1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "numpy",
+      "package": "mcp-numpy",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-numpy"
+      ],
+      "calls": [
+        {
+          "tool": "np_arange",
+          "arguments": {
+            "start": 0,
+            "stop": 5
+          }
+        }
+      ]
+    },
+    {
+      "name": "unit-converter",
+      "package": "unit-converter-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "unit-converter-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "list_supported_units",
+          "arguments": {}
+        },
+        {
+          "tool": "convert_temperature",
+          "arguments": {
+            "value": 100,
+            "from_unit": "celsius",
+            "to_unit": "fahrenheit"
+          }
+        }
+      ]
+    },
+    {
+      "name": "math",
+      "package": "mcp-server-math",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-server-math"
+      ],
+      "calls": [
+        {
+          "tool": "average",
+          "arguments": {
+            "numbers": [
+              1,
+              2,
+              3
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "abacus",
+      "package": "mcp-abacus",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-abacus"
+      ],
+      "calls": [
+        {
+          "tool": "calculate",
+          "arguments": {
+            "expression": "2+2*10"
+          }
+        },
+        {
+          "tool": "info",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "gnu-units",
+      "package": "mcp-gnu-units",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-gnu-units"
+      ],
+      "calls": [
+        {
+          "tool": "info",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "dice",
+      "package": "mcp-dice",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-dice"
+      ],
+      "calls": [
+        {
+          "tool": "roll_dice",
+          "arguments": {
+            "notation": "2d6"
+          }
+        }
+      ]
+    },
+    {
+      "name": "random-number",
+      "package": "random-number-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "random-number-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "random_int",
+          "arguments": {
+            "low": 1,
+            "high": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "uuid",
+      "package": "uuid-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "uuid-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "generate_uuid",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "molecules",
+      "package": "mcp-molecules",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-molecules"
+      ],
+      "calls": [
+        {
+          "tool": "molecular_weight_calculator",
+          "arguments": {
+            "formula": "H2O"
+          }
+        }
+      ]
+    },
+    {
+      "name": "chess",
+      "package": "mcp-chess",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-chess"
+      ],
+      "calls": [
+        {
+          "tool": "get_board_visualization",
+          "arguments": {}
+        },
+        {
+          "tool": "get_valid_moves",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "tree-sitter",
+      "package": "mcp-server-tree-sitter",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-server-tree-sitter"
+      ],
+      "calls": [
+        {
+          "tool": "list_languages",
+          "arguments": {}
+        },
+        {
+          "tool": "list_query_templates_tool",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "code-index",
+      "package": "code-index-mcp",
+      "command": [
+        "uvx",
+        "code-index-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "get_settings_info",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "ast-explorer",
+      "package": "mcp-ast-explorer",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-ast-explorer"
+      ],
+      "calls": [
+        {
+          "tool": "health",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "pandoc",
+      "package": "mcp-pandoc",
+      "command": [
+        "uvx",
+        "mcp-pandoc"
+      ],
+      "calls": [
+        {
+          "tool": "convert-contents",
+          "arguments": {
+            "contents": "# Hello",
+            "input_format": "markdown",
+            "output_format": "html"
+          }
+        }
+      ]
+    },
+    {
+      "name": "geo",
+      "package": "mcp-geo",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-geo"
+      ],
+      "calls": [
+        {
+          "tool": "distance",
+          "arguments": {
+            "geojson_a": "{\"type\":\"Point\",\"coordinates\":[0,0]}",
+            "geojson_b": "{\"type\":\"Point\",\"coordinates\":[1,1]}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "polars",
+      "package": "polars-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "polars-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "polars_search_api",
+          "arguments": {
+            "query": "read_csv"
+          }
+        }
+      ]
+    },
+    {
+      "name": "feed",
+      "package": "feed-mcp",
+      "command": [
+        "uvx",
+        "feed-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "list_feeds",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "math-npm",
+      "package": "math-mcp",
+      "command": [
+        "npx",
+        "-y",
+        "math-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "evaluate",
+          "arguments": {
+            "expression": "2+3*4"
+          }
+        }
+      ]
+    },
+    {
+      "name": "calculator-wrtn",
+      "package": "@wrtnlabs/calculator-mcp",
+      "command": [
+        "npx",
+        "-y",
+        "@wrtnlabs/calculator-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "add",
+          "arguments": {
+            "a": 2,
+            "b": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "calculator-min",
+      "package": "calculator-mcp-server",
+      "command": [
+        "npx",
+        "-y",
+        "calculator-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "add",
+          "arguments": {
+            "a": 2,
+            "b": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "mermaid-list",
+      "package": "mermaid-mcp-server",
+      "command": [
+        "npx",
+        "-y",
+        "mermaid-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "list_diagrams",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "primevue",
+      "package": "@primevue/mcp",
+      "command": [
+        "npx",
+        "-y",
+        "@primevue/mcp"
+      ],
+      "calls": [
+        {
+          "tool": "list",
+          "arguments": {}
+        },
+        {
+          "tool": "version",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "primeng",
+      "package": "@primeng/mcp",
+      "command": [
+        "npx",
+        "-y",
+        "@primeng/mcp"
+      ],
+      "calls": [
+        {
+          "tool": "list",
+          "arguments": {}
+        },
+        {
+          "tool": "version",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "knip",
+      "package": "@knip/mcp",
+      "command": [
+        "npx",
+        "-y",
+        "@knip/mcp"
+      ],
+      "calls": [
+        {
+          "tool": "knip-docs",
+          "arguments": {
+            "topic": "configuration"
+          }
+        }
+      ]
+    },
+    {
+      "name": "shadcn-jpisnice",
+      "package": "@jpisnice/shadcn-ui-mcp-server",
+      "command": [
+        "npx",
+        "-y",
+        "@jpisnice/shadcn-ui-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "list_components",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "wikipedia",
+      "package": "wikipedia-mcp",
+      "command": [
+        "uvx",
+        "wikipedia-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "get_summary",
+          "arguments": {
+            "title": "Python (programming language)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "arxiv",
+      "package": "arxiv-mcp-server",
+      "command": [
+        "uvx",
+        "arxiv-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "search_papers",
+          "arguments": {
+            "query": "transformer",
+            "max_results": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "arxiv-simple",
+      "package": "mcp-simple-arxiv",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-simple-arxiv"
+      ],
+      "calls": [
+        {
+          "tool": "search_papers",
+          "arguments": {
+            "query": "graph neural network"
+          }
+        }
+      ]
+    },
+    {
+      "name": "crossref",
+      "package": "crossref-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "crossref-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "ping",
+          "arguments": {}
+        },
+        {
+          "tool": "search_works",
+          "arguments": {
+            "query": "attention is all you need"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pypi-query",
+      "package": "pypi-query-mcp-server",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "pypi-query-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "get_package_info",
+          "arguments": {
+            "package_name": "requests"
+          }
+        }
+      ]
+    },
+    {
+      "name": "hackernews",
+      "package": "mcp-hn",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-hn"
+      ],
+      "calls": [
+        {
+          "tool": "get_stories",
+          "arguments": {
+            "story_type": "top",
+            "num_stories": 3
+          }
+        }
+      ]
+    },
+    {
+      "name": "yahoo-finance",
+      "package": "mcp-yahoo-finance",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-yahoo-finance"
+      ],
+      "calls": [
+        {
+          "tool": "get_current_stock_price",
+          "arguments": {
+            "symbol": "AAPL"
+          }
+        }
+      ]
+    },
+    {
+      "name": "pubchem",
+      "package": "pubchem_mcp_server",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "pubchem_mcp_server"
+      ],
+      "calls": [
+        {
+          "tool": "get_cid_by_name",
+          "arguments": {
+            "name": "aspirin"
+          }
+        }
+      ]
+    },
+    {
+      "name": "kegg",
+      "package": "kegg-mcp-server",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "kegg-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "list_organisms",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "rcsb",
+      "package": "rcsb-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "rcsb-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "rcsb_list_pdb_search_attributes",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "uniprot",
+      "package": "uniprot-mcp-server",
+      "command": [
+        "uvx",
+        "uniprot-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "uniprot_get_entry",
+          "arguments": {
+            "accession": "P69905"
+          }
+        }
+      ]
+    },
+    {
+      "name": "orcid",
+      "package": "orcid-mcp-server",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "orcid-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "orcid_search",
+          "arguments": {
+            "query": "Einstein"
+          }
+        }
+      ]
+    },
+    {
+      "name": "scholarly",
+      "package": "mcp-scholarly",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-scholarly"
+      ],
+      "calls": [
+        {
+          "tool": "search-arxiv",
+          "arguments": {
+            "keyword": "neural network"
+          }
+        }
+      ]
+    },
+    {
+      "name": "geocode",
+      "package": "geocode-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "geocode-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "get_coordinates",
+          "arguments": {
+            "location": "Paris, France"
+          }
+        }
+      ]
+    },
+    {
+      "name": "dictionary",
+      "package": "dictionary-mcp-server",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "dictionary-mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "tool_get_definition",
+          "arguments": {
+            "word": "serendipity"
+          }
+        }
+      ]
+    },
+    {
+      "name": "currency",
+      "package": "mcp-currency",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-currency"
+      ],
+      "calls": [
+        {
+          "tool": "get_currency_conversion_rate",
+          "arguments": {
+            "from_currency": "USD",
+            "to_currency": "EUR"
+          }
+        }
+      ]
+    },
+    {
+      "name": "holidays",
+      "package": "holidays-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "holidays-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "get_public_holidays",
+          "arguments": {
+            "country": "US",
+            "year": 2026
+          }
+        }
+      ]
+    },
+    {
+      "name": "swiss-holidays",
+      "package": "swiss-holidays-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "swiss-holidays-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "list_cantons",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "company-registry",
+      "package": "registry-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "registry-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "list_countries",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "nixos",
+      "package": "mcp-nixos",
+      "command": [
+        "uvx",
+        "mcp-nixos"
+      ],
+      "calls": [
+        {
+          "tool": "nix_versions",
+          "arguments": {
+            "package": "git"
+          }
+        }
+      ]
+    },
+    {
+      "name": "rss",
+      "package": "mcp-server-rss",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-server-rss"
+      ],
+      "calls": [
+        {
+          "tool": "feed",
+          "arguments": {
+            "url": "https://hnrss.org/frontpage"
+          }
+        }
+      ]
+    },
+    {
+      "name": "fetch-python",
+      "package": "mcp-server-fetch-python",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "mcp-server-fetch-python"
+      ],
+      "calls": [
+        {
+          "tool": "get-raw-text",
+          "arguments": {
+            "url": "https://example.com"
+          }
+        }
+      ]
+    },
+    {
+      "name": "astronomy",
+      "package": "astronomy-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "astronomy-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "search_simbad_object",
+          "arguments": {
+            "name": "M31"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ephemeris",
+      "package": "ephemeris-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "ephemeris-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "get_planetary_positions",
+          "arguments": {
+            "date": "2026-01-01"
+          }
+        }
+      ]
+    },
+    {
+      "name": "readability",
+      "package": "readability-mcp",
+      "command": [
+        "uvx",
+        "--with",
+        "mcp<2",
+        "readability-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "flesch_reading_ease",
+          "arguments": {
+            "text": "The cat sat on the mat."
+          }
+        }
+      ]
+    },
+    {
+      "name": "trends-hub",
+      "package": "mcp-trends-hub",
+      "command": [
+        "npx",
+        "-y",
+        "mcp-trends-hub"
+      ],
+      "calls": [
+        {
+          "tool": "get_bbc_news",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "name": "open-meteo",
+      "package": "open-meteo-mcp",
+      "command": [
+        "npx",
+        "-y",
+        "open-meteo-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "get_weather",
+          "arguments": {
+            "location": "Paris"
+          }
+        }
+      ]
+    },
+    {
+      "name": "youtube-transcript",
+      "package": "@sinco-lab/mcp-youtube-transcript",
+      "command": [
+        "npx",
+        "-y",
+        "@sinco-lab/mcp-youtube-transcript"
+      ],
+      "calls": [
+        {
+          "tool": "get_video_info",
+          "arguments": {
+            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "devdocs",
+      "package": "devdocs-mcp",
+      "command": [
+        "npx",
+        "-y",
+        "devdocs-mcp"
+      ],
+      "calls": [
+        {
+          "tool": "list_available_docs",
+          "arguments": {
+            "filter": "react"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mantine",
+      "package": "@mantine/mcp-server",
+      "command": [
+        "npx",
+        "-y",
+        "@mantine/mcp-server"
+      ],
+      "calls": [
+        {
+          "tool": "list_items",
+          "arguments": {
+            "kind": "hook"
+          }
+        }
+      ]
+    },
+    {
+      "name": "react-spectrum",
+      "package": "@react-spectrum/mcp",
+      "command": [
+        "npx",
+        "-y",
+        "@react-spectrum/mcp"
+      ],
+      "calls": [
+        {
+          "tool": "list_s2_pages",
+          "arguments": {}
+        }
+      ]
     }
   ],
-
   "_refused_without_credentials": [
     "@modelcontextprotocol/server-gitlab -- GITLAB_PERSONAL_ACCESS_TOKEN",
     "@modelcontextprotocol/server-slack -- SLACK_BOT_TOKEN and SLACK_TEAM_ID",
