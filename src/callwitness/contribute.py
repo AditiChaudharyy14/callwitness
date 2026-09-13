@@ -187,10 +187,45 @@ def _rows(home: Path, since: Optional[str]) -> List[sqlite3.Row]:
         conn.close()
 
 
+
+def _declared_by_package(home: Path) -> Dict[str, int]:
+    """Largest tools/list recorded per package, or {} if none were.
+
+    Until v0.2.2 the recorder did not keep this, so contributed records carried
+    declared_bytes 0 -- which silently removed the declared half of the only
+    comparison this baseline exists to make.
+    """
+    db = Path(home) / "callwitness.db"
+    if not db.is_file():
+        return {}
+    conn = sqlite3.connect(str(db))
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            "SELECT s.command AS command, e.payload AS payload "
+            "FROM events e JOIN sessions s ON s.session_id = e.session_id "
+            "WHERE e.kind = 'server:tools/list'").fetchall()
+    except Exception:
+        return {}
+    finally:
+        conn.close()
+    found: Dict[str, int] = {}
+    for row in rows:
+        try:
+            declared = int(json.loads(row["payload"]).get("declared_bytes") or 0)
+        except Exception:
+            continue
+        package = package_of(row["command"] or "")
+        if declared > found.get(package, 0):
+            found[package] = declared
+    return found
+
+
 def build_payload(home: Path, install: str,
                   since: Optional[str] = None) -> Dict[str, Any]:
     """Everything that would be sent, and nothing that would not."""
     rows = _rows(home, since)
+    declared_sizes = _declared_by_package(home)
 
     grouped: Dict[str, Dict[str, List[sqlite3.Row]]] = {}
     for row in rows:
@@ -220,11 +255,12 @@ def build_payload(home: Path, install: str,
                 },
             })
         servers.append({
-            # declared_bytes needs a tools/list observation the recorder does not
-            # keep yet. Reported as 0 rather than guessed; a fabricated number in
-            # a baseline is worse than a missing one.
+            # Measured from the tools/list this install actually saw. 0 means
+            # no listing was recorded for this package, never that it declared
+            # nothing: a fabricated number in a baseline is worse than a
+            # missing one.
             "package": package,
-            "declared_bytes": 0,
+            "declared_bytes": int(declared_sizes.get(package, 0)),
             "tool_count": len(tools),
             "tools": entries,
         })

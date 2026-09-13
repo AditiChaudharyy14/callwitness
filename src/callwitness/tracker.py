@@ -47,6 +47,11 @@ class CallTracker:
         self.redact = redact
         self.pending_ttl = pending_ttl
         self.pending: Dict[str, Dict[str, Any]] = {}
+        # Ids of tools/list requests awaiting a response. Separate from
+        # `pending` because these carry no arguments and produce an event
+        # rather than a call row -- and because a listing must never be
+        # mistaken for a tool invocation in the record.
+        self.listings: Dict[str, float] = {}
         self.pending_lock = threading.Lock()
 
     # -- observation -------------------------------------------------------
@@ -59,6 +64,15 @@ class CallTracker:
                 self.rec.event("client:{}".format(method), msg.get("params", {}))
             except Exception:
                 pass
+            if method == "tools/list" and msg.get("id") is not None:
+                # Remember the id so the response can be measured. The declared
+                # size is the denominator of the only ratio this project
+                # publishes, and this is the one moment it is observable.
+                # Bounded, because a client that never gets answers should not
+                # be able to grow this without limit.
+                with self.pending_lock:
+                    if len(self.listings) < 64:
+                        self.listings[str(msg["id"])] = time.perf_counter()
             return
         if method != "tools/call":
             return
@@ -139,9 +153,47 @@ class CallTracker:
             except Exception:
                 pass
 
+    def _record_listing(self, msg: Dict[str, Any]) -> None:
+        """Measure the menu: what a server declares before anything is called.
+
+        Every published measurement of MCP context cost counts this document
+        and stops there, because nothing else runs the servers. Recording it
+        here is what lets a delivered size be compared with the declared one on
+        the same machine, which is the entire finding.
+
+        Sizes and names only. The schemas themselves are not kept: they are
+        often the largest thing a server sends, and keeping them would turn a
+        measurement into a copy of somebody's interface.
+        """
+        result = msg.get("result")
+        if not isinstance(result, dict):
+            return
+        tools = result.get("tools")
+        if not isinstance(tools, list):
+            return
+        raw = json.dumps(result, ensure_ascii=False, default=str)
+        names = [t.get("name") for t in tools
+                 if isinstance(t, dict) and isinstance(t.get("name"), str)]
+        try:
+            self.rec.event("server:tools/list", {
+                "declared_bytes": len(raw.encode("utf-8")),
+                "tool_count": len(tools),
+                "tools": names,
+            })
+        except Exception:
+            pass
+
     def on_server_message(self, msg: Dict[str, Any]) -> None:
         request_id = msg.get("id")
         if request_id is None:
+            return
+
+        with self.pending_lock:
+            listed = self.listings.pop(str(request_id), None)
+        if listed is not None:
+            # A listing, not a call. Measured and recorded as an event; it
+            # never becomes a row in `calls`, because nothing was invoked.
+            self._record_listing(msg)
             return
 
         with self.pending_lock:
