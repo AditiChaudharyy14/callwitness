@@ -379,6 +379,7 @@ footer a{color:var(--ink-soft)}
   <p>This is why a fixed context budget behaves unpredictably in practice: the cut point is static, and the pressure on it varies by 6,437x depending on which argument the model happens to pick at runtime.</p>
 </section>
 
+<section><h2>The same server, measured twice</h2><p>Two censuses have been run. <code>mcp-deepwiki</code> appears in both, declaring the same 774 B of schema each time, and the size it handed back moved by <b>11x</b>:</p><div class="tablewrap"><table><thead><tr><th>run</th><th class="num">declared</th><th class="num">delivered</th><th class="num">ratio</th></tr></thead><tbody><tr><td class="pkg">first census</td><td class="num">774 B</td><td class="num">701 KB</td><td class="num ratio">906x</td></tr><tr><td class="pkg">second census</td><td class="num">774 B</td><td class="num">62 KB</td><td class="num ratio">81x</td></tr></tbody></table></div><p style="margin-top:1.2rem">Nothing about the server changed. Its declared size is a constant; only the argument differed. Whatever an install-time number can tell you, it could not have told you this &mdash; and no ranking built on declared size survives a 11x swing in what actually gets delivered.</p><p>Both runs are published, as <code>census/data/census-r1.jsonl</code> and <code>census/data/census.jsonl</code>. The comparison above is computed from them rather than typed in.</p></section>
 <section>
   <h2>Every measured server</h2>
   <div class="tablewrap">
