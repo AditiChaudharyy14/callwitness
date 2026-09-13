@@ -14,6 +14,41 @@ No dependencies. Python 3.8+. MIT.
 
 ---
 
+## What it found
+
+Every published estimate of MCP context cost counts the schemas a server declares
+in `tools/list`. Nobody counts what it hands the model at runtime, because that
+means running the servers rather than reading their manifests. So they were run:
+86 servers attempted, 82 started, 65 measured, 140 calls.
+
+Declared size does not predict delivered size.
+
+| server | declares | returned |
+|---|---|---|
+| `mcp-deepwiki` | 774 B | 62 KB |
+| `company-registry` | 145 KB | 4 KB |
+| `mcp-sympy` | 63 KB across 171 tools | 198 B |
+| `@playwright/mcp` | 19 KB | 167 B |
+
+Median response 580 B, p95 36 KB, largest 496 KB — a spread of 6,437×. And the
+same server moves: deepwiki declared the same 774 bytes in both censuses, and
+returned 701 KB when asked about a large repository against 62 KB for a small
+one. The cost is set by the argument the model picks at runtime, not by anything
+visible at install time.
+
+- **[The results](https://callwitness.tech/baseline/)** — every measured server, with the raw data
+- **[The method](https://callwitness.tech/research/)** — how servers were chosen, which tools were safe to call, every failure, and what this cannot tell you
+- **[`baseline/v1.json`](https://callwitness.tech/baseline/v1.json)** — the distribution as a versioned document, so a tool can fetch it rather than copy constants
+
+Your servers will differ, and yours are the ones that matter for your context
+budget. Same schema, from your own traffic:
+
+```
+pip install callwitness
+callwitness run --label docs -- npx -y <your mcp server>
+callwitness baseline --out mine.json
+```
+
 ## The thing it shows you
 
 Same tool. Same permission. Two very different actions:
