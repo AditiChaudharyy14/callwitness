@@ -45,6 +45,40 @@ def spread(values: List[int]) -> Dict[str, int]:
             "max": int(max(values))}
 
 
+
+def _declared_by_package(home: Path) -> Dict[str, int]:
+    """Largest tools/list this machine saw from each package.
+
+    Largest, not latest: a server that answered once with a partial listing and
+    once in full declared the full one, and the ratio should be measured
+    against what it can put in front of a model, not against its smallest day.
+    """
+    db = Path(home) / "callwitness.db"
+    if not db.is_file():
+        return {}
+    conn = sqlite3.connect(str(db))
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            "SELECT s.command AS command, e.payload AS payload "
+            "FROM events e JOIN sessions s ON s.session_id = e.session_id "
+            "WHERE e.kind = 'server:tools/list'").fetchall()
+    except Exception:
+        return {}
+    finally:
+        conn.close()
+    found: Dict[str, int] = {}
+    for row in rows:
+        try:
+            declared = int(json.loads(row["payload"]).get("declared_bytes") or 0)
+        except Exception:
+            continue
+        package = package_of(row["command"] or "")
+        if declared > found.get(package, 0):
+            found[package] = declared
+    return found
+
+
 def _rows(home: Path, since: Optional[str]) -> List[sqlite3.Row]:
     db = Path(home) / "callwitness.db"
     if not db.is_file():
@@ -70,6 +104,7 @@ def _rows(home: Path, since: Optional[str]) -> List[sqlite3.Row]:
 
 def build(home: Path, since: Optional[str] = None) -> Dict[str, Any]:
     rows = _rows(home, since)
+    declared_sizes = _declared_by_package(home)
 
     grouped: Dict[str, List[sqlite3.Row]] = {}
     for row in rows:
@@ -85,6 +120,7 @@ def build(home: Path, since: Optional[str] = None) -> Dict[str, Any]:
         pseudonym = {} if public else anonymise_tools(
             [c["tool"] or "?" for c in calls])
 
+        declared = int(declared_sizes.get(package, 0))
         returned = [int(c["result_bytes"] or 0) for c in calls]
         arguments = [int(c["args_bytes"] or 0) for c in calls]
         every_returned.extend(returned)
@@ -93,11 +129,10 @@ def build(home: Path, since: Optional[str] = None) -> Dict[str, Any]:
         servers.append({
             "server": package,
             "package": package,
-            # The recorder does not keep the tools/list response yet, so the
-            # declared size is unknown here. Reported as 0 rather than guessed:
-            # a fabricated denominator would produce a ratio that looks like a
-            # measurement and is not one.
-            "declared_bytes": 0,
+            # Measured from the tools/list this machine actually saw. Still 0
+            # when no listing was recorded -- a server wrapped before v0.2.2,
+            # or a client that never asked -- and 0 means unknown, never zero.
+            "declared_bytes": declared,
             "tool_count": len({c["tool"] for c in calls}),
             "returned_bytes": spread(returned),
             "argument_bytes": spread(arguments),
@@ -109,6 +144,14 @@ def build(home: Path, since: Optional[str] = None) -> Dict[str, Any]:
                 for c in calls
             ],
         })
+        # The ratio only exists when both halves were measured. Computed here
+        # rather than left to each consumer, so the finding means the same
+        # thing wherever it is read.
+        if declared and returned:
+            servers[-1]["returned_over_declared"] = {
+                "p50": round(percentile(returned, 0.50) / declared, 2),
+                "max": round(max(returned) / declared, 2),
+            }
 
     stamps = [r["ts"] for r in rows if r["ts"]]
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -135,8 +178,8 @@ def build(home: Path, since: Optional[str] = None) -> Dict[str, Any]:
             "Generated from {} calls recorded on this machine. These are your "
             "servers and your traffic, which makes them the right numbers to "
             "calibrate against and not comparable with anyone else's. "
-            "declared_bytes is 0 because the recorder does not yet keep the "
-            "tools/list response."
+            "declared_bytes is measured from the tools/list each server "
+            "sent; 0 means no listing was recorded for it."
         ).format(len(every_returned)),
         "returned_bytes_all": sorted(every_returned),
         "overall": {
