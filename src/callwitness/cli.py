@@ -294,7 +294,21 @@ def cmd_baseline(args: argparse.Namespace) -> int:
         print("")
         print("Nothing recorded yet, so the distribution is empty. Run a server")
         print("through the proxy first:  callwitness run -- npx -y <server>")
-    return 0
+    
+    if args.compare:
+        from . import compare as cmp
+        public, source = cmp.fetch(Path(args.home))
+        if public is None:
+            print("")
+            print("Could not reach the public baseline ({}).".format(source))
+            print("Local numbers above are unaffected.")
+        else:
+            rows = cmp.compare(document, public)
+            if args.format == "md":
+                print("")
+                print(cmp.render_markdown(rows, public))
+            else:
+                print(cmp.render(rows, public, source))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -406,6 +420,10 @@ def build_parser() -> argparse.ArgumentParser:
                           help="write to this file instead of standard output")
     baseline.add_argument("--since",
                           help="only calls after this ISO timestamp")
+    baseline.add_argument("--compare", action="store_true",
+                          help="show your numbers against the public baseline")
+    baseline.add_argument("--format", choices=("text", "md"), default="text",
+                          help="md gives a table you can paste into an issue")   
     baseline.set_defaults(func=cmd_baseline)
 
     export = sub.add_parser("export", help="dump all calls as JSONL")
