@@ -239,6 +239,19 @@ def human(size: int) -> str:
     return "{} B".format(size)
 
 
+# How many rows before the interesting ones are buried. The first run printed
+# sixty and the five that mattered were off the top of the screen.
+SHOWN = 20
+
+# Read as "12x the median for this tool". The level names read as labels in
+# the column beside it and as prose here, so they are not the same strings.
+_MEDIAN_PHRASE = {
+    EXACT: "the median for this tool",
+    PACKAGE: "the median for this package",
+    GLOBAL: "the overall median",
+}
+
+
 def _scale(row: Dict[str, Any]) -> str:
     """Words for the last column, taken from the same fact as the percentile.
 
@@ -251,7 +264,8 @@ def _scale(row: Dict[str, Any]) -> str:
     """
     percentile, ratio = row["percentile"], row["ratio"]
     if ratio and ratio >= 2:
-        return "{:.0f}x the {} median".format(ratio, row["level"])
+        return "{:.0f}x {}".format(
+            ratio, _MEDIAN_PHRASE.get(row["level"], "the median"))
     if ratio and 0 < ratio <= 0.5:
         return "{:.0f}x smaller".format(1.0 / ratio)
     if percentile >= 90:
@@ -272,14 +286,23 @@ def render(rows: List[Dict[str, Any]], public: Dict[str, Any], source: str) -> s
         lines.append("")
         return "\n".join(lines)
 
-    width = min(38, max(len(r["package"]) + len(r["tool"]) + 1 for r in rows))
-    for row in rows:
+    shown = rows[:SHOWN]
+    width = min(38, max(len(r["package"]) + len(r["tool"]) + 1 for r in shown))
+    for row in shown:
         label = "{}/{}".format(row["package"], row["tool"])
         if len(label) > width:
-            label = label[:width - 1] + "…"
+            # ASCII. A single-character ellipsis is cp1252 on a Windows console
+            # and prints as a stray accented letter in the middle of a tool
+            # name, which looks like the tool name is wrong.
+            label = label[:width - 3] + "..."
         lines.append("  {}  {:>9}  p{:<3} vs {:<13} {}".format(
             label.ljust(width), human(row["yours"]),
             row["percentile"], row["level"], _scale(row)))
+
+    if len(rows) > SHOWN:
+        lines.append("")
+        lines.append("  {} more, least unusual last. --format md prints them all.".format(
+            len(rows) - SHOWN))
 
     lines.append("")
     lines.append("  Biggest first. p50 means half the public calls were smaller.")

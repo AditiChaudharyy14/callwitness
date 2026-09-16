@@ -194,6 +194,33 @@ def test_a_large_difference_still_gets_a_number():
     assert "smaller" in _scale({"percentile": 1, "ratio": 0.05, "level": EXACT})
 
 
+def test_long_names_are_trimmed_with_ascii():
+    """A cp1252 console prints a one-character ellipsis as a stray accent."""
+    long_name = "@modelcontextprotocol/server-filesystem-with-a-very-long-name"
+    rows = compare(_local([{"package": long_name,
+                            "calls": [{"tool": "read_text_file",
+                                       "returned_bytes": 900}]}]), PUBLIC)
+    out = render(rows, PUBLIC, "cached")
+    assert "..." in out
+    assert out == out.encode("cp1252", "strict").decode("cp1252")
+
+
+def test_only_the_unusual_rows_are_printed():
+    many = [{"package": "p{}".format(i), "calls": [{"tool": "t", "returned_bytes": i}]}
+            for i in range(1, 41)]
+    out = render(compare(_local(many), PUBLIC), PUBLIC, "cached")
+    assert "20 more" in out
+    assert out.count("all servers") == 20
+
+
+def test_every_row_survives_the_markdown_form():
+    many = [{"package": "p{}".format(i), "calls": [{"tool": "t", "returned_bytes": i}]}
+            for i in range(1, 41)]
+    from callwitness.compare import render_markdown
+    rows = compare(_local(many), PUBLIC)
+    assert render_markdown(rows, PUBLIC).count("| `p") == 40
+
+
 def test_a_local_name_finds_its_public_twin():
     """End to end: the row should say same tool, not all servers."""
     public = dict(PUBLIC, servers=[

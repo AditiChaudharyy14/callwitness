@@ -29,3 +29,6 @@ runs/
 
 # a census server writes a cache here when the census runs from the repo root
 data/
+
+*.bak
+patch_*.py

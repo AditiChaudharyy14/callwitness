@@ -275,21 +275,26 @@ def cmd_baseline(args: argparse.Namespace) -> int:
     document = bl.build(Path(args.home), since=args.since)
     blob = json.dumps(document, indent=2) + "\n"
 
-    if not args.out:
+    # --compare on its own is a legitimate way to run this: someone who has
+    # not asked for a file does not want a screenful of JSON either, they want
+    # the comparison. Only dump the document when nobody asked for anything
+    # else to be printed.
+    if not args.out and not args.compare:
         sys.stdout.write(blob)
         return 0
 
-    out = Path(args.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(blob, encoding="utf-8")
-
     sample = document["sample"]
     returned = document["overall"]["returned_bytes"]
-    print("wrote {} ({:,} bytes)".format(out, len(blob.encode())))
-    print("  servers  {}".format(sample["servers_called"]))
-    print("  calls    {}".format(sample["calls"]))
-    print("  returned p50 {:,}  p95 {:,}  max {:,}".format(
-        returned["p50"], returned["p95"], returned["max"]))
+
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(blob, encoding="utf-8")
+        print("wrote {} ({:,} bytes)".format(out, len(blob.encode())))
+        print("  servers  {}".format(sample["servers_called"]))
+        print("  calls    {}".format(sample["calls"]))
+        print("  returned p50 {:,}  p95 {:,}  max {:,}".format(
+            returned["p50"], returned["p95"], returned["max"]))
     if not sample["calls"]:
         print("")
         print("Nothing recorded yet, so the distribution is empty. Run a server")
