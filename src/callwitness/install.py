@@ -22,6 +22,20 @@ here than anywhere else, because a broken config means a broken agent.
 Nothing is touched without `--apply`, `--apply` writes a timestamped backup
 first, already-wrapped servers are left alone, and anything with a shape we do
 not recognise is skipped and reported rather than guessed at.
+
+More than one server map per file
+---------------------------------
+A config is not one list of servers. Claude Code keeps a global map at the top
+level and a separate map per project under `projects.<absolute path>`, so a
+server registered inside a project used to be invisible here: the file parsed,
+the servers sat right there, and install reported "nothing to wrap" while that
+server ran unrecorded. A monitor that silently fails to monitor is worse than
+no monitor at all, because it produces confident silence.
+
+Two things follow from that, and both are load-bearing. Every known shape is
+walked rather than just the first one found, and when the answer is "nothing to
+wrap" the tool prints every location it looked at -- so a gap shows up as a
+missing line someone can report, instead of as silence.
 """
 
 from __future__ import annotations
@@ -54,6 +68,7 @@ def _client_paths() -> List[Tuple[str, Path]]:
 
     out.extend([
         ("Cursor", home / ".cursor" / "mcp.json"),
+        ("Cursor (workspace)", Path.cwd() / ".cursor" / "mcp.json"),
         ("Windsurf", home / ".codeium" / "windsurf" / "mcp_config.json"),
         ("Claude Code", home / ".claude.json"),
         ("VS Code (workspace)", Path.cwd() / ".vscode" / "mcp.json"),
@@ -67,13 +82,42 @@ def discover() -> List[Tuple[str, Path]]:
     return [(name, path) for name, path in _client_paths() if path.is_file()]
 
 
-def _servers_of(doc: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    """The server map, whichever key this client uses for it."""
+def audit() -> List[Tuple[str, Path, bool]]:
+    """Every location we look at, and whether it is there.
+
+    Reported on the empty result, not just on failure. "Nothing to wrap" is
+    three completely different situations -- no config exists, a config exists
+    with no servers in it, or every server is already wrapped -- and only one
+    of them means the user is finished.
+    """
+    return [(name, path, path.is_file()) for name, path in _client_paths()]
+
+
+def _sections(doc: Dict[str, Any]) -> List[Tuple[str, List[Any], Dict[str, Any]]]:
+    """Every server map in this document: (label, key path, the map itself).
+
+    The key path is how `apply` finds its way back to the right dict. Writing
+    a nested server into the top level would corrupt the config in a way the
+    user could not see, which is the failure this whole module exists to avoid.
+    """
+    out: List[Tuple[str, List[Any], Dict[str, Any]]] = []
+
     for key in ("mcpServers", "servers"):
         value = doc.get(key)
         if isinstance(value, dict):
-            return value
-    return None
+            out.append((key, [key], value))
+
+    # Claude Code: one map per project, keyed by absolute path.
+    projects = doc.get("projects")
+    if isinstance(projects, dict):
+        for project, config in projects.items():
+            if not isinstance(config, dict):
+                continue
+            value = config.get("mcpServers")
+            if isinstance(value, dict):
+                out.append(("projects/{}".format(project),
+                            ["projects", project, "mcpServers"], value))
+    return out
 
 
 KNOWN_EXECUTABLES = frozenset({"callwitness", "bollard"})
@@ -138,7 +182,7 @@ def plan(path: Path, executable: str = "callwitness",
     """Work out what would change in one config, without changing anything."""
     report: Dict[str, Any] = {
         "path": path, "error": None, "change": [], "already": [], "skipped": [],
-        "doc": None, "key": None, "bom": False,
+        "doc": None, "key": None, "bom": False, "sections": [], "writes": [],
     }
     try:
         # utf-8-sig, not utf-8. Windows writes JSON with a byte-order mark by
@@ -153,39 +197,52 @@ def plan(path: Path, executable: str = "callwitness",
         report["error"] = "could not read as JSON: {}".format(exc)
         return report
 
-    servers = _servers_of(doc)
-    if servers is None:
-        report["error"] = "no mcpServers section"
+    sections = _sections(doc)
+    if not sections:
+        report["error"] = ("no server map found "
+                           "(looked at mcpServers, servers, projects.*.mcpServers)")
         return report
 
     report["doc"] = doc
-    report["key"] = "mcpServers" if "mcpServers" in doc else "servers"
+    report["key"] = sections[0][0]          # kept for callers that still read it
+    report["sections"] = [label for label, _keypath, _servers in sections]
 
-    for name, entry in servers.items():
-        if undo:
-            restored = unwrap(entry) if isinstance(entry, dict) else None
-            if restored is not None:
-                report["change"].append((name, entry, restored))
+    # Only qualify names when there is something to disambiguate. A single-map
+    # config is the common case and "filesystem" reads better than
+    # "mcpServers :: filesystem".
+    qualify = len(sections) > 1
+
+    for label, keypath, servers in sections:
+        for name, entry in servers.items():
+            shown = "{} :: {}".format(label, name) if qualify else name
+
+            if undo:
+                restored = unwrap(entry) if isinstance(entry, dict) else None
+                if restored is not None:
+                    report["change"].append((shown, entry, restored))
+                    report["writes"].append((keypath, name, restored))
+                elif is_wrapped(entry):
+                    report["skipped"].append(
+                        (shown, "wrapped, but not in a shape we can undo"))
+                else:
+                    report["already"].append(shown)
+                continue
+
+            if not isinstance(entry, dict):
+                report["skipped"].append((shown, "not an object"))
             elif is_wrapped(entry):
-                report["skipped"].append((name, "wrapped, but not in a shape we can undo"))
+                report["already"].append(shown)
+            elif "url" in entry and not entry.get("command"):
+                report["skipped"].append(
+                    (shown, "remote server -- needs `callwitness proxy --upstream {} "
+                            "--port <port>` and a port you choose".format(entry.get("url"))))
             else:
-                report["already"].append(name)
-            continue
-
-        if not isinstance(entry, dict):
-            report["skipped"].append((name, "not an object"))
-        elif is_wrapped(entry):
-            report["already"].append(name)
-        elif "url" in entry and not entry.get("command"):
-            report["skipped"].append(
-                (name, "remote server -- needs `callwitness proxy --upstream {} --port <port>` "
-                       "and a port you choose".format(entry.get("url"))))
-        else:
-            wrapped = wrap(name, entry, executable)
-            if wrapped is None:
-                report["skipped"].append((name, "no command to wrap"))
-            else:
-                report["change"].append((name, entry, wrapped))
+                wrapped = wrap(name, entry, executable)
+                if wrapped is None:
+                    report["skipped"].append((shown, "no command to wrap"))
+                else:
+                    report["change"].append((shown, entry, wrapped))
+                    report["writes"].append((keypath, name, wrapped))
     return report
 
 
@@ -200,9 +257,14 @@ def apply(report: Dict[str, Any]) -> Optional[Path]:
         time.strftime("%Y%m%d-%H%M%S")))
     shutil.copy2(str(path), str(backup))
 
-    servers = doc[report["key"]]
-    for name, _before, after in report["change"]:
-        servers[name] = after
+    # Walk the recorded key path rather than assuming a single top-level map.
+    # A server that lives under projects.<path>.mcpServers has to be written
+    # back there, not invented at the top level.
+    for keypath, name, after in report["writes"]:
+        node = doc
+        for key in keypath[:-1]:
+            node = node[key]
+        node[keypath[-1]][name] = after
 
     # Write the file back the way we found it. If the client wrote a BOM, it
     # gets a BOM: quietly changing the encoding of someone's config is not our
@@ -218,7 +280,8 @@ def _render_one(entry: Dict[str, Any]) -> str:
     return "{} {}".format(command, args).strip()
 
 
-def format_plan(reports: List[Dict[str, Any]], undo: bool, applied: bool) -> str:
+def format_plan(reports: List[Dict[str, Any]], undo: bool, applied: bool,
+                checked: Optional[List[Tuple[str, Path, bool]]] = None) -> str:
     verb = "unwrap" if undo else "wrap"
     lines: List[str] = []
     total = 0
@@ -245,12 +308,20 @@ def format_plan(reports: List[Dict[str, Any]], undo: bool, applied: bool) -> str
 
     if not reports:
         lines.append("No MCP client configs found on this machine.")
+        lines.append("")
+        lines.extend(_checked_lines(checked))
         lines.append("If yours lives somewhere else, point at it:")
         lines.append("  callwitness install --config /path/to/mcp.json")
         return "\n".join(lines) + "\n"
 
     if total == 0:
+        # The important case. Saying only "nothing to wrap" is how a server we
+        # failed to find looks exactly like a machine that is already set up.
         lines.append("Nothing to {}.".format(verb))
+        lines.append("")
+        lines.extend(_checked_lines(checked))
+        lines.append("If a server is registered somewhere not listed above, that is a gap")
+        lines.append("in callwitness -- please open an issue with the config shape.")
     elif applied:
         lines.append("{} server{} {}ped. Restart the client to pick it up.".format(
             total, "" if total == 1 else "s", verb))
@@ -262,3 +333,16 @@ def format_plan(reports: List[Dict[str, Any]], undo: bool, applied: bool) -> str
         lines.append("Re-run with --apply to write it. Your config is backed up first,")
         lines.append("and `callwitness uninstall` puts it back.")
     return "\n".join(lines) + "\n"
+
+
+def _checked_lines(checked: Optional[List[Tuple[str, Path, bool]]]) -> List[str]:
+    """The audit trail. Defaults to a live audit so callers need no change."""
+    if checked is None:
+        checked = audit()
+    width = max((len(name) for name, _p, _e in checked), default=0)
+    lines = ["Checked these locations:"]
+    for name, path, exists in checked:
+        lines.append("  {}  {}{}".format(
+            name.ljust(width), path, "" if exists else "   (not found)"))
+    lines.append("")
+    return lines

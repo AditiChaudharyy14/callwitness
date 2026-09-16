@@ -115,7 +115,7 @@ def test_a_config_without_a_server_section_is_reported_not_edited():
     path = Path(tempfile.mkdtemp()) / "mcp.json"
     path.write_text('{"theme": "dark"}', encoding="utf-8")
     report = plan(path)
-    assert report["error"] == "no mcpServers section"
+    assert "no server map found" in report["error"]
     assert report["change"] == []
 
 
@@ -260,3 +260,102 @@ def test_install_uninstall_round_trips_through_a_bom():
     apply(plan(path, undo=True))
     assert _servers(path) == servers
     assert path.read_bytes().startswith(codecs.BOM_UTF8)
+CLAUDE_CODE_NESTED = {
+    "numStartups": 7,
+    "projects": {
+        "C:\\Users\\dev\\proj": {
+            "mcpServers": {
+                "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp"]}
+            },
+            "allowedTools": [],
+        }
+    },
+}
+
+CLAUDE_CODE_BOTH = {
+    "mcpServers": {"memory": {"command": "npx", "args": ["-y", "@mcp/memory"]}},
+    "projects": {
+        "/home/dev/a": {"mcpServers": {"fs": {"command": "npx", "args": ["-y", "@mcp/fs"]}}},
+        "/home/dev/b": {"mcpServers": {}},
+        "/home/dev/c": {"allowedTools": []},
+    },
+}
+
+
+def _write(doc, name=".claude.json"):
+    path = Path(tempfile.mkdtemp()) / name
+    path.write_text(json.dumps(doc, indent=2), encoding="utf-8")
+    return path
+
+
+def _read(path):
+    return json.loads(path.read_bytes().decode("utf-8-sig"))
+
+
+# -- the bug ---------------------------------------------------------------
+
+def test_a_server_registered_only_under_a_project_is_found():
+    """The live failure: install said "nothing to wrap" while this server ran."""
+    report = plan(_write(CLAUDE_CODE_NESTED))
+    assert report["error"] is None
+    assert len(report["change"]) == 1
+
+
+def test_applying_writes_into_the_project_not_the_top_level():
+    path = _write(CLAUDE_CODE_NESTED)
+    apply(plan(path))
+    doc = _read(path)
+    entry = doc["projects"]["C:\\Users\\dev\\proj"]["mcpServers"]["playwright"]
+    assert entry["command"] == "callwitness"
+    assert "mcpServers" not in doc        # nothing invented at the top level
+    assert doc["numStartups"] == 7        # unrelated keys survive
+
+
+def test_every_map_in_one_file_is_walked():
+    report = plan(_write(CLAUDE_CODE_BOTH))
+    assert len(report["change"]) == 2     # the global one and the project one
+    assert len(report["sections"]) == 3   # the empty map counts; the keyless project does not
+
+
+def test_names_are_qualified_only_when_there_is_more_than_one_map():
+    many = plan(_write(CLAUDE_CODE_BOTH))
+    assert any("::" in name for name, _b, _a in many["change"])
+    one = plan(_config({"filesystem": FILESYSTEM}))
+    assert all("::" not in name for name, _b, _a in one["change"])
+
+
+# -- round trip ------------------------------------------------------------
+
+def test_wrap_then_unwrap_restores_the_nested_document():
+    """Uninstall has to reverse install exactly, or people cannot risk trying it."""
+    path = _write(CLAUDE_CODE_NESTED)
+    before = _read(path)
+    apply(plan(path))
+    apply(plan(path, undo=True))
+    assert _read(path) == before
+
+
+def test_wrap_then_unwrap_restores_a_file_with_several_maps():
+    path = _write(CLAUDE_CODE_BOTH)
+    before = _read(path)
+    apply(plan(path))
+    apply(plan(path, undo=True))
+    assert _read(path) == before
+
+
+# -- the empty answer ------------------------------------------------------
+
+def test_nothing_to_wrap_says_what_was_checked():
+    """Three different situations used to print the same sentence."""
+    path = _config({"fs": WRAPPED})
+    out = format_plan([plan(path)], undo=False, applied=False,
+                      checked=[("Claude Code", Path("/home/x/.claude.json"), False)])
+    assert "Checked these locations" in out
+    assert "(not found)" in out
+
+
+def test_a_file_with_no_server_map_at_all_says_where_it_looked():
+    path = _write({"numStartups": 1}, name="empty.json")
+    report = plan(path)
+    assert report["error"] is not None
+    assert "projects.*.mcpServers" in report["error"]
