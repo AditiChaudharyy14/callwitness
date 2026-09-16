@@ -431,6 +431,15 @@ def build_parser() -> argparse.ArgumentParser:
                           help="md gives a table you can paste into an issue")   
     baseline.set_defaults(func=cmd_baseline)
 
+    demo = sub.add_parser(
+        "demo",
+        help="record a real server in under a minute, with no agent or config")
+    demo.add_argument(
+        "server", nargs="*",
+        help="the server to run, after --; defaults to a public one that needs "
+             "no credentials")
+    demo.set_defaults(func=cmd_demo)
+
     export = sub.add_parser("export", help="dump all calls as JSONL")
     export.add_argument("out")
     export.set_defaults(func=cmd_export)
@@ -456,6 +465,37 @@ def entrypoint() -> None:
     except KeyboardInterrupt:
         sys.exit(130)
 
+
+
+def cmd_demo(args: argparse.Namespace) -> int:
+    """Record a real server without an agent, then say where it sits.
+
+    This is the first minute. Someone who has just installed this has no agent
+    wired to anything, so `run` looks like it hangs -- an MCP server over stdio
+    is silent until a client speaks to it. This is the client, and it ends with
+    the comparison, because a log of your own traffic is only interesting once
+    there is something to compare it against.
+    """
+    from . import demo as dm
+
+    made, lines = dm.run(server=list(args.server or []) or None, home=args.home)
+    for line in lines:
+        print(line)
+    if not made:
+        return 1
+
+    from . import baseline as bl
+    from . import compare as cmp
+
+    document = bl.build(Path(args.home))
+    public, source = cmp.fetch(Path(args.home))
+    if public is None:
+        print("")
+        print("Could not reach the public baseline ({}).".format(source))
+        print("What was recorded is on disk either way.")
+        return 0
+    print(cmp.render(cmp.compare(document, public), public, source))
+    return 0
 
 if __name__ == "__main__":
     entrypoint()
