@@ -431,6 +431,14 @@ def build_parser() -> argparse.ArgumentParser:
                           help="md gives a table you can paste into an issue")   
     baseline.set_defaults(func=cmd_baseline)
 
+    last = sub.add_parser(
+        "last",
+        help="what happened the last time an agent ran")
+    last.add_argument("--session", help="a particular run, by id")
+    last.add_argument("--runs", action="store_true",
+                      help="list recent runs instead of summarising one")
+    last.set_defaults(func=cmd_last)
+
     demo = sub.add_parser(
         "demo",
         help="record a real server in under a minute, with no agent or config")
@@ -495,6 +503,25 @@ def cmd_demo(args: argparse.Namespace) -> int:
         print("What was recorded is on disk either way.")
         return 0
     print(cmp.render(cmp.compare(document, public), public, source))
+    return 0
+
+
+def cmd_last(args: argparse.Namespace) -> int:
+    """What happened the last time an agent ran.
+
+    Everything this prints has been in the database since the beginning --
+    every call carries a session_id, every wrapped process is a row in
+    `sessions`. It was never shown. `stats` flattens every run ever recorded
+    into one table sorted by call count, which answers which tools exist
+    rather than what failed or what was enormous.
+    """
+    from . import last as lst
+
+    home = Path(args.home)
+    if getattr(args, "runs", False):
+        print(lst.render_sessions(lst.sessions(home)))
+        return 0
+    print(lst.render(lst.summarise(home, getattr(args, "session", None)), home))
     return 0
 
 if __name__ == "__main__":
