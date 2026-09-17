@@ -219,7 +219,9 @@ callwitness tail --errors
 
 Three calls that took between sixteen and thirty-seven seconds to return
 nothing. An agent waits that out and moves on without saying anything, and the
-same rows sit invisibly in the middle of a 180-row `stats` table.
+same rows sit invisibly in the middle of a 180-row `stats` table. Those three
+are from the census sweep of 86 public servers rather than from my own agent --
+`--errors` spans the whole database, which is the point of it.
 
 ### What it is costing you
 
