@@ -36,3 +36,5 @@ patch_*.py
 .mcp.json
 
 *.callwitness-backup-*
+
+notes/
