@@ -21,6 +21,19 @@ pip install callwitness
 callwitness demo
 ```
 
+If `pip` is not a command on your machine, `python -m pip install callwitness`
+does the same thing.
+
+If the install finishes with a warning that the script went somewhere **not on
+PATH**, the `callwitness` command will not exist. Run it as a module instead --
+same tool, same output:
+
+```bash
+python -m callwitness demo
+python -m callwitness last
+```
+
+
 No agent, no API key, nothing to configure. It starts a real MCP server through
 the recorder, calls the tools that read like reads, refuses the ones that don't,
 shows what came back, and tells you where your responses sit against 140 calls
