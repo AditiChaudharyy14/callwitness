@@ -59,8 +59,8 @@ def _moment(stamp: Optional[str]) -> Optional[datetime]:
     The store holds UTC, but not uniformly: some rows carry an offset and some
     do not, depending on which version wrote them. Mixing the two raises
     "can't subtract offset-naive and offset-aware datetimes" the moment you do
-    arithmetic, so everything is flattened to naive UTC on the way in and
-    compared against utcnow, never now.
+    arithmetic, so everything is flattened to naive UTC on the way in, and
+    the comparison clock is built the same way.
     """
     if not stamp:
         return None
@@ -94,7 +94,8 @@ def _elapsed(started: Optional[str], ended: Optional[str],
         return "?"
     if not last:
         latest = _moment(last_seen) or first
-        idle = (datetime.utcnow() - latest).total_seconds()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        idle = (now - latest).total_seconds()
         return "still running" if idle < STALE_AFTER else "no end recorded"
     seconds = max(0.0, (last - first).total_seconds())
     if seconds >= 3600:
@@ -316,5 +317,57 @@ def render_sessions(rows: List[Dict[str, Any]]) -> str:
             _clock(row.get("started_at")),
             _elapsed(row.get("started_at"), row.get("ended_at"),
                      row.get("last_call"))))
+    lines.append("")
+    return "\n".join(lines)
+
+
+def calls(home: Path, session: Optional[str] = None, errors_only: bool = False,
+          limit: int = 20) -> List[Dict[str, Any]]:
+    """Individual calls, filtered. The drill-down `last` points at.
+
+    `session` matches on a prefix, because `last` prints the first eight
+    characters of a session id and a command that prints an identifier has to
+    accept the identifier it printed.
+    """
+    connection = _connect(home)
+    if connection is None:
+        return []
+    where, params = [], []
+    if session:
+        where.append("session_id LIKE ?")
+        params.append(str(session) + "%")
+    if errors_only:
+        where.append("is_error = 1")
+    clause = (" WHERE " + " AND ".join(where)) if where else ""
+    try:
+        rows = connection.execute(
+            "SELECT ts, label, tool, args_bytes, duration_ms, is_error, "
+            "result_bytes, result_preview FROM calls" + clause +
+            " ORDER BY ts DESC LIMIT ?", params + [limit]).fetchall()
+        return [dict(r) for r in reversed(rows)]
+    except sqlite3.Error:
+        return []
+    finally:
+        connection.close()
+
+
+def render_calls(rows: List[Dict[str, Any]], session: Optional[str] = None,
+                 errors_only: bool = False) -> str:
+    if not rows:
+        what = "errors" if errors_only else "calls"
+        where = " in session {}".format(session) if session else ""
+        return "\n  No {}{}.\n".format(what, where)
+
+    lines = [""]
+    for row in rows:
+        lines.append("  {}  {:<4} {:<26} in={:<8} out={:<10} {:>8}{}".format(
+            _clock(row.get("ts")),
+            "ERR" if row.get("is_error") else "ok",
+            str(row.get("tool"))[:26],
+            int(row.get("args_bytes") or 0),
+            human(int(row.get("result_bytes") or 0)),
+            _ms(row.get("duration_ms")),
+            "  " + (_why(row.get("result_preview")) or "")
+            if row.get("is_error") else ""))
     lines.append("")
     return "\n".join(lines)

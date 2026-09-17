@@ -7,7 +7,7 @@ lean on ordering and on what appears when things go wrong.
 
 import sqlite3
 import tempfile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from callwitness.last import human, render, render_sessions, sessions, summarise
@@ -164,7 +164,7 @@ def test_runs_are_listed_newest_first():
 
 
 def test_a_run_that_started_moments_ago_is_still_running():
-    now = datetime.utcnow().isoformat(timespec="seconds")
+    now = datetime.now(timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds")
     running = ("s-run", "pw", "npx pw", now, None, None)
     text = render_sessions(sessions(_store([running], [])))
     assert "still running" in text
@@ -201,7 +201,7 @@ def test_an_unclosed_run_from_days_ago_is_not_called_running():
 
 def test_activity_decides_it_not_the_start_time():
     """A long run that is still making calls is running, however old it is."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     started = (now - timedelta(days=2)).isoformat(timespec="seconds")
     recent = now.isoformat(timespec="seconds")
     row = ("s-long", "pw", "npx pw", started, None, None)
@@ -220,4 +220,56 @@ def test_sizes_are_readable():
 
 def test_the_output_survives_a_windows_console():
     text = render(summarise(_store([NEW], CALLS)), Path("."))
+    assert text == text.encode("cp1252", "strict").decode("cp1252")
+
+
+# -- drilling in -----------------------------------------------------------
+#
+# `last` printed "callwitness tail --session 6d4e47f7" before tail accepted
+# --session, so the tool told people to run a command that did not exist.
+# A command that prints an identifier has to accept the identifier it printed.
+
+def test_a_session_is_matched_on_the_prefix_last_prints():
+    from callwitness.last import calls
+    rows = calls(_store([NEW], CALLS), session="s-ne")
+    assert len(rows) == 4
+    assert all(r["tool"] != "read_file" for r in rows)
+
+
+def test_errors_only_shows_the_failures():
+    from callwitness.last import calls
+    rows = calls(_store([OLD, NEW], CALLS), errors_only=True)
+    assert len(rows) == 2
+    assert {r["tool"] for r in rows} == {"browser_find"}
+
+
+def test_the_two_filters_compose():
+    from callwitness.last import calls
+    rows = calls(_store([OLD, NEW], CALLS), session="s-old", errors_only=True)
+    assert rows == []
+
+
+def test_calls_come_back_oldest_first_within_the_window():
+    from callwitness.last import calls
+    rows = calls(_store([NEW], CALLS), limit=2)
+    assert [r["tool"] for r in rows] == ["browser_find", "take_screenshot"]
+
+
+def test_a_failure_line_carries_its_reason():
+    from callwitness.last import calls, render_calls
+    text = render_calls(calls(_store([NEW], CALLS), errors_only=True),
+                        errors_only=True)
+    assert "ERR" in text
+    assert "element not found" in text
+
+
+def test_no_matches_says_so_rather_than_printing_nothing():
+    from callwitness.last import render_calls
+    assert "No errors" in render_calls([], errors_only=True)
+    assert "No calls in session abc" in render_calls([], session="abc")
+
+
+def test_the_drill_down_survives_a_windows_console():
+    from callwitness.last import calls, render_calls
+    text = render_calls(calls(_store([NEW], CALLS)))
     assert text == text.encode("cp1252", "strict").decode("cp1252")

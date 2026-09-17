@@ -71,6 +71,17 @@ def cmd_stats(args: argparse.Namespace) -> int:
 
 
 def cmd_tail(args: argparse.Namespace) -> int:
+    session = getattr(args, "session", None)
+    errors_only = getattr(args, "errors", False)
+    if session or errors_only:
+        # `last` names a session and offers this as the way to see inside it,
+        # so the filters read from the same place last does rather than
+        # reshaping format_tail, which the unfiltered path still uses.
+        from . import last as lst
+        rows = lst.calls(Path(args.home), session=session,
+                         errors_only=errors_only, limit=args.n)
+        sys.stdout.write(lst.render_calls(rows, session, errors_only))
+        return 0
     try:
         sys.stdout.write(format_tail(Path(args.home), args.n))
     except FileNotFoundError:
@@ -367,6 +378,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     tail = sub.add_parser("tail", help="show the most recent calls")
     tail.add_argument("-n", type=int, default=20)
+    tail.add_argument("--session",
+                      help="only this run; the id last prints is enough")
+    tail.add_argument("--errors", action="store_true",
+                      help="only the calls that failed")
     tail.set_defaults(func=cmd_tail)
 
     suggest = sub.add_parser(
