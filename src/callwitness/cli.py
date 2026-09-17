@@ -446,6 +446,16 @@ def build_parser() -> argparse.ArgumentParser:
                           help="md gives a table you can paste into an issue")   
     baseline.set_defaults(func=cmd_baseline)
 
+    cost = sub.add_parser(
+        "cost",
+        help="what your tools returned, estimated in tokens")
+    cost.add_argument("--since", help="a window like 7d, 24h or 2w")
+    cost.add_argument("--session", help="one run; the id last prints is enough")
+    cost.add_argument("--bytes-per-token", type=float, default=4.0,
+                      dest="bytes_per_token",
+                      help="your tokeniser's ratio (default 4)")
+    cost.set_defaults(func=cmd_cost)
+
     last = sub.add_parser(
         "last",
         help="what happened the last time an agent ran")
@@ -537,6 +547,21 @@ def cmd_last(args: argparse.Namespace) -> int:
         print(lst.render_sessions(lst.sessions(home)))
         return 0
     print(lst.render(lst.summarise(home, getattr(args, "session", None)), home))
+    return 0
+
+
+def cmd_cost(args: argparse.Namespace) -> int:
+    """What tools returned, in the unit people budget in.
+
+    The recorder measures bytes because bytes are a fact. Nobody budgets in
+    bytes. The conversion is an estimate, the ratio is printed, and the ratio
+    is a flag -- a constant nobody can see is a constant nobody can correct.
+    """
+    from . import cost as cst
+
+    summary = cst.summarise(Path(args.home), window=args.since,
+                            session=args.session)
+    print(cst.render(summary, ratio=args.bytes_per_token))
     return 0
 
 if __name__ == "__main__":
