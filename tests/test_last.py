@@ -7,6 +7,7 @@ lean on ordering and on what appears when things go wrong.
 
 import sqlite3
 import tempfile
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from callwitness.last import human, render, render_sessions, sessions, summarise
@@ -162,9 +163,33 @@ def test_runs_are_listed_newest_first():
     assert [r["session_id"] for r in rows] == ["s-new", "s-old"]
 
 
-def test_a_run_still_going_is_not_reported_as_finished():
-    running = ("s-run", "pw", "npx pw", "2026-09-17T11:09:00", None, None)
+def test_a_run_that_started_moments_ago_is_still_running():
+    now = datetime.now().isoformat(timespec="seconds")
+    running = ("s-run", "pw", "npx pw", now, None, None)
     text = render_sessions(sessions(_store([running], [])))
+    assert "still running" in text
+
+
+def test_an_unclosed_run_from_days_ago_is_not_called_running():
+    """The recorder closes sessions properly; a killed process cannot.
+
+    Saying a process that died four days ago is still running is the tool
+    stating something false about its own records.
+    """
+    stale = ("s-old2", "census", "npx x", "2026-09-13T08:27:00", None, None)
+    text = render_sessions(sessions(_store([stale], [])))
+    assert "no end recorded" in text
+    assert "still running" not in text
+
+
+def test_activity_decides_it_not_the_start_time():
+    """A long run that is still making calls is running, however old it is."""
+    now = datetime.now()
+    started = (now - timedelta(days=2)).isoformat(timespec="seconds")
+    recent = now.isoformat(timespec="seconds")
+    row = ("s-long", "pw", "npx pw", started, None, None)
+    calls = [("s-long", recent, "read_file", 2, 1.0, 0, 100, None, None)]
+    text = render_sessions(sessions(_store([row], calls)))
     assert "still running" in text
 
 

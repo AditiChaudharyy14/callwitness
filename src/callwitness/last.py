@@ -32,6 +32,16 @@ from typing import Any, Dict, List, Optional
 DB_NAME = "callwitness.db"
 SHOWN = 5
 
+# After this long with no activity, an unclosed session is not running.
+#
+# The recorder already closes sessions properly -- in a finally, on spawn
+# failure and on normal exit -- so a row with no end means the process was
+# killed outright, which cannot be caught on any platform. That residue is
+# permanent and unavoidable. What is avoidable is reporting a process that
+# died four days ago as still running, which is the tool stating something
+# false about its own records.
+STALE_AFTER = 3600.0
+
 
 def _connect(home: Path) -> Optional[sqlite3.Connection]:
     """Read-only. This command must never be able to damage a recording."""
@@ -57,10 +67,21 @@ def _clock(stamp: Optional[str]) -> str:
     return when.strftime("%d %b %H:%M") if when else "?"
 
 
-def _elapsed(started: Optional[str], ended: Optional[str]) -> str:
+def _elapsed(started: Optional[str], ended: Optional[str],
+             last_seen: Optional[str] = None) -> str:
+    """How long it ran, or an honest word about why that isn't known.
+
+    `last_seen` is the newest call in the session. With no recorded end, it is
+    the only evidence of whether anything is still happening: a session whose
+    last call was days ago is finished, whatever the absent end says.
+    """
     first, last = _moment(started), _moment(ended)
-    if not first or not last:
-        return "still running" if first else "?"
+    if not first:
+        return "?"
+    if not last:
+        latest = _moment(last_seen) or first
+        idle = (datetime.now() - latest).total_seconds()
+        return "still running" if idle < STALE_AFTER else "no end recorded"
     seconds = max(0.0, (last - first).total_seconds())
     if seconds >= 3600:
         return "{:.0f}h {:.0f}m".format(seconds // 3600, (seconds % 3600) // 60)
@@ -91,8 +112,11 @@ def sessions(home: Path, limit: int = 10) -> List[Dict[str, Any]]:
         return []
     try:
         rows = connection.execute(
-            "SELECT session_id, label, command, started_at, ended_at, exit_code "
-            "FROM sessions ORDER BY started_at DESC LIMIT ?", (limit,)).fetchall()
+            "SELECT s.session_id, s.label, s.command, s.started_at, s.ended_at, "
+            "s.exit_code, (SELECT MAX(ts) FROM calls c "
+            "WHERE c.session_id = s.session_id) AS last_call "
+            "FROM sessions s ORDER BY s.started_at DESC LIMIT ?",
+            (limit,)).fetchall()
         return [dict(row) for row in rows]
     except sqlite3.Error:
         return []
@@ -148,6 +172,7 @@ def summarise(home: Path, session_id: Optional[str] = None) -> Optional[Dict[str
     slowest = sorted(done, key=lambda c: -float(c.get("duration_ms") or 0))[:SHOWN]
     return {
         "session": session,
+        "last_call": calls[-1]["ts"] if calls else None,
         "calls": len(calls),
         "failed": sum(1 for c in calls if c.get("is_error")),
         "returned": sum(int(c.get("result_bytes") or 0) for c in calls),
@@ -212,14 +237,15 @@ def render(summary: Optional[Dict[str, Any]], home: Path) -> str:
     until = (finished.strftime("%H:%M") if finished and started
              and finished.date() == started.date()
              else (_clock(session.get("ended_at")) if finished else "now"))
+    ran_for = _elapsed(session.get("started_at"), session.get("ended_at"),
+                       summary.get("last_call"))
     lines.append("  {}   {} -> {}   {}".format(
         session.get("label") or "unlabelled",
-        _clock(session.get("started_at")), until,
-        _elapsed(session.get("started_at"), session.get("ended_at"))))
+        _clock(session.get("started_at")), until, ran_for))
 
     exit_code = session.get("exit_code")
     ended = ("exited {}".format(exit_code) if exit_code not in (None, 0)
-             else ("clean" if exit_code == 0 else "still running"))
+             else ("clean" if exit_code == 0 else ran_for))
     lines.append("  {} calls, {} failed, {} returned, {} in tools, {}".format(
         summary["calls"], summary["failed"], human(summary["returned"]),
         _ms(summary["spent_ms"]), ended))
@@ -274,6 +300,7 @@ def render_sessions(rows: List[Dict[str, Any]]) -> str:
             str(row.get("session_id"))[:8],
             (row.get("label") or "unlabelled")[:14],
             _clock(row.get("started_at")),
-            _elapsed(row.get("started_at"), row.get("ended_at"))))
+            _elapsed(row.get("started_at"), row.get("ended_at"),
+                     row.get("last_call"))))
     lines.append("")
     return "\n".join(lines)
