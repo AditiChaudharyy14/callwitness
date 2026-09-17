@@ -138,6 +138,7 @@ footer a{color:var(--ink-soft)}
   <h2>Which servers, and how they were chosen</h2>
   <p>Servers were drawn from the reference implementations, community directories, and registry searches, filtered to those that can be launched by a package runner and exercised without an API key, an account, or an external service. The filter is not editorial: a server that refuses to list its tools without credentials yields no measurement, so it cannot be in the distribution however popular it is.</p>
   <p>Of 86 attempted, <b>82 started and answered <code>tools/list</code></b>, declaring 1,070 tools between them. 65 of those went on to answer a real call.</p>
+  <p><b>What happened to the other 21.</b> 8 need credentials or infrastructure I do not have; 2 declare only tools that execute or write, and the read-verb rule will not call those; 5 were asked and the call errored; 4 never completed a handshake; and 2 had no call defined for them in the catalogue &mdash; a gap in the catalogue rather than a fact about the server.</p>
   <p>The full list, with the exact argv used for each, is <code>census/servers.json</code> in the repository. Nothing was measured that is not in that file.</p>
 </section>
 
