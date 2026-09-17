@@ -164,10 +164,27 @@ def test_runs_are_listed_newest_first():
 
 
 def test_a_run_that_started_moments_ago_is_still_running():
-    now = datetime.now().isoformat(timespec="seconds")
+    now = datetime.utcnow().isoformat(timespec="seconds")
     running = ("s-run", "pw", "npx pw", now, None, None)
     text = render_sessions(sessions(_store([running], [])))
     assert "still running" in text
+
+
+def test_timestamps_carrying_an_offset_do_not_crash():
+    """The real store has both shapes, and mixing them raises on subtraction.
+
+    Rows written by different versions carry '+00:00' or nothing. Fixtures
+    used only the naive form, so this went out and crashed on first contact
+    with a real database.
+    """
+    stale = ("s-tz", "census", "npx x", "2026-09-13T08:27:00+00:00", None, None)
+    text = render_sessions(sessions(_store([stale], [])))
+    assert "no end recorded" in text
+
+
+def test_a_z_suffix_is_also_understood():
+    stale = ("s-z", "census", "npx x", "2026-09-13T08:27:00Z", None, None)
+    assert "no end recorded" in render_sessions(sessions(_store([stale], [])))
 
 
 def test_an_unclosed_run_from_days_ago_is_not_called_running():
@@ -184,7 +201,7 @@ def test_an_unclosed_run_from_days_ago_is_not_called_running():
 
 def test_activity_decides_it_not_the_start_time():
     """A long run that is still making calls is running, however old it is."""
-    now = datetime.now()
+    now = datetime.utcnow()
     started = (now - timedelta(days=2)).isoformat(timespec="seconds")
     recent = now.isoformat(timespec="seconds")
     row = ("s-long", "pw", "npx pw", started, None, None)

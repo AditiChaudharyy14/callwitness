@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -54,12 +54,26 @@ def _connect(home: Path) -> Optional[sqlite3.Connection]:
 
 
 def _moment(stamp: Optional[str]) -> Optional[datetime]:
+    """Parse a recorded timestamp to naive UTC.
+
+    The store holds UTC, but not uniformly: some rows carry an offset and some
+    do not, depending on which version wrote them. Mixing the two raises
+    "can't subtract offset-naive and offset-aware datetimes" the moment you do
+    arithmetic, so everything is flattened to naive UTC on the way in and
+    compared against utcnow, never now.
+    """
     if not stamp:
         return None
+    text = str(stamp).strip()
+    if text.endswith("Z"):
+        text = text[:-1]
     try:
-        return datetime.fromisoformat(str(stamp).replace("Z", "").strip())
+        when = datetime.fromisoformat(text)
     except Exception:
         return None
+    if when.tzinfo is not None:
+        when = when.astimezone(timezone.utc).replace(tzinfo=None)
+    return when
 
 
 def _clock(stamp: Optional[str]) -> str:
@@ -80,7 +94,7 @@ def _elapsed(started: Optional[str], ended: Optional[str],
         return "?"
     if not last:
         latest = _moment(last_seen) or first
-        idle = (datetime.now() - latest).total_seconds()
+        idle = (datetime.utcnow() - latest).total_seconds()
         return "still running" if idle < STALE_AFTER else "no end recorded"
     seconds = max(0.0, (last - first).total_seconds())
     if seconds >= 3600:
