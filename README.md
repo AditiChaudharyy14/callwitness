@@ -172,7 +172,7 @@ run rather than every run ever recorded.
 ```bash
 $ callwitness last
 
-  fetch   17 Sep 05:56 -> now   still running
+  fetch   17 Sep 05:56 -> 06:02   open, idle 1h
   2 calls, 0 failed, 71.0 KB returned, 3.4 s in tools
 
   nothing failed
@@ -190,11 +190,17 @@ $ callwitness last
 Failures come first, then the biggest responses, then anything slow that was
 not already listed. If nothing failed it says so in one line and moves on.
 
-`callwitness last --runs` lists recent runs. A run with no recorded end and no
-activity for an hour reads *no end recorded* rather than *still running* — the
-recorder closes sessions in a `finally`, on spawn failure and on normal exit,
-so a row with no end means the process was killed outright, which no platform
-lets you catch.
+`callwitness last --runs` lists recent runs, and is careful about what it
+claims. A session with no recorded end reads *still running* only while calls
+are still arriving; after an hour of silence it reads *open, idle 3d*. That is
+the honest form — the process may have been killed, or it may be sitting there
+alive and unused, and the record cannot tell you which. Saying *no end
+recorded* invited the first conclusion; saying *still running* asserted the
+second. Knowing for certain would mean storing a pid and testing liveness, and
+on Windows the obvious test terminates the process rather than checking it.
+
+The arrow points at the last call rather than at now, for the same reason:
+nothing is known to have happened after it.
 
 Then drill in. `--session` takes the id `last` prints, and matches on a prefix:
 
