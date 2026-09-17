@@ -352,11 +352,11 @@ footer a:hover{color:var(--accent)}
 
 <header class="top">
   <div class="wordmark">Callwitness</div>
-  <h1>Record every tool<br>call an agent makes.<br>Block nothing.</h1>
-  <p class="thesis">A transparent MCP proxy. It forwards <span class="b">every byte unchanged</span> and writes down what happened.</p>
+  <h1>Do you know what<br>your agent actually did?</h1>
+  <p class="thesis">A transparent MCP proxy that records <span class="b">every tool call an agent makes</span>, forwards every byte unchanged, and blocks nothing.</p>
 
   <div class="meta">
-    <span>v0.1.1 &middot; alpha</span>
+    <span>v0.4.0</span>
     <span>Python 3.8+</span>
     <span>Zero dependencies</span>
     <span>MIT</span>
@@ -367,23 +367,63 @@ footer a:hover{color:var(--accent)}
     <button class="copy" id="copy" type="button">Copy</button>
     <a class="ghlink" href="https://github.com/AditiChaudharyy14/callwitness">Source</a>
   </div>
+
+  <p class="thesis" style="margin-top:1.1rem">
+    Then <code>callwitness demo</code> &mdash; a real MCP server recorded in under
+    a minute, with no agent, no API key and nothing to configure.
+  </p>
 </header>
 
 <section class="seq" style="border-top:2px solid var(--accent);padding-top:1.6rem">
-  <span class="mark" style="color:var(--accent)">measured</span>
+  <span class="mark" style="color:var(--accent)">found</span>
+  <h2>One ordinary call spent<br>17,000 tokens of context.</h2>
+
+  <p style="max-width:54ch;color:var(--ink-soft)">
+    A single <code>fetch</code> returned 68.6 KB &mdash; roughly seventeen thousand
+    tokens into the context window, for &ldquo;go read this document&rdquo;. The
+    agent's very next move was the same call with <code>max_length=2000</code>.
+    It hit the size, worked around it, and said nothing.
+  </p>
+
+  <p style="max-width:54ch;color:var(--ink-soft)">
+    In the same log: three calls that failed after 16, 21 and 37 seconds and
+    returned nothing at all. An agent waits that out and moves on. They had been
+    happening for days.
+  </p>
+
+  <p style="max-width:54ch;color:var(--ink-soft)">
+    Neither is visible in a terminal, and neither is anyone's fault. They are
+    simply not written down anywhere &mdash; which is the whole problem.
+  </p>
+
+  <p style="font-family:var(--f-mono);font-size:.8rem;letter-spacing:.04em;margin-top:1.4rem;color:var(--ink-faint)">
+    callwitness last &nbsp;&middot;&nbsp; callwitness cost --since 7d
+    &nbsp;&middot;&nbsp; callwitness tail --errors
+  </p>
+</section>
+
+<section class="seq">
+  <span class="mark">measured</span>
   <h2>Declared size does not predict<br>what a server actually hands back.</h2>
 
   <p style="max-width:54ch;color:var(--ink-soft)">
-    82 MCP servers run behind this proxy, 140 calls, 1,070 tools declared.
+    Rank 65 MCP servers by the schema bytes they declare, then rank them again by
+    what they actually returned. The two top tens share <span class="b">two
+    entries</span>. The typical server moves 13 to 18 places out of 65.
+  </p>
+
+  <p style="max-width:54ch;color:var(--ink-soft)">
     <code>mcp-deepwiki</code> declares 774 bytes of schema and returned 62 KB.
     <code>mcp-sympy</code> declares 63 KB across 171 tools and returned 198 B.
-    Median response 580 B, p95 36 KB, largest 496 KB.
+    Median response 580 B, p95 36 KB, largest 496 KB, across 140 calls on 82
+    servers declaring 1,070 tools.
   </p>
 
   <p style="max-width:54ch;color:var(--ink-soft)">
     Every published estimate of MCP context cost counts the schemas a server
     declares. Nobody counted what it delivers, because that means running the
-    servers. The raw data, the harness and every failure are published.
+    servers. The raw data, the harness, every failure, and the script that
+    computes the correlation four different ways are all published.
   </p>
 
   <p style="font-family:var(--f-mono);font-size:.8rem;letter-spacing:.04em;margin-top:1.4rem">
