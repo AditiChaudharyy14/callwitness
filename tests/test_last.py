@@ -23,6 +23,17 @@ CREATE TABLE calls (id INTEGER PRIMARY KEY, session_id TEXT, label TEXT, ts TEXT
 """
 
 
+def _face(stamp, fmt="%H:%M"):
+    """The clock face `last` will print for a recorded UTC timestamp.
+
+    Asserting a literal "11:09" only passes where the machine runs UTC. This
+    goes through the same conversion the code does, so the expectation follows
+    the reader's zone exactly as the output does.
+    """
+    from callwitness.last import local
+    return local(stamp).strftime(fmt)
+
+
 def _store(sessions_rows, calls_rows):
     home = Path(tempfile.mkdtemp())
     connection = sqlite3.connect(str(home / "callwitness.db"))
@@ -120,7 +131,8 @@ def test_a_slow_call_too_small_to_be_biggest_still_gets_surfaced():
 
 def test_the_date_is_not_printed_twice_on_one_line():
     text = render(summarise(_store([NEW], CALLS)), Path("."))
-    assert "11:09 -> 11:13" in text
+    assert "{} -> {}".format(
+        _face("2026-09-17T11:09:00"), _face("2026-09-17T11:13:00")) in text
 
 
 def test_a_clean_run_says_so_rather_than_printing_an_empty_heading():
@@ -301,7 +313,8 @@ def test_an_open_run_points_at_its_last_call_not_at_now():
     row = ("s-open", "fetch", "uvx x", "2026-09-13T08:00:00", None, None)
     calls = [("s-open", "2026-09-13T08:02:00", "fetch", 2, 5.0, 0, 100, None, None)]
     text = render(summarise(_store([row], calls)), Path("."))
-    assert "08:00 -> 08:02" in text
+    assert "{} -> {}".format(
+        _face("2026-09-13T08:00:00"), _face("2026-09-13T08:02:00")) in text
 
 
 def test_one_call_is_not_reported_as_one_calls():

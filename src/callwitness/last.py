@@ -76,11 +76,39 @@ def _moment(stamp: Optional[str]) -> Optional[datetime]:
     return when
 
 
-def _clock(stamp: Optional[str]) -> str:
-    when = _moment(stamp)
+def _shift(when):
+    """An already-parsed naive-UTC datetime on the reader's clock.
+
+    local() is for timestamps as recorded; this is for values that have
+    already been through _moment(). Both funnel through here, so there is one
+    place that knows the reader's zone and no way for two rendered times on
+    one line to disagree about it.
+    """
+    if when is None:
+        return None
+    try:
+        return when.replace(tzinfo=timezone.utc).astimezone()
+    except Exception:
+        return when
+
+
+def local(stamp):
+    """A recorded UTC timestamp on the reader's own clock.
+
+    The database stores UTC and keeps storing it. This is the only place the
+    two representations meet, so `last`, `tail` and `stats` cannot drift --
+    report.py calls this rather than keeping its own copy.
+
+    astimezone() with no argument uses the system zone, which is what a person
+    reading their own log means by "the time". Anything unparseable comes back
+    as None and the caller prints "?" exactly as before.
+    """
+    return _shift(_moment(stamp))
+
+
+def _clock(stamp):
+    when = local(stamp)
     return when.strftime("%d %b %H:%M") if when else "?"
-
-
 def _span(seconds: float) -> str:
     """A rough age: 4d, 3h, 20m."""
     if seconds >= 86400:
@@ -267,14 +295,14 @@ def render(summary: Optional[Dict[str, Any]], home: Path) -> str:
     finished = _moment(session.get("ended_at"))
     started = _moment(session.get("started_at"))
     if finished:
-        until = (finished.strftime("%H:%M")
+        until = (_shift(finished).strftime("%H:%M")
                  if started and finished.date() == started.date()
                  else _clock(session.get("ended_at")))
     else:
         # No recorded end. The last call is the last thing known to have
         # happened, so point at that rather than implying it ran until now.
         latest = _moment(summary.get("last_call"))
-        until = (latest.strftime("%H:%M") if latest and started
+        until = (_shift(latest).strftime("%H:%M") if latest and started
                  and latest.date() == started.date() else "?")
     ran_for = _elapsed(session.get("started_at"), session.get("ended_at"),
                        summary.get("last_call"))

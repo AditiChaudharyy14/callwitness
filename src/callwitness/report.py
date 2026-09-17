@@ -74,6 +74,21 @@ def _bytes(size) -> str:
     return "{}B".format(size)
 
 
+def _when(stamp) -> str:
+    """One timestamp format, one zone, shared with `last`.
+
+    Imported lazily so report.py keeps no import-time dependency on last.py.
+    Nineteen characters, same as the slice it replaces, so every column that
+    was aligned stays aligned.
+    """
+    try:
+        from .last import local
+        when = local(stamp)
+    except Exception:
+        when = None
+    return when.strftime("%Y-%m-%d %H:%M:%S") if when else str(stamp)[:19]
+
+
 def format_stats(home: Path) -> str:
     by_tool, destinations, largest = summarise(home)
     if not by_tool:
@@ -120,7 +135,7 @@ def format_stats(home: Path) -> str:
             dest = ", ".join(parsed.get("hosts", []) + parsed.get("emails", [])) or "-"
         except Exception:
             dest = "-"
-        lines.append(f"  {args_bytes:>9}B  {str(tool):<22} {dest[:40]:<42} {str(ts)[:19]}")
+        lines.append(f"  {args_bytes:>9}B  {str(tool):<22} {dest[:40]:<42} {_when(ts)}")
 
     return "\n".join(lines) + "\n"
 
@@ -141,7 +156,7 @@ def format_tail(home: Path, n: int = 20) -> str:
         except Exception:
             dest = ""
         flag = "ERR" if is_error else "ok "
-        out.append(f"{str(ts)[:19]}  {flag}  {str(tool):<22} "
+        out.append(f"{_when(ts)}  {flag}  {str(tool):<22} "
                    f"in={args_bytes:<8} out={result_bytes:<9} "
                    f"{(duration or 0):>7.0f}ms  {dest[:44]}")
     return "\n".join(out) + ("\n" if out else "")
