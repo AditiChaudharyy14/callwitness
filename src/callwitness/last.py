@@ -81,6 +81,15 @@ def _clock(stamp: Optional[str]) -> str:
     return when.strftime("%d %b %H:%M") if when else "?"
 
 
+def _span(seconds: float) -> str:
+    """A rough age: 4d, 3h, 20m."""
+    if seconds >= 86400:
+        return "{:.0f}d".format(seconds // 86400)
+    if seconds >= 3600:
+        return "{:.0f}h".format(seconds // 3600)
+    return "{:.0f}m".format(max(1, seconds // 60))
+
+
 def _elapsed(started: Optional[str], ended: Optional[str],
              last_seen: Optional[str] = None) -> str:
     """How long it ran, or an honest word about why that isn't known.
@@ -96,7 +105,15 @@ def _elapsed(started: Optional[str], ended: Optional[str],
         latest = _moment(last_seen) or first
         now = datetime.now(timezone.utc).replace(tzinfo=None)
         idle = (now - latest).total_seconds()
-        return "still running" if idle < STALE_AFTER else "no end recorded"
+        if idle < STALE_AFTER:
+            return "still running"
+        # Not "no end recorded", which invites the reader to conclude the
+        # process died -- it may be sitting idle and perfectly alive. The
+        # record is open and nothing has happened since; say exactly that.
+        # Knowing which would mean storing a pid and checking liveness, and
+        # on Windows the obvious check (os.kill with signal 0) terminates the
+        # process rather than testing it.
+        return "open, idle {}".format(_span(idle))
     seconds = max(0.0, (last - first).total_seconds())
     if seconds >= 3600:
         return "{:.0f}h {:.0f}m".format(seconds // 3600, (seconds % 3600) // 60)
@@ -249,9 +266,16 @@ def render(summary: Optional[Dict[str, Any]], home: Path) -> str:
     # noise in the place a reader looks first.
     finished = _moment(session.get("ended_at"))
     started = _moment(session.get("started_at"))
-    until = (finished.strftime("%H:%M") if finished and started
-             and finished.date() == started.date()
-             else (_clock(session.get("ended_at")) if finished else "now"))
+    if finished:
+        until = (finished.strftime("%H:%M")
+                 if started and finished.date() == started.date()
+                 else _clock(session.get("ended_at")))
+    else:
+        # No recorded end. The last call is the last thing known to have
+        # happened, so point at that rather than implying it ran until now.
+        latest = _moment(summary.get("last_call"))
+        until = (latest.strftime("%H:%M") if latest and started
+                 and latest.date() == started.date() else "?")
     ran_for = _elapsed(session.get("started_at"), session.get("ended_at"),
                        summary.get("last_call"))
     lines.append("  {}   {} -> {}   {}".format(
@@ -259,11 +283,15 @@ def render(summary: Optional[Dict[str, Any]], home: Path) -> str:
         _clock(session.get("started_at")), until, ran_for))
 
     exit_code = session.get("exit_code")
+    # Only say how it exited when that is actually known. Repeating the state
+    # already in the line above is padding, and padding is how a reader
+    # decides the rest is padding too.
     ended = ("exited {}".format(exit_code) if exit_code not in (None, 0)
-             else ("clean" if exit_code == 0 else ran_for))
-    lines.append("  {} calls, {} failed, {} returned, {} in tools, {}".format(
-        summary["calls"], summary["failed"], human(summary["returned"]),
-        _ms(summary["spent_ms"]), ended))
+             else ("clean" if exit_code == 0 else None))
+    lines.append("  {} {}, {} failed, {} returned, {} in tools{}".format(
+        summary["calls"], "call" if summary["calls"] == 1 else "calls",
+        summary["failed"], human(summary["returned"]),
+        _ms(summary["spent_ms"]), ", " + ended if ended else ""))
     lines.append("")
 
     if summary["failures"]:

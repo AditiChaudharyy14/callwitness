@@ -179,12 +179,12 @@ def test_timestamps_carrying_an_offset_do_not_crash():
     """
     stale = ("s-tz", "census", "npx x", "2026-09-13T08:27:00+00:00", None, None)
     text = render_sessions(sessions(_store([stale], [])))
-    assert "no end recorded" in text
+    assert "open, idle" in text
 
 
 def test_a_z_suffix_is_also_understood():
     stale = ("s-z", "census", "npx x", "2026-09-13T08:27:00Z", None, None)
-    assert "no end recorded" in render_sessions(sessions(_store([stale], [])))
+    assert "open, idle" in render_sessions(sessions(_store([stale], [])))
 
 
 def test_an_unclosed_run_from_days_ago_is_not_called_running():
@@ -195,7 +195,7 @@ def test_an_unclosed_run_from_days_ago_is_not_called_running():
     """
     stale = ("s-old2", "census", "npx x", "2026-09-13T08:27:00", None, None)
     text = render_sessions(sessions(_store([stale], [])))
-    assert "no end recorded" in text
+    assert "open, idle" in text
     assert "still running" not in text
 
 
@@ -273,3 +273,45 @@ def test_the_drill_down_survives_a_windows_console():
     from callwitness.last import calls, render_calls
     text = render_calls(calls(_store([NEW], CALLS)))
     assert text == text.encode("cp1252", "strict").decode("cp1252")
+
+
+def test_an_idle_run_does_not_claim_the_process_died():
+    """It may be sitting idle and alive. The record is open; say only that.
+
+    Knowing which would mean storing a pid and testing liveness, and on
+    Windows the obvious test -- os.kill with signal 0 -- terminates the
+    process instead of checking it.
+    """
+    stale = ("s-idle", "fetch", "uvx x", "2026-09-13T08:27:00", None, None)
+    text = render_sessions(sessions(_store([stale], [])))
+    assert "open, idle" in text
+    assert "no end recorded" not in text
+    assert "still running" not in text
+
+
+def test_the_idle_age_is_reported_roughly():
+    from callwitness.last import _span
+    assert _span(30) == "1m"
+    assert _span(3 * 3600) == "3h"
+    assert _span(4 * 86400) == "4d"
+
+
+def test_an_open_run_points_at_its_last_call_not_at_now():
+    """Saying it ran until now implies something happened until now."""
+    row = ("s-open", "fetch", "uvx x", "2026-09-13T08:00:00", None, None)
+    calls = [("s-open", "2026-09-13T08:02:00", "fetch", 2, 5.0, 0, 100, None, None)]
+    text = render(summarise(_store([row], calls)), Path("."))
+    assert "08:00 -> 08:02" in text
+
+
+def test_one_call_is_not_reported_as_one_calls():
+    row = ("s1", "fetch", "uvx x", "2026-09-13T08:00:00", "2026-09-13T08:01:00", 0)
+    calls = [("s1", "2026-09-13T08:00:30", "fetch", 2, 5.0, 0, 100, None, None)]
+    assert "1 call," in render(summarise(_store([row], calls)), Path("."))
+
+
+def test_the_state_is_not_printed_twice():
+    row = ("s2", "fetch", "uvx x", "2026-09-13T08:00:00", None, None)
+    calls = [("s2", "2026-09-13T08:02:00", "fetch", 2, 5.0, 0, 100, None, None)]
+    text = render(summarise(_store([row], calls)), Path("."))
+    assert text.count("open, idle") == 1
