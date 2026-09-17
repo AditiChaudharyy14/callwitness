@@ -61,31 +61,59 @@ def summarise(home: Path) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, int], Li
     return by_tool, destinations, largest
 
 
+# Enough rows to see the shape, few enough that the report ends.
+SHOWN_TOOLS = 15
+
+
+def _bytes(size) -> str:
+    size = int(size or 0)
+    if size >= 1024 * 1024:
+        return "{:.1f}MB".format(size / (1024.0 * 1024.0))
+    if size >= 1024:
+        return "{:.1f}KB".format(size / 1024.0)
+    return "{}B".format(size)
+
+
 def format_stats(home: Path) -> str:
     by_tool, destinations, largest = summarise(home)
     if not by_tool:
         return "No tool calls recorded yet."
 
     total = sum(s["n"] for s in by_tool.values())
-    lines = [f"", f"{total} tool calls across {len(by_tool)} tools", ""]
-    header = (f"{'tool':<28}{'calls':>7}{'err':>6}{'p50ms':>9}"
-              f"{'p95ms':>9}{'maxArg':>10}{'outBytes':>11}")
+    lines = ["", "{} tool calls across {} tools".format(total, len(by_tool)), ""]
+    header = "{:<28}{:>7}{:>6}{:>9}{:>9}{:>11}{:>11}".format(
+        "tool", "calls", "err", "p50ms", "p95ms", "returned", "worst")
     lines += [header, "-" * len(header)]
 
-    for tool, s in sorted(by_tool.items(), key=lambda kv: -kv[1]["n"]):
-        lines.append(
-            f"{str(tool)[:27]:<28}{s['n']:>7}{s['errors']:>6}"
-            f"{percentile(s['durations'], 50):>9.0f}"
-            f"{percentile(s['durations'], 95):>9.0f}"
-            f"{max(s['arg_sizes']):>10}{s['out_bytes']:>11}"
-        )
+    # The worst single call per tool. `out_bytes` is a sum, which answers how
+    # much in total; the question people have is how big one call can get,
+    # because that is the one that ends a context window.
+    from . import cost as _cost
+    worst = {}
+    try:
+        worst = {t["tool"]: int(t["largest"] or 0)
+                 for t in _cost.summarise(home)["tools"]}
+    except Exception:
+        pass
+
+    ranked = sorted(by_tool.items(), key=lambda kv: -kv[1]["out_bytes"])
+    for tool, s in ranked[:SHOWN_TOOLS]:
+        lines.append("{:<28}{:>7}{:>6}{:>9.0f}{:>9.0f}{:>11}{:>11}".format(
+            str(tool)[:27], s["n"], s["errors"],
+            percentile(s["durations"], 50), percentile(s["durations"], 95),
+            _bytes(s["out_bytes"]),
+            _bytes(worst[tool]) if tool in worst else "-"))
+
+    if len(ranked) > SHOWN_TOOLS:
+        lines.append("... and {} more tools, smaller than these".format(
+            len(ranked) - SHOWN_TOOLS))
 
     if destinations:
         lines += ["", "destinations named in arguments", "-" * 42]
         for dest, count in sorted(destinations.items(), key=lambda kv: -kv[1])[:20]:
             lines.append(f"  {count:>5}  {dest}")
 
-    lines += ["", "largest payloads sent to tools", "-" * 42]
+    lines += ["", "largest arguments sent to tools", "-" * 42]
     for ts, tool, args_bytes, signals in largest:
         try:
             parsed = json.loads(signals or "{}").get("destinations", {})
