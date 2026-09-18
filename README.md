@@ -7,8 +7,10 @@
 [![PyPI](https://img.shields.io/pypi/v/callwitness)](https://pypi.org/project/callwitness/)
 **[callwitness.tech](https://callwitness.tech)** · [Install from PyPI](https://pypi.org/project/callwitness/)
 
-A transparent MCP proxy. It sits between an agent and its tools, forwards every
-byte unchanged, and writes down what happened.
+A recorder for AI agents. It sits between an agent and its tools, forwards every
+byte unchanged, blocks nothing, and hash-chains every record it writes -- so a log
+its operator could have edited still proves what happened. Works with any MCP
+server today.
 
 No dependencies. Python 3.8+. MIT.
 
