@@ -556,12 +556,13 @@ design are in [experiments/README.md](experiments/README.md).
 ## Where this is going
 
 1. **Now** — observe. Record every call, block nothing.
-2. **Next** — deterministic policy: the rules `callwitness suggest` proposes,
-   evaluated inline, sub-millisecond, fail-open by default. The generator ships
-   first on purpose; an engine that enforces numbers nobody could justify is the
-   problem, not the product.
-3. **Then** — context: an LLM judge, but only on calls the deterministic tier
-   flags. Payload volume × destination reputation first.
+2. **Next** — independent verification. A log its operator could have edited
+   proves nothing to the person demanding it. Anchoring publishes the chain's
+   head outside your control, so a third party can confirm what was recorded
+   and when.
+3. **Then** — population. Enough recorded deployments to say "this response is
+   unusual for this tool" on a machine's first day, instead of only after it
+   has built its own history.
 
 Scope: MCP tool calls over stdio and Streamable HTTP. The deprecated
 two-endpoint HTTP+SSE transport is not covered. Direct API calls made inside
