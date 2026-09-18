@@ -311,6 +311,13 @@ def render(rows: List[Dict[str, Any]], public: Dict[str, Any], source: str) -> s
     lines.append("")
     lines.append("  The comparison is a download. Nothing about your traffic was sent.")
     lines.append("")
+    lines.append("  That comparison exists because people sent the shape of")
+    lines.append("  their traffic -- never arguments, never paths. Yours can")
+    lines.append("  join it. It is off until you turn it on, and --dry-run")
+    lines.append("  prints the exact bytes while sending nothing:")
+    lines.append("")
+    lines.append("    callwitness contribute --dry-run")
+    lines.append("")
     return "\n".join(lines)
 
 
