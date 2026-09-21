@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/callwitness/"><img alt="PyPI" src="https://img.shields.io/pypi/v/callwitness?color=111111"></a>
-  <a href="https://pypi.org/project/callwitness/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/callwitness?color=111111"></a>
+  <a href="https://pypi.org/project/callwitness/"><img alt="Python 3.8+" src="https://img.shields.io/badge/python-3.8%2B-111111"></a>
   <img alt="Dependencies: zero" src="https://img.shields.io/badge/dependencies-zero-111111">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-111111"></a>
 </p>
@@ -28,11 +28,9 @@
 
 <!-- mcp-name: io.github.AditiChaudharyy14/callwitness -->
 
-**Record every tool call an AI agent makes. Block nothing.**
 
 [![tests](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml/badge.svg)](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml)
 [![PyPI](https://img.shields.io/pypi/v/callwitness)](https://pypi.org/project/callwitness/)
-**[callwitness.tech](https://callwitness.tech)** · [Install from PyPI](https://pypi.org/project/callwitness/)
 
 A recorder for AI agents. It sits between an agent and its tools, forwards every
 byte unchanged, blocks nothing, and hash-chains every record it writes -- so a log
