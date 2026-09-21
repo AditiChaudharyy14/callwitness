@@ -12,6 +12,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml"><img alt="tests" src="https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml/badge.svg"></a>
   <a href="https://pypi.org/project/callwitness/"><img alt="PyPI" src="https://img.shields.io/pypi/v/callwitness?color=111111"></a>
   <a href="https://pypi.org/project/callwitness/"><img alt="Python 3.8+" src="https://img.shields.io/badge/python-3.8%2B-111111"></a>
   <img alt="Dependencies: zero" src="https://img.shields.io/badge/dependencies-zero-111111">
@@ -27,10 +28,6 @@
 <!-- /callwitness-header -->
 
 <!-- mcp-name: io.github.AditiChaudharyy14/callwitness -->
-
-
-[![tests](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml/badge.svg)](https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml)
-[![PyPI](https://img.shields.io/pypi/v/callwitness)](https://pypi.org/project/callwitness/)
 
 A recorder for AI agents. It sits between an agent and its tools, forwards every
 byte unchanged, blocks nothing, and hash-chains every record it writes -- so a log
@@ -59,7 +56,6 @@ same tool, same output:
 python -m callwitness demo
 python -m callwitness last
 ```
-
 
 No agent, no API key, nothing to configure. It starts a real MCP server through
 the recorder, calls the tools that read like reads, refuses the ones that don't,
