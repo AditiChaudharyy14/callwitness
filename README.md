@@ -36,6 +36,14 @@ server today.
 
 No dependencies. Python 3.8+. MIT.
 
+<!-- callwitness-diagram -->
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/AditiChaudharyy14/callwitness/main/.github/assets/how-it-works-dark.svg">
+    <img alt="Your agent talks to MCP servers through Callwitness, which forwards every byte unchanged and writes a copy to a hash-chained log on your machine" src="https://raw.githubusercontent.com/AditiChaudharyy14/callwitness/main/.github/assets/how-it-works-light.svg" width="760">
+  </picture>
+</p>
+
 ---
 
 ## Thirty seconds

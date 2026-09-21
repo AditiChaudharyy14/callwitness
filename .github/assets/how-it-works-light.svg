@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="380" viewBox="0 0 880 380">
+<rect width="880" height="380" rx="14" fill="#ffffff"/>
+<defs>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#182646"/></marker>
+<marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#a47a35"/></marker>
+</defs>
+<rect x="20" y="40" width="200" height="100" rx="12" fill="#f5f2ed" stroke="#ddd6ca"/>
+<text x="120" y="84" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="22" font-weight="600" fill="#182646">Your agent</text>
+<text x="120" y="112" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" fill="#4a5468">any MCP client</text>
+<rect x="330" y="28" width="220" height="124" rx="14" fill="#182646" stroke="#c69e5c" stroke-width="2"/>
+<circle cx="440" cy="54" r="5" fill="#c69e5c"/>
+<text x="440" y="90" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="24" font-weight="700" fill="#f0e6d8">Callwitness</text>
+<text x="440" y="116" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" fill="#d9ccb9">forwards every byte</text>
+<text x="440" y="137" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" fill="#d9ccb9">blocks nothing</text>
+<rect x="660" y="40" width="200" height="100" rx="12" fill="#f5f2ed" stroke="#ddd6ca"/>
+<text x="760" y="84" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="22" font-weight="600" fill="#182646">MCP servers</text>
+<text x="760" y="112" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" fill="#4a5468">stdio or HTTP</text>
+<line x1="224" y1="90" x2="324" y2="90" stroke="#182646" stroke-width="2.5" marker-start="url(#a)" marker-end="url(#a)"/>
+<line x1="556" y1="90" x2="656" y2="90" stroke="#182646" stroke-width="2.5" marker-start="url(#a)" marker-end="url(#a)"/>
+<text x="274" y="76" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="14" fill="#4a5468">unchanged</text>
+<text x="606" y="76" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="14" fill="#4a5468">unchanged</text>
+<line x1="440" y1="156" x2="440" y2="222" stroke="#a47a35" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#g)"/>
+<text x="454" y="196" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="15" font-style="italic" fill="#a47a35">a copy, written on the side</text>
+<rect x="150" y="228" width="580" height="128" rx="12" fill="#fbf6ec" stroke="#a47a35" stroke-width="1.5"/>
+<text x="440" y="262" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="20" font-weight="600" fill="#182646">Hash-chained log on your machine</text>
+<text x="440" y="289" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" fill="#4a5468">Redacted before it is written. Nothing leaves unless you send it.</text>
+<text x="440" y="313" text-anchor="middle" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" fill="#4a5468">If the log falls behind, it drops a record rather than slow your agent.</text>
+<text x="440" y="340" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" font-size="15" fill="#a47a35">callwitness verify · last · tail</text>
+</svg>
