@@ -1,4 +1,31 @@
-# Callwitness
+<!-- callwitness-header -->
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/AditiChaudharyy14/callwitness/main/.github/assets/logo-dark.png">
+    <img alt="callwitness" src="https://raw.githubusercontent.com/AditiChaudharyy14/callwitness/main/.github/assets/logo-light.png" width="260">
+  </picture>
+</p>
+
+<p align="center">
+  <b>Record what your AI agent's tools actually return.</b><br>
+  Forwards every byte. Blocks nothing. Hash-chains the log.
+</p>
+
+<p align="center">
+  <a href="https://pypi.org/project/callwitness/"><img alt="PyPI" src="https://img.shields.io/pypi/v/callwitness?color=111111"></a>
+  <a href="https://pypi.org/project/callwitness/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/callwitness?color=111111"></a>
+  <img alt="Dependencies: zero" src="https://img.shields.io/badge/dependencies-zero-111111">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-111111"></a>
+</p>
+
+<p align="center">
+  <a href="https://callwitness.tech">Website</a> &middot;
+  <a href="https://pypi.org/project/callwitness/">PyPI</a> &middot;
+  <a href="SECURITY.md">Security</a> &middot;
+  <a href="https://github.com/AditiChaudharyy14/callwitness/issues">Issues</a>
+</p>
+<!-- /callwitness-header -->
+
 <!-- mcp-name: io.github.AditiChaudharyy14/callwitness -->
 
 **Record every tool call an AI agent makes. Block nothing.**
@@ -593,3 +620,8 @@ pytest
 ## License
 
 MIT
+
+<!-- callwitness-name -->
+---
+
+callwitness is MIT-licensed. The name and logo are not; see [TRADEMARKS.md](TRADEMARKS.md).
