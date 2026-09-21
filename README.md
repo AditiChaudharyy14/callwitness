@@ -13,10 +13,10 @@
 
 <p align="center">
   <a href="https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml"><img alt="tests" src="https://github.com/AditiChaudharyy14/callwitness/actions/workflows/tests.yml/badge.svg"></a>
-  <a href="https://pypi.org/project/callwitness/"><img alt="PyPI" src="https://img.shields.io/pypi/v/callwitness?color=111111"></a>
-  <a href="https://pypi.org/project/callwitness/"><img alt="Python 3.8+" src="https://img.shields.io/badge/python-3.8%2B-111111"></a>
-  <img alt="Dependencies: zero" src="https://img.shields.io/badge/dependencies-zero-111111">
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-111111"></a>
+  <a href="https://pypi.org/project/callwitness/"><img alt="PyPI" src="https://img.shields.io/pypi/v/callwitness?color=182646"></a>
+  <a href="https://pypi.org/project/callwitness/"><img alt="Python 3.8+" src="https://img.shields.io/badge/python-3.8%2B-182646"></a>
+  <img alt="Dependencies: zero" src="https://img.shields.io/badge/dependencies-zero-182646">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-182646"></a>
 </p>
 
 <p align="center">
