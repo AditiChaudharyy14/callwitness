@@ -566,7 +566,7 @@ footer a:hover{color:var(--accent)}
 <pre><span class="c">stored as:</span>  postgres://admin:<span class="flag">&lt;redacted:url_password&gt;</span>@db.internal</pre>
 
   <p>The host is the signal; the password is not. The true pre-redaction byte count is kept, so the volume signal survives. <code>--no-args</code> stores argument <em>shape</em> only and still records destinations &mdash; that is deliberate, it is tested, and you should say it out loud to anyone you ask to run this.</p>
-  <p>Everything stays on the machine that ran it. Nothing is transmitted anywhere.</p>
+  <p>Everything stays on the machine that ran it. Nothing is transmitted anywhere unless you run <code>callwitness contribute</code>, which sends shapes only and stays off until you type it.</p>
 </section>
 
 <section class="seq">
