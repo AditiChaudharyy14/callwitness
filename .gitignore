@@ -38,3 +38,4 @@ patch_*.py
 *.callwitness-backup-*
 
 notes/
+callwitness-report-*.html

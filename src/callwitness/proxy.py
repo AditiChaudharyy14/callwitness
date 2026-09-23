@@ -128,7 +128,10 @@ class Proxy(CallTracker):
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                bufsize=0,
+                # Buffered. bufsize=0 made readline() one system call per BYTE:
+                # a 500 KB response cost 500,000 syscalls and ~450 ms of added
+                # latency. Every forwarded line is still flushed at once.
+                bufsize=-1,
             )
         except (FileNotFoundError, PermissionError) as exc:
             print("callwitness: cannot start server {!r}: {}".format(self.command[0], exc),

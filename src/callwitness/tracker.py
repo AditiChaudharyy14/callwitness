@@ -20,7 +20,7 @@ from typing import Any, Dict, Optional
 from .analyze import extract_signals, shape_only
 from .record import Recorder, utcnow
 from .chain import result_digest
-from .redact import redact_structure
+from .redact import redact_preview, redact_structure
 
 MAX_ARG_BYTES_DEFAULT = 8192
 RESULT_PREVIEW_BYTES = 512
@@ -219,8 +219,10 @@ class CallTracker:
         # measured on the original, because the volume signal is the product.
         preview = raw
         if self.redact and payload is not None:
-            redacted, rstats = redact_structure(payload)
-            preview = json.dumps(redacted, ensure_ascii=False, default=str)
+            # Only the stored preview needs redacting, so only a bounded window
+            # is scanned: walking a 500 KB response to keep 512 bytes of it cost
+            # ~100 ms per call and, through the GIL, slowed the relay itself.
+            preview, rstats = redact_preview(raw)
             if rstats.total:
                 merged = dict(entry.get("redaction") or {})
                 merged["result"] = rstats.as_dict()

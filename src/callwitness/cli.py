@@ -477,6 +477,13 @@ def build_parser() -> argparse.ArgumentParser:
              "no credentials")
     demo.set_defaults(func=cmd_demo)
 
+    report = sub.add_parser(
+        "report",
+        help="one-page HTML evidence report for a run, safe to hand to someone")
+    report.add_argument("--session", help="a particular run; an id prefix is enough")
+    report.add_argument("-o", "--out", help="file to write (default: callwitness-report-<id>.html)")
+    report.set_defaults(func=cmd_report)
+
     export = sub.add_parser("export", help="dump all calls as JSONL")
     export.add_argument("out")
     export.set_defaults(func=cmd_export)
@@ -571,6 +578,43 @@ def cmd_cost(args: argparse.Namespace) -> int:
                             session=args.session)
     print(cst.render(summary, ratio=args.bytes_per_token))
     return 0
+
+def cmd_report(args: argparse.Namespace) -> int:
+    """One page for the person who asks what the agent did.
+
+    Read-only against the store, and deliberately without arguments or response
+    contents: a report exists to be handed on, and whatever is in it leaves the
+    machine with it. Sizes and hashes travel instead.
+    """
+    from . import __version__
+    from . import evidence as ev
+
+    home = Path(args.home)
+    sid = ev.resolve(home, getattr(args, "session", None))
+    if not sid:
+        if getattr(args, "session", None):
+            print("No single run matches '{}'. `callwitness last --runs` lists them."
+                  .format(args.session))
+        else:
+            print("Nothing recorded yet. Try:  callwitness demo")
+        return 1
+    data = ev.build(home, sid)
+    if not data:
+        print("Run {} has no recorded calls.".format(sid))
+        return 1
+    out = Path(args.out or "callwitness-report-{}.html".format(sid[:8]))
+    out.write_text(ev.render_html(data, __version__), encoding="utf-8")
+    verdict = data.get("verdict") or {}
+    state = ("BROKEN at record {}".format(verdict["break"].get("seq"))
+             if verdict.get("break") else
+             "intact" if verdict.get("verified") else "not chained")
+    print("")
+    print("  Wrote {}".format(out))
+    print("  {} calls, chain {}.".format(len(data["calls"]), state))
+    print("  Open it in a browser. Nothing was sent anywhere.")
+    print("")
+    return 0 if not verdict.get("break") else 1
+
 
 if __name__ == "__main__":
     entrypoint()

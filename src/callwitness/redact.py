@@ -18,7 +18,7 @@ import math
 import re
 from typing import Any, Dict, Tuple
 
-__all__ = ["redact_value", "redact_structure", "RedactionStats", "DEFAULT_KEY_NAMES"]
+__all__ = ["redact_value", "redact_structure", "redact_preview", "RedactionStats", "DEFAULT_KEY_NAMES"]
 
 # --- Key names that redact regardless of value shape -------------------------
 # Cheapest, highest-recall signal available: the tool's own parameter name.
@@ -209,4 +209,51 @@ def redact_structure(obj: Any, entropy: bool = True, _depth: int = 0,
             stats.hit("redactor_error")
         except Exception:  # noqa: BLE001
             pass
+        return "<redacted:redactor_error>", stats
+
+
+# --- Bounded redaction for stored previews -----------------------------------
+# The preview is the first 512 characters of a result. Redacting the entire
+# result to keep 512 characters of it is wasted work that grows with response
+# size -- ~100 ms for 500 KB. A window 8x the preview is scanned instead, so a
+# secret that straddles the 512 edge is still seen whole before the cut.
+PREVIEW_WINDOW = 4096
+
+_KEY_ESCAPED = re.compile(
+    r'\\"([A-Za-z0-9_.\-]{1,64})\\"(\s*:\s*)'
+    r'(\\"(?:[^\\]|\\[^"])*?\\"|[^,}\]\s\\]+)')
+_KEY_PLAIN = re.compile(
+    r'(?<!\\)"([A-Za-z0-9_.\-]{1,64})"(\s*:\s*)'
+    r'("(?:[^"\\]|\\.)*"|[^,}\]\s]+)')
+
+
+def redact_preview(text: str, limit: int = 512,
+                   window: int = PREVIEW_WINDOW) -> Tuple[str, "RedactionStats"]:
+    """Redact the start of a serialised result and return its first `limit` chars.
+
+    Pattern, URL and entropy redaction as for any value, plus sensitive key
+    names inside the text itself -- plain JSON or JSON escaped inside a string.
+    Total: never raises; on any failure the preview is withheld entirely.
+    """
+    stats = RedactionStats()
+    try:
+        chunk = (text or "")[:window]
+
+        def _swap(q: str):
+            def _key(m: "re.Match") -> str:
+                name = m.group(1).strip().lower().replace("-", "_")
+                if name in DEFAULT_KEY_NAMES:
+                    stats.hit("key_name")
+                    return "{q}{k}{q}{sep}{q}<redacted:key_name>{q}".format(
+                        q=q, k=m.group(1), sep=m.group(2))
+                return m.group(0)
+            return _key
+
+        # Escaped first (JSON inside a string, like an env dump), then plain.
+        chunk = _KEY_ESCAPED.sub(_swap('\\"'), chunk)
+        chunk = _KEY_PLAIN.sub(_swap('"'), chunk)
+        chunk, _ = redact_value(chunk, stats=stats)
+        return chunk[:limit], stats
+    except Exception:  # noqa: BLE001 - contract: never raise on the write path
+        stats.hit("redactor_error")
         return "<redacted:redactor_error>", stats
