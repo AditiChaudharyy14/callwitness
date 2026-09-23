@@ -19,6 +19,7 @@ from typing import Any, Dict, Optional
 
 from .analyze import extract_signals, shape_only
 from .record import Recorder, utcnow
+from .chain import result_digest
 from .redact import redact_structure
 
 MAX_ARG_BYTES_DEFAULT = 8192
@@ -230,6 +231,9 @@ class CallTracker:
             "is_error": is_error,
             "result_bytes": len(raw.encode("utf-8")),
             "result_preview": preview[:RESULT_PREVIEW_BYTES],
+            # Over the ORIGINAL payload, before redaction: it commits to what
+            # actually came back. Only the hash is stored, never the content.
+            "result_sha256": result_digest(payload),
         })
         try:
             self.rec.call(entry)

@@ -81,6 +81,7 @@ measured across 65 public servers.
     get-resource-reference           368 B
     get-structured-content           187 B
     get-sum                           67 B
+    (1 more not called: the demo stops at 6 calls.)
 
   6 calls recorded. Nothing was blocked, nothing was
   altered -- the proxy forwards every byte and writes down
@@ -489,8 +490,12 @@ be inserted without `verify` noticing. Fixed; see the 0.4.5 release.)
 ## What gets stored
 
 `calls` — one row per tool call: tool, arguments, `args_bytes`, whether they
-were truncated, `signals`, `duration_ms`, `is_error`, `result_bytes`, and a
-result preview.
+were truncated, `signals`, `duration_ms`, `is_error`, `result_bytes`, a
+result preview, and `result_sha256` -- a SHA-256 of the complete result, over
+canonical JSON, covered by the chain. The preview is 512 bytes; the hash
+commits to all of it, so anyone holding the full response can later show it
+is exactly what came back. Only the hash is stored, never the content.
+(Since 0.4.6. Older rows have no hash and still verify.)
 
 `signals` splits two things a naive scan conflates:
 

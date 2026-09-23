@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS calls (
     duration_ms    REAL,
     is_error       INTEGER DEFAULT 0,
     result_bytes   INTEGER,
-    result_preview TEXT
+    result_preview TEXT,
+    result_sha256  TEXT
 );
 
 CREATE TABLE IF NOT EXISTS events (
@@ -64,7 +65,7 @@ _MAX_EVENT_BYTES = 20_000
 # Bump when the shape of the tables changes. Stored in PRAGMA user_version so an
 # upgraded Callwitness can tell a v1 database from a v2 one instead of failing on a
 # missing column and losing a user's history.
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 
 def utcnow() -> str:
@@ -124,6 +125,10 @@ class Recorder:
                     if name not in cols:
                         self._db.execute(
                             "ALTER TABLE calls ADD COLUMN {} {}".format(name, decl))
+            if current < 4 and "result_sha256" not in cols:
+                # Older rows keep NULL: a hash of a response nobody hashed at
+                # the time would be manufactured evidence.
+                self._db.execute("ALTER TABLE calls ADD COLUMN result_sha256 TEXT")
             self._db.execute("PRAGMA user_version={}".format(SCHEMA_VERSION))
         except Exception:
             pass
@@ -196,6 +201,7 @@ class Recorder:
                     "is_error": 1 if rec.get("is_error") else 0,
                     "result_bytes": rec.get("result_bytes", 0),
                     "result_preview": rec.get("result_preview"),
+                    "result_sha256": rec.get("result_sha256"),
                 }
                 prev_hash = self._last_hash
                 row_hash = digest(row, prev_hash)
@@ -204,8 +210,8 @@ class Recorder:
                     "INSERT INTO calls (session_id, label, ts, tool, args_json, "
                     "args_bytes, args_truncated, signals_json, redaction_json, "
                     "duration_ms, is_error, result_bytes, result_preview, "
-                    "seq, prev_hash, hash) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "seq, prev_hash, hash, result_sha256) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         row["session_id"], self.label, row["ts"], row["tool"],
                         row["args_json"], row["args_bytes"], row["args_truncated"],
@@ -213,6 +219,7 @@ class Recorder:
                         row["duration_ms"], row["is_error"], row["result_bytes"],
                         row["result_preview"],
                         row["seq"], prev_hash, row_hash,
+                        row["result_sha256"],
                     ),
                 )
                 self._db.commit()

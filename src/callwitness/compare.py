@@ -275,6 +275,11 @@ def _scale(row: Dict[str, Any]) -> str:
     return "about typical"
 
 
+def _pct(percentile: int) -> str:
+    """p0 read like a failed match. Below every public sample is a finding."""
+    return "<p1" if percentile <= 0 else "p{}".format(percentile)
+
+
 def render(rows: List[Dict[str, Any]], public: Dict[str, Any], source: str) -> str:
     sample = public.get("sample", {}) or {}
     lines = ["", "Your calls against the public baseline ({} servers, {} calls, {})".format(
@@ -295,9 +300,9 @@ def render(rows: List[Dict[str, Any]], public: Dict[str, Any], source: str) -> s
             # and prints as a stray accented letter in the middle of a tool
             # name, which looks like the tool name is wrong.
             label = label[:width - 3] + "..."
-        lines.append("  {}  {:>9}  p{:<3} vs {:<13} {}".format(
+        lines.append("  {}  {:>9}  {:<4} vs {:<13} {}".format(
             label.ljust(width), human(row["yours"]),
-            row["percentile"], row["level"], _scale(row)))
+            _pct(row["percentile"]), row["level"], _scale(row)))
 
     if len(rows) > SHOWN:
         lines.append("")
@@ -327,9 +332,9 @@ def render_markdown(rows: List[Dict[str, Any]], public: Dict[str, Any]) -> str:
     lines = ["| tool | mine | percentile | compared against |",
              "| --- | ---: | ---: | --- |"]
     for row in rows:
-        lines.append("| `{}/{}` | {} | p{} | {} |".format(
+        lines.append("| `{}/{}` | {} | {} | {} |".format(
             row["package"], row["tool"], human(row["yours"]),
-            row["percentile"], row["level"]))
+            _pct(row["percentile"]), row["level"]))
     lines.append("")
     lines.append("Baseline: {} servers, {} public calls, callwitness.tech/baseline/".format(
         sample.get("servers_called", "?"), sample.get("calls", "?")))

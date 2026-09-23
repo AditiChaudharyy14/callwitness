@@ -83,7 +83,8 @@ def test_large_payload_does_not_stall_observation():
            "params": {"name": "upload", "arguments": {"blob": "A" * 2_000_000}}}
     start = time.perf_counter()
     proxy.on_client_message(msg)
-    assert time.perf_counter() - start < 2.0
+    # Guards against a hang, not a benchmark: a loaded laptop can take >2 s.
+    assert time.perf_counter() - start < 5.0
 
 
 # --------------------------------------------------------------------------

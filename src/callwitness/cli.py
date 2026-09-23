@@ -20,7 +20,11 @@ from .record import Recorder
 from .report import export_jsonl, format_stats, format_tail
 from .suggest import format_suggestions, format_yaml
 
-DEFAULT_HOME = Path(os.environ.get("BOLLARD_HOME", Path.home() / ".callwitness"))
+# CALLWITNESS_HOME is the name. BOLLARD_HOME is the project's old name and
+# keeps working, so nobody's existing setup moves their data out from under them.
+DEFAULT_HOME = Path(os.environ.get("CALLWITNESS_HOME")
+                    or os.environ.get("BOLLARD_HOME")
+                    or (Path.home() / ".callwitness"))
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -330,7 +334,7 @@ def cmd_baseline(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="callwitness",
-        description="Record every tool call an AI agent makes. Block nothing.",
+        description="Verifiable records of AI agent tool interactions. Blocks nothing.",
     )
     parser.add_argument("--version", action="version", version=f"callwitness {__version__}")
     parser.add_argument("--home", default=str(DEFAULT_HOME),
@@ -511,6 +515,10 @@ def cmd_demo(args: argparse.Namespace) -> int:
     """
     from . import demo as dm
 
+    # Only what this run recorded. Comparing the whole store showed anyone with
+    # history their old traffic instead of the demo they had just watched.
+    from .record import utcnow
+    started = utcnow()
     made, lines = dm.run(server=list(args.server or []) or None, home=args.home)
     for line in lines:
         print(line)
@@ -520,7 +528,7 @@ def cmd_demo(args: argparse.Namespace) -> int:
     from . import baseline as bl
     from . import compare as cmp
 
-    document = bl.build(Path(args.home))
+    document = bl.build(Path(args.home), since=started)
     public, source = cmp.fetch(Path(args.home))
     if public is None:
         print("")

@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "callwitness"
-version = "0.4.5"
-description = "Record every tool call an AI agent makes. Block nothing."
+version = "0.4.6"
+description = "Verifiable records of AI agent tool interactions. Forwards every byte, blocks nothing."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }

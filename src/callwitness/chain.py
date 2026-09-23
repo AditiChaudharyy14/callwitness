@@ -69,6 +69,27 @@ def _canonical(key: str, value: Any) -> Any:
     return value
 
 
+# Covered only when present. Added in schema 4 (0.4.6): a record written before
+# then has no such field, and hashing a None it never had would make every older
+# chain look tampered. A record written since carries it, so removing or editing
+# it breaks that record's hash like any other covered field.
+OPTIONAL_COVERED = ("result_sha256",)
+
+
+def result_digest(payload: Any) -> Optional[str]:
+    """SHA-256 of a tool result, over canonical JSON of the whole thing.
+
+    Canonical so that anyone holding the full response can recompute it on any
+    machine: sorted keys, no whitespace variance, UTF-8. This is a commitment to
+    the complete result -- the stored preview is only its first 512 bytes.
+    """
+    if payload is None:
+        return None
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":"),
+                      ensure_ascii=False, default=str)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
 def digest(record: Dict[str, Any], prev_hash: str) -> str:
     """Hash one record against its predecessor.
 
@@ -78,6 +99,9 @@ def digest(record: Dict[str, Any], prev_hash: str) -> str:
     tampering on an untouched file, which is worse than no verifier at all.
     """
     payload = {key: _canonical(key, record.get(key)) for key in COVERED}
+    for key in OPTIONAL_COVERED:
+        if record.get(key) is not None:
+            payload[key] = record.get(key)
     payload["prev"] = prev_hash
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"),
                       ensure_ascii=True, default=str)

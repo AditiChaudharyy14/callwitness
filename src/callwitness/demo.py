@@ -278,11 +278,13 @@ def run(server: Optional[List[str]] = None, home: Optional[str] = None,
         lines.append("")
 
         made = 0
+        skipped = 0
         for tool in safe:
             if made >= max_calls:
                 break
             arguments = arguments_for(tool.get("inputSchema"))
             if arguments is None:
+                skipped += 1
                 continue
             reply = session.call(100 + made, "tools/call",
                                  {"name": tool["name"], "arguments": arguments})
@@ -297,6 +299,14 @@ def run(server: Optional[List[str]] = None, home: Optional[str] = None,
             lines.append("    {:<28} {:>9}  {}".format(
                 tool["name"][:28], human(size), note))
 
+        capped = len(safe) - made - skipped
+        if capped > 0:
+            lines.append("    ({} more not called: the demo stops at {} calls.)"
+                         .format(capped, max_calls))
+        if skipped:
+            lines.append("    ({} more need arguments the demo cannot invent,"
+                         .format(skipped))
+            lines.append("     so they were not called.)")
         lines.append("")
         if made:
             lines.append("  {} calls recorded. Nothing was blocked, nothing was".format(made))
