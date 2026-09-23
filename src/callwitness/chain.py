@@ -49,6 +49,26 @@ COVERED = (
 )
 
 
+# SQLite column affinity rewrites numbers on the way in: an int written to a
+# REAL column reads back as a float, and a whole float written to an INTEGER
+# column reads back as an int. If the hash saw one form and the verifier the
+# other, an untouched file would verify as tampered. So both sides hash the form
+# the column will hand back. Values the recorder has always written (floats for
+# duration_ms, ints for the counts) come out identical, so no existing hash moves.
+_REAL_FIELDS = ("duration_ms",)
+_INT_FIELDS = ("seq", "args_bytes", "args_truncated", "is_error", "result_bytes")
+
+
+def _canonical(key: str, value: Any) -> Any:
+    if value is None or isinstance(value, bool):
+        return value
+    if key in _REAL_FIELDS and isinstance(value, int):
+        return float(value)
+    if key in _INT_FIELDS and isinstance(value, float) and value.is_integer():
+        return int(value)
+    return value
+
+
 def digest(record: Dict[str, Any], prev_hash: str) -> str:
     """Hash one record against its predecessor.
 
@@ -57,7 +77,7 @@ def digest(record: Dict[str, Any], prev_hash: str) -> str:
     A verifier that disagrees with the writer about byte layout would report
     tampering on an untouched file, which is worse than no verifier at all.
     """
-    payload = {key: record.get(key) for key in COVERED}
+    payload = {key: _canonical(key, record.get(key)) for key in COVERED}
     payload["prev"] = prev_hash
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"),
                       ensure_ascii=True, default=str)
@@ -77,13 +97,28 @@ def verify_rows(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
     break_at: Optional[Dict[str, Any]] = None
     head = GENESIS
 
+    # The chain is per session, and a session is written by one version of the
+    # recorder from start to finish. So a session is either wholly pre-chain
+    # (no hashes anywhere: an older install, not tampering) or wholly chained.
+    # A row without a hash inside a chained session -- before, between or after
+    # the hashed ones -- is a row the recorder did not write. Skipping it would
+    # let one INSERT with hash=NULL add a forged call without moving the head.
+    chained_session = any(r.get("hash") for r in rows)
+
     for row in rows:
         stored = row.get("hash")
         if not stored:
-            # Written before chaining existed. Not evidence of tampering --
-            # evidence of an older version, and saying otherwise would cry wolf
-            # on every upgraded install.
-            unchained += 1
+            if chained_session:
+                if break_at is None:
+                    break_at = {"seq": row.get("seq"), "id": row.get("id"),
+                                "reason": "record has no hash in a chained "
+                                          "session: it was not written by the "
+                                          "recorder"}
+            else:
+                # Written before chaining existed. Not evidence of tampering --
+                # evidence of an older version, and saying otherwise would cry
+                # wolf on every upgraded install.
+                unchained += 1
             continue
 
         if break_at is None:

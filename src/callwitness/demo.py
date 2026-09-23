@@ -69,12 +69,24 @@ def words(name: str) -> List[str]:
     return [w.lower() for w in _WORDS.split(name or "") if w]
 
 
+# A read can still be the wrong thing to call on a stranger's machine. The demo
+# records what comes back, so a tool that returns the environment or a secret
+# store would put the user's credentials in their own log. Refused by name.
+SENSITIVE_WORDS = frozenset({
+    "env", "environ", "environment", "secret", "secrets", "credential",
+    "credentials", "password", "passwords", "token", "tokens", "key", "keys",
+    "cookie", "cookies",
+})
+
+
 def is_safe(name: str) -> bool:
-    """True only for names that read like a read."""
+    """True only for names that read like a read, and touch nothing sensitive."""
     parts = words(name)
     if not parts:
         return False
     if any(part in WRITE_VERBS for part in parts):
+        return False
+    if any(part in SENSITIVE_WORDS for part in parts):
         return False
     return any(part in READ_VERBS for part in parts[:2])
 

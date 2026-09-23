@@ -212,11 +212,24 @@ class CallTracker:
         payload = error if is_error else result
         raw = json.dumps(payload, ensure_ascii=False, default=str) if payload is not None else ""
 
+        # Results carry secrets as often as arguments do -- a tool that reads a
+        # config file or the environment hands them straight back. The preview
+        # goes through the same redactor before it can reach disk. The size is
+        # measured on the original, because the volume signal is the product.
+        preview = raw
+        if self.redact and payload is not None:
+            redacted, rstats = redact_structure(payload)
+            preview = json.dumps(redacted, ensure_ascii=False, default=str)
+            if rstats.total:
+                merged = dict(entry.get("redaction") or {})
+                merged["result"] = rstats.as_dict()
+                entry["redaction"] = merged
+
         entry.update({
             "duration_ms": round(duration_ms, 2),
             "is_error": is_error,
             "result_bytes": len(raw.encode("utf-8")),
-            "result_preview": raw[:RESULT_PREVIEW_BYTES],
+            "result_preview": preview[:RESULT_PREVIEW_BYTES],
         })
         try:
             self.rec.call(entry)
