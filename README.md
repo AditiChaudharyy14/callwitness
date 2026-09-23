@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <b>Record what your AI agent's tools actually return.</b><br>
+  <b>Verifiable records of AI agent tool interactions.</b><br>
   Forwards every byte. Blocks nothing. Hash-chains the log.
 </p>
 
@@ -30,9 +30,10 @@
 <!-- mcp-name: io.github.AditiChaudharyy14/callwitness -->
 
 A recorder for AI agents. It sits between an agent and its tools, forwards every
-byte unchanged, blocks nothing, and hash-chains every record it writes -- so a log
-its operator could have edited still proves what happened. Works with any MCP
-server today.
+byte unchanged, blocks nothing, and hash-chains every record it writes -- so if a
+record is edited, removed or inserted afterwards, `callwitness verify` shows
+where. Tamper-evident, not tamper-proof: see *Evidence, not just a log* below.
+Works with any MCP server today.
 
 No dependencies. Python 3.8+. MIT.
 
@@ -71,20 +72,25 @@ shows what came back, and tells you where your responses sit against 140 calls
 measured across 65 public servers.
 
 ```
-  npx -y @modelcontextprotocol/server-everything declared 8 tools.
-  6 read like reads; 2 refused by the safety rule and never called.
+  mcp-servers/everything declared 13 tools. 7 read like reads; 6 refused by the
+  safety rule and never called.
 
-    echo                              41 B
-    get-resource-reference           369 B
+    echo                              65 B
+    get-annotated-message            133 B
+    get-resource-links               617 B
+    get-resource-reference           368 B
     get-structured-content           187 B
+    get-sum                           67 B
 
-  6 calls recorded. Nothing was blocked, nothing was altered.
-
-  Your calls against the public baseline (65 servers, 140 calls)
-
-    server-everything/echo            41 B   p12  vs same tool    3x smaller
-    server-everything/get-resource   369 B   p61  vs same tool    about typical
+  6 calls recorded. Nothing was blocked, nothing was
+  altered -- the proxy forwards every byte and writes down
+  what it saw.
 ```
+
+Then a table of where each response sits against the public baseline. Numbers
+above are from a clean run on 0.4.5; the server they come from changes its tool
+list from time to time, so yours may differ. Tools named like env, secrets,
+keys or tokens are always refused, so the demo never records your credentials.
 
 Point it at your own server instead:
 
@@ -418,14 +424,16 @@ work from rather than an anecdote.
 
 | Flag | Effect |
 |---|---|
-| *(default)* | Credentials in argument values are redacted before storage |
-| `--no-redact` | Stores argument values verbatim, credentials included |
+| *(default)* | Credentials in arguments and in result previews are redacted before storage |
+| `--no-redact` | Stores arguments and result previews verbatim, credentials included |
 | `--no-args` | Stores argument *shape* only (`{"to": "<str:20>"}`), never values |
 | `--max-arg-bytes N` | Caps stored bytes; the true size is still recorded |
 | `--home DIR` | Where data lives (default `~/.callwitness`) |
 
 **Redaction is on by default.** Tool arguments routinely carry API keys, bearer
-tokens and connection strings, and without this every install would be a
+tokens and connection strings, and tool results carry them just as often -- a
+tool that reads a config file or the environment hands them straight back.
+(Before 0.4.5 only arguments were redacted.) Without this every install would be a
 plaintext credential store that didn't exist before Callwitness was installed. Known
 key formats, credentials inside URLs, sensitively-named parameters and
 high-entropy tokens are replaced with `<redacted:reason>` on the write path —
@@ -440,7 +448,9 @@ signal; the password is not.
 destinations are the signal. That's deliberate, it's tested, and you should say
 it out loud to anyone you ask to run this.
 
-Everything stays on the machine that ran it. Nothing is transmitted anywhere.
+Everything stays on the machine that ran it. Nothing is transmitted anywhere
+unless you run `callwitness contribute`, which sends shapes only and is off until
+you turn it on (see *The public baseline* below).
 
 ### Evidence, not just a log
 
@@ -471,7 +481,10 @@ inventing one for you would be worse than naming the gap.
 
 Records written before chaining existed are reported as predating it, not as
 tampering. A verifier that cries wolf on an upgraded install is worse than no
-verifier.
+verifier. But a session is written by one version from start to finish, so a
+record with no hash *inside* a chained session is a break: it was not written
+by the recorder. (Before 0.4.5, such a row was skipped -- a forged record could
+be inserted without `verify` noticing. Fixed; see the 0.4.5 release.)
 
 ## What gets stored
 
