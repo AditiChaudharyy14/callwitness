@@ -101,6 +101,29 @@ callwitness demo -- npx -y @your/server
 
 ---
 
+## Evidence report
+
+One command turns a session into a single HTML page you can hand to a customer, auditor or teammate:
+
+    callwitness report                     # latest session
+    callwitness report --session <id> -o evidence.html
+
+It shows whether the chain is intact, the head hash, and every call with its response hash, timing and destination. It contains no arguments and no response contents, and nothing is sent anywhere.
+
+Keep a copy of the head hash somewhere the operator of the machine cannot edit. If it ever stops matching `callwitness verify`, the record was changed after the fact.
+
+## Overhead
+
+Measured p50 on a local stub server, direct vs. through Callwitness (0.4.7):
+
+| Response size | Added latency |
+|---|---|
+| ~200 B | 0.34 ms |
+| 20 KB | 1.8 ms |
+| 500 KB | 14 ms |
+
+The recorder never blocks the agent. Under an extreme burst (1,000 calls at once) a few percent of records can be dropped, and the report says so.
+
 ## The thing it shows you
 
 Same tool. Same permission. Two very different actions:
