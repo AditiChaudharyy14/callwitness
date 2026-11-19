@@ -33,7 +33,7 @@ A recorder for AI agents. It sits between an agent and its tools, forwards every
 byte unchanged, blocks nothing, and hash-chains every record it writes -- so if a
 record is edited, removed or inserted afterwards, `callwitness verify` shows
 where. Tamper-evident, not tamper-proof: see *Evidence, not just a log* below.
-Works with any MCP server today.
+Built for small teams that connect AI agents to real tools and have no security staff: see what your agent actually did, and prove the record was not changed.
 
 No dependencies. Python 3.8+. MIT.
 
